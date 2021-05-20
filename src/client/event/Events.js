@@ -12,7 +12,9 @@ import Typography from "@material-ui/core/Typography";
 import ArrowForward from "@material-ui/icons/ArrowForward";
 import Person from "@material-ui/icons/Person";
 import { Link } from "react-router-dom";
-import { list } from "./api-event.js";
+import { list, sync_events } from "./api-event.js";
+import auth from "./../auth/auth-helper";
+import { Snackbar } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
   root: theme.mixins.gutters({
@@ -48,11 +50,39 @@ export default function Events() {
     };
   }, []);
 
+  const handleSyncEventsClick = async () => {
+    const jwt = auth.isAuthenticated();
+    const credentials = { t: jwt.token };
+    const abortController = new AbortController();
+    const signal = abortController.signal;
+    const result = await sync_events(credentials, signal);
+    console.log(result);
+    if (result.error) {
+      // { error: "You have reached the rate limit for number of requ…oss.com/reference#rate-limiting for more details."}
+      // send to a notify/snackbar
+      setSnackbarMessage(result.error);
+      setSnackbarOpen(true);
+    } else {
+      setSnackbarMessage(result);
+      setSnackbarOpen(true);
+    }
+  };
+
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
   return (
     <Paper className={classes.root} elevation={4}>
+      <Snackbar
+        message={snackbarMessage}
+        open={snackbarOpen}
+        onRequestClose={() => setSnackbarOpen(false)}
+        autoHideDuration={2000}
+      />
       <Typography variant="h6" className={classes.title}>
         All Events
       </Typography>
+      <button onClick={handleSyncEventsClick}>Sync Events</button>
       <List dense>
         {events.map((item, i) => {
           return (

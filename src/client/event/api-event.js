@@ -1,3 +1,5 @@
+const fetch = require("node-fetch");
+
 const list = async (signal) => {
   try {
     let response = await fetch("/api/events/", {
@@ -60,4 +62,21 @@ const remove = async (params, credentials) => {
   }
 };
 
-export { list, read, update, remove };
+const sync_events = async (credentials, signal) => {
+  try {
+    let response = await fetch("/api/events/sync", {
+      method: "GET",
+      signal: signal,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + credentials.t,
+      },
+    });
+    return await response.json();
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export { list, read, update, remove, sync_events };
