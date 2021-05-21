@@ -43,7 +43,9 @@ const read = (req, res) => {
 
 const list = async (req, res) => {
   try {
-    let events = await Event.find().select("name email updated created");
+    let events = await Event.find().select(
+      "id updated created source property"
+    );
     res.json(events);
   } catch (err) {
     return res.status(400).json({
@@ -87,94 +89,108 @@ const addNewEvents = async (events) => {
     return false;
   }
   let continueReading = true;
-  events.forEach(async (event) => {
-    console.log(
-      `Processing event: ${event.id}, created: ${event.created}, updated: ${event.updated}`
-    );
-    // TODO
-    // if both created and updated are > 7 days ago, ignore the event
-    console.log(event.created);
-    console.log(new Date(event.created) < new Date() - 7); // this date is less than a week old, good to go!
-    const lessThanWeekOld = new Date(event.created) < new Date() - 7;
-    if (!lessThanWeekOld) {
-      console.log(`The event is > 7 days old, skipping`);
-      return false;
+
+  for (const eventObj of events) {
+    if (!eventObj) {
+      continue;
     }
 
-    const existingEvent = await Event.find({ id: event.id });
+    console.log(
+      `Processing event: ${eventObj.id}, created: ${eventObj.created}, updated: ${eventObj.updated}`
+    );
+
+    const today = new Date();
+    const two_days_ago = today.getTime() - 1000 * 2 * (60 * 60 * 24);
+    const created = new Date(eventObj.created);
+    const oldData = created.getTime() < two_days_ago;
+
+    if (oldData) {
+      console.log(`The event is > 2 days old, skipping`);
+      return false;
+    } else {
+      console.log(`Less than 2 days old, processing...`);
+    }
+
+    const existingEvent = await Event.find({ id: eventObj.id });
     if (!existingEvent.length) {
-      const newEvent = new Event(event);
+      const newEvent = new Event(eventObj);
       try {
         await newEvent.save();
       } catch (err) {
         console.log(err);
       }
     }
-  });
+  }
+
   return continueReading;
 };
 
-const syncEvents = async (req, res) => {
+const syncEventsHelper = async (url) => {
   const BASIC_AUTHORIZATION = config.basicAuth;
-  let url = "https://api.followupboss.com/v1/events?limit=1&offset=0";
   const options = {
     method: "GET",
     headers: {
       Accept: "application/json",
-      Authorization: `Basic ${
-        BASIC_AUTHORIZATION ||
-        "MmM1OTRjYTI0M2QwZDliMDhlNDYyNzE0MjE4MmQ0YzMyMmZjYWU6Cg=="
-      }`,
+      Authorization: `Basic ${BASIC_AUTHORIZATION}`,
     },
   };
-
   try {
     const result = await fetch(url, options);
     const eventsData = await result.json();
-    let continueFetching = true;
-    if (eventsData.events.length) {
+    if (eventsData.errorMessage) {
+      console.log(
+        `Got an errorMessage rather than events data from FUB, here's the rest of the result:`
+      );
+      console.log(result);
+      console.log(result.status);
+      if (result.status === 429) {
+        console.log(
+          "Too Many Requests! Checking the retry-after from the headers:"
+        );
+      }
+      // wait for retry-after seconds and then `continue` in the while loop, which will result in the query being run again for the same URL
+      setTimeout(() => {
+        syncEventsHelper(url);
+      }, result.headers.get("retry-after") * 1000);
+    }
+    if (eventsData.events && eventsData.events.length) {
       console.log(
         `Fetched the following events: ${eventsData.events.map((x) => x.id)}`
       );
-      continueFetching = await addNewEvents(eventsData.events);
+      const continueFetching = await addNewEvents(eventsData.events);
       console.log(
         `Processed those events using addNewEvents(), which returned ${continueFetching}`
       );
-      url = eventsData._metadata.nextLink;
-    }
-
-    while (continueFetching && eventsData._metadata.nextLink) {
-      const result = await fetch(url, options);
-      const newEventsData = await result.json();
-
-      if (newEventsData.errorMessage) {
-        return res.status(400).json({
-          error: newEventsData.errorMessage,
-        });
-      }
-      console.log(newEventsData);
-      if (
-        newEventsData &&
-        newEventsData.events &&
-        newEventsData.events.length
-      ) {
-        console.log(
-          `Fetched the following events: ${newEventsData.events.map(
-            (x) => x.id
-          )}`
-        );
-        url = newEventsData._metadata.nextLink;
-        continueFetching = await addNewEvents(newEventsData.events);
-        console.log(
-          `Processed those events using addNewEvents(), which returned ${continueFetching}`
-        );
+      if (continueFetching) {
+        url = eventsData._metadata.nextLink;
+        return url;
       } else {
-        continueFetching = false;
+        return false;
       }
+    } else {
+      return false;
     }
   } catch (err) {
     console.log(`error: ${err}`);
+    return false;
   }
+};
+
+const syncEvents = async (req, res) => {
+  // Prepare an authenticated request for the FUB API with a starting URL
+  // Rather than use a while loop, use some kind of helper function or recursion!
+  // Try to make a fetch from the FUB API
+  // If the response
+  let currentUrl = "https://api.followupboss.com/v1/events?limit=100&offset=0";
+  currentUrl = await syncEventsHelper(currentUrl);
+  while (currentUrl) {
+    // update the currentUrl or exit the while loop
+    currentUrl = await syncEventsHelper(currentUrl);
+  }
+
+  res.status(200).json({
+    message: "Sync done",
+  });
 };
 
 export default {
