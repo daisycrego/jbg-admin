@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
+import EventIcon from "@material-ui/icons/Event";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemAvatar from "@material-ui/core/ListItemAvatar";
@@ -10,7 +11,6 @@ import Avatar from "@material-ui/core/Avatar";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
 import Edit from "@material-ui/icons/Edit";
-import Person from "@material-ui/icons/Person";
 import Divider from "@material-ui/core/Divider";
 import DeleteEvent from "./DeleteEvent";
 import auth from "./../auth/auth-helper";
@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Profile({ match }) {
+export default function Event({ match }) {
   const classes = useStyles();
   const [event, setEvent] = useState({});
   const [redirectToSignin, setRedirectToSignin] = useState(false);
@@ -65,13 +65,13 @@ export default function Profile({ match }) {
   return (
     <Paper className={classes.root} elevation={4}>
       <Typography variant="h6" className={classes.title}>
-        Profile
+        Event
       </Typography>
       <List dense>
         <ListItem>
           <ListItemAvatar>
             <Avatar>
-              <Person />
+              <EventIcon />
             </Avatar>
           </ListItemAvatar>
           <ListItemText primary={event.name} secondary={event.name} />{" "}
@@ -88,8 +88,29 @@ export default function Profile({ match }) {
         </ListItem>
         <Divider />
         <ListItem>
+          <ListItemText primary={`ID (FUB): ${event.id}`} />
+        </ListItem>
+        <ListItem>
+          <ListItemText primary={`Person ID: ${event.personId}`} />
+        </ListItem>
+        <ListItem>
+          <ListItemText primary={`Note ID: ${event.noteId}`} />
+        </ListItem>
+        <ListItem>
+          <ListItemText primary={`Source: ${event.source}`} />
+        </ListItem>
+        <ListItem>
+          <ListItemText primary={`Property ID: ${event.property?.id}`} />
+          <ListItemText primary={`URL: ${event.property?.url.toString()}`} />
+        </ListItem>
+        <ListItem>
           <ListItemText
             primary={"Created: " + new Date(event.created).toDateString()}
+          />
+        </ListItem>
+        <ListItem>
+          <ListItemText
+            primary={"Updated: " + new Date(event.updated).toDateString()}
           />
         </ListItem>
       </List>

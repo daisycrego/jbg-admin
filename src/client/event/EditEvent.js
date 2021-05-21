@@ -45,7 +45,7 @@ export default function EditEvent({ match }) {
     email: "",
     open: false,
     error: "",
-    redirectToProfile: false,
+    redirectToEvent: false,
   });
   const jwt = auth.isAuthenticated();
 
@@ -89,7 +89,7 @@ export default function EditEvent({ match }) {
       if (data && data.error) {
         setValues({ ...values, error: data.error });
       } else {
-        setValues({ ...values, eventId: data._id, redirectToProfile: true });
+        setValues({ ...values, eventId: data._id, redirectToEvent: true });
       }
     });
   };
@@ -97,14 +97,14 @@ export default function EditEvent({ match }) {
     setValues({ ...values, [name]: event.target.value });
   };
 
-  if (values.redirectToProfile) {
+  if (values.redirectToEvent) {
     return <Redirect to={"/event/" + values.eventId} />;
   }
   return (
     <Card className={classes.card}>
       <CardContent>
         <Typography variant="h6" className={classes.title}>
-          Edit Profile
+          Edit Event
         </Typography>
         <TextField
           id="name"
