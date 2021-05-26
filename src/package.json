@@ -1,21 +1,13 @@
 {
-  "name": "mern-skeleton",
+  "name": "jbg-admin",
   "version": "2.0.0",
-  "description": "A MERN stack skeleton web application",
-  "author": "Shama Hoque",
-  "license": "MIT",
-  "keywords": [
-    "react",
-    "express",
-    "mongodb",
-    "node",
-    "mern"
-  ],
+  "description": "JBG Admin App",
+  "author": "Daisy Crego",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shamahoque/mern-skeleton.git"
+    "url": "https://github.com/daisycrego/jbg-admin.git"
   },
-  "homepage": "https://github.com/shamahoque/mern-skeleton",
+  "homepage": "https://github.com/daisycrego/jbg-admin.git",
   "main": "./dist/server.generated.js",
   "scripts": {
     "development": "nodemon",
