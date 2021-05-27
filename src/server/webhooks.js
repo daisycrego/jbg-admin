@@ -33,7 +33,7 @@ const createWebhook = async (webhooks) => {
   const BASIC_AUTHORIZATION = config.basicAuth;
   const data = {
     event: "eventsCreated",
-    url: "https://jbgadmin.herokuapp.com/api/events/fub/callback",
+    url: "https://jbg-admin.herokuapp.com/api/events/fub/callback",
   };
   const body = JSON.stringify(data);
   const options = {
