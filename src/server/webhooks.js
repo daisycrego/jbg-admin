@@ -9,6 +9,7 @@ const fetchWebhooks = async () => {
     headers: {
       Accept: "application/json",
       Authorization: `Basic ${BASIC_AUTHORIZATION}`,
+      "Content-Type": "application/json; charset=utf-8",
       "X-System": "jbg-admin",
     },
   };
