@@ -40,7 +40,7 @@ const createWebhook = async (webhooks) => {
     },
     body: {
       // prettier-ignore
-      "event": "eventsCreated",
+      // "event": "eventsCreated",
       // prettier-ignore
       "url": "https://jbg-admin.herokuapp.com/api/events/fub/callback",
     },
