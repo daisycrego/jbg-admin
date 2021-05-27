@@ -9,6 +9,7 @@ const fetchWebhooks = async () => {
     headers: {
       Accept: "application/json",
       Authorization: `Basic ${BASIC_AUTHORIZATION}`,
+      "X-System": "jbg-admin",
     },
   };
   try {
@@ -33,13 +34,8 @@ const createWebhook = async (webhooks) => {
   const data = {
     event: "eventsCreated",
     url: "https://jbgadmin.herokuapp.com/api/events/fub/callback",
-    system: "jbg-admin",
-    "X-System": "jbg-admin",
-    "x-system": "jbg-admin",
   };
   const body = JSON.stringify(data);
-  console.log(`body:`);
-  console.log(body);
   const options = {
     method: "POST",
     headers: {
