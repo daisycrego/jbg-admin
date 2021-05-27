@@ -38,6 +38,13 @@
     "react-dom": "16.13.1",
     "react-hot-loader": "4.12.20",
     "react-router": "5.1.2",
-    "react-router-dom": "5.1.2"
+    "react-router-dom": "5.1.2",
+    "webpack": "^5.38.0",
+    "webpack-dev-middleware": "3.7.2",
+    "webpack-hot-middleware": "2.25.0",
+    "webpack-node-externals": "1.7.2",
+    "babel-loader": "8.1.0",
+    "file-loader": "6.0.0",
+    "nodemon": "2.0.2"
   }
 }
