@@ -28,7 +28,7 @@ const createWebhook = async (webhooks) => {
   }
 
   console.log(`Creating a webhook because one doesn't exist`);
-  const url = "https://api.followupboss.com/v1/webhooks";
+  const url = "https://api.followupboss.com/v1/webhooks?system=jbg-admin";
   const BASIC_AUTHORIZATION = config.basicAuth;
   const data = {
     event: "eventsCreated",
@@ -46,7 +46,6 @@ const createWebhook = async (webhooks) => {
       "Content-Type": "application/json; charset=utf-8",
     },
     body: body,
-    system: "jbg-admin",
   };
   try {
     const result = await fetch(url, options);
