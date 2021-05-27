@@ -193,6 +193,14 @@ const syncEvents = async (req, res) => {
   });
 };
 
+const createEventsWebhookCallback = (req, res) => {
+  console.log(`createEventsWebhhookCallback`);
+  console.log(`req:`);
+  console.log(req);
+  console.log(`req.body:`);
+  console.log(req.body);
+};
+
 export default {
   create,
   eventById,
@@ -201,4 +209,5 @@ export default {
   remove,
   update,
   syncEvents,
+  createEventsWebhookCallback,
 };

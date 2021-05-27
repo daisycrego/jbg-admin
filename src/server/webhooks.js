@@ -37,8 +37,10 @@ const createWebhook = async (webhooks) => {
       Authorization: `Basic ${BASIC_AUTHORIZATION}`,
       "X-System": "jbg-admin",
     },
-    event: "eventsCreated",
-    url: "https://jbg-admin.herokuapp.com/callbacks",
+    body: {
+      event: "eventsCreated",
+      url: "https://jbg-admin.herokuapp.com/api/events/fub/callback",
+    },
   };
   try {
     const result = await fetch(url, options);

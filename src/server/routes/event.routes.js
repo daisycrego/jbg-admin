@@ -11,6 +11,10 @@ router
   .get(authCtrl.requireSignin, eventCtrl.syncEvents);
 
 router
+  .route("/api/events/fub/callback")
+  .post(eventCtrl.createEventsWebhookCallback);
+
+router
   .route("/api/events/:eventId")
   .get(authCtrl.requireSignin, eventCtrl.read)
   .put(authCtrl.requireSignin, authCtrl.hasAuthorization, eventCtrl.update)
