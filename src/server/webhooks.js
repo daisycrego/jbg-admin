@@ -39,8 +39,10 @@ const createWebhook = async (webhooks) => {
       "X-System": "jbg-admin",
     },
     body: {
-      event: "eventsCreated",
-      url: "https://jbg-admin.herokuapp.com/api/events/fub/callback",
+      // prettier-ignore
+      "event": "eventsCreated",
+      // prettier-ignore
+      "url": "https://jbg-admin.herokuapp.com/api/events/fub/callback",
     },
   };
   try {
