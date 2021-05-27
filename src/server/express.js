@@ -23,6 +23,8 @@ import theme from "./../client/theme";
 //comment out before building for production
 import devBundle from "./devBundle";
 
+import { setupEventsWebhook } from "./webhooks";
+
 const CURRENT_WORKING_DIR = process.cwd();
 const app = express();
 
@@ -45,6 +47,9 @@ app.use("/dist", express.static(path.join(CURRENT_WORKING_DIR, "dist")));
 app.use("/", userRoutes);
 app.use("/", eventRoutes);
 app.use("/", authRoutes);
+
+// set up `eventsCreated` FUB webhook if it doesn't exist
+setupEventsWebhook();
 
 app.get("*", (req, res) => {
   const sheets = new ServerStyleSheets();

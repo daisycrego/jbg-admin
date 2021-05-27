@@ -26,6 +26,10 @@ const EventSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     required: false,
   },
+  isNewLead: {
+    type: Boolean,
+    required: false,
+  },
 });
 
 export default mongoose.model("Event", EventSchema);
