@@ -31,6 +31,13 @@ const createWebhook = async (webhooks) => {
   console.log(`Creating a webhook because one doesn't exist`);
   const url = "https://api.followupboss.com/v1/webhooks";
   const BASIC_AUTHORIZATION = config.basicAuth;
+  const data = {
+    event: "eventsCreated",
+    url: "https://jbg-admin.herokuapp.com/api/events/fub/callback",
+  };
+  const body = JSON.stringify(data);
+  console.log(`body:`);
+  console.log(body);
   const options = {
     method: "POST",
     headers: {
@@ -38,12 +45,7 @@ const createWebhook = async (webhooks) => {
       Authorization: `Basic ${BASIC_AUTHORIZATION}`,
       "X-System": "jbg-admin",
     },
-    body: {
-      // prettier-ignore
-      // "event": "eventsCreated",
-      // prettier-ignore
-      // "url": "https://jbg-admin.herokuapp.com/api/events/fub/callback",
-    },
+    body: body,
   };
   try {
     const result = await fetch(url, options);
