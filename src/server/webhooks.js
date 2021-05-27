@@ -33,6 +33,7 @@ const createWebhook = async (webhooks) => {
   const data = {
     event: "eventsCreated",
     url: "https://jbg-admin.herokuapp.com/api/events/fub/callback",
+    system: "jbg-admin",
   };
   const body = JSON.stringify(data);
   console.log(`body:`);
