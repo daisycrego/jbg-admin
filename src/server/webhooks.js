@@ -42,7 +42,7 @@ const createWebhook = async (webhooks) => {
     headers: {
       Accept: "application/json",
       Authorization: `Basic ${BASIC_AUTHORIZATION}`,
-      "X-System": "jbg-admin",
+      "x-system": "jbg-admin",
       "Content-Type": "application/json; charset=utf-8",
     },
     body: body,
