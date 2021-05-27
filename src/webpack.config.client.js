@@ -28,9 +28,6 @@ const config = {
       },
     ],
   },
-  node: {
-    fs: "empty",
-  },
   plugins: [
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoEmitOnErrorsPlugin(),
