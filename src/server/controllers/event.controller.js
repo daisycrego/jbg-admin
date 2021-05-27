@@ -194,11 +194,10 @@ const syncEvents = async (req, res) => {
 };
 
 const createEventsWebhookCallback = (req, res) => {
-  console.log(`createEventsWebhhookCallback`);
-  console.log(`req:`);
-  console.log(req);
+  console.log(`/api/events/fub/callback`);
   console.log(`req.body:`);
   console.log(req.body);
+  res.send(200);
 };
 
 export default {
