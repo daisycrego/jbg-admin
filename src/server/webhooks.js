@@ -27,7 +27,9 @@ const createWebhook = async (webhooks) => {
   if (webhooks.length) {
     return;
   }
+
   console.log(`Creating a webhook because one doesn't exist`);
+  /*
   const url = "https://api.followupboss.com/v1/webhooks";
   const BASIC_AUTHORIZATION = config.basicAuth;
   const options = {
@@ -51,6 +53,7 @@ const createWebhook = async (webhooks) => {
     console.log(err);
     return err;
   }
+  */
 };
 
 export const setupEventsWebhook = () => {
