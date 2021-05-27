@@ -28,11 +28,11 @@ const createWebhook = async (webhooks) => {
   }
 
   console.log(`Creating a webhook because one doesn't exist`);
-  const url = "https://api.followupboss.com/v1/webhooks?system=jbg-admin";
+  const url = "https://api.followupboss.com/v1/webhooks?system=jbgadmin";
   const BASIC_AUTHORIZATION = config.basicAuth;
   const data = {
     event: "eventsCreated",
-    url: "https://jbg-admin.herokuapp.com/api/events/fub/callback",
+    url: "https://jbgadmin.herokuapp.com/api/events/fub/callback",
   };
   const body = JSON.stringify(data);
   console.log(`body:`);
@@ -42,7 +42,7 @@ const createWebhook = async (webhooks) => {
     headers: {
       Accept: "application/json",
       Authorization: `Basic ${BASIC_AUTHORIZATION}`,
-      "X-System": "jbg-admin",
+      "X-System": "jbgadmin",
       "Content-Type": "application/json; charset=utf-8",
     },
     body: body,
