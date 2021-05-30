@@ -200,7 +200,7 @@ const createEventsWebhookCallback = (req, res) => {
 
   // add a new event with the basic details to the db (eventId, eventCreated, resourceIds, and uri)
   // send a GET to another endpoint which will trigger a background process to find more details about the event
-
+  /*
   try {
     const id = req.body.resourceIds[0];
     const event = new Event({
@@ -216,7 +216,7 @@ const createEventsWebhookCallback = (req, res) => {
     console.log(`Event not saved to the database: ${req.body.uri}`);
     console.log(err);
   }
-
+*/
   res.send(200);
 };
 
