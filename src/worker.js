@@ -1,3 +1,5 @@
+console.log(`worker process :)`);
+
 let throng = require("throng");
 let Queue = require("bull");
 
@@ -19,6 +21,7 @@ function sleep(ms) {
 }
 
 function start() {
+  console.log(`worker process: start() running...`);
   // Connect to the named work queue
   let workQueue = new Queue("work", REDIS_URL);
 
