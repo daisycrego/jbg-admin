@@ -15,8 +15,13 @@ const fetchWebhooks = async () => {
   try {
     const result = await fetch(url, options);
     const parsedResult = await result.json();
-    console.log(parsedResult);
-    return parsedResult.webhooks;
+    if (parsedResult.webhooks) {
+      return parsedResult.webhooks;
+    } else {
+      throw new Error(
+        parsedResult.errorMessage ? parsedResult.errorMessage : parsedResult
+      );
+    }
   } catch (err) {
     console.log(err);
     return err;
@@ -50,7 +55,11 @@ const createWebhook = async (webhooks) => {
     const result = await fetch(url, options);
     const parsedResult = await result.json();
     console.log(parsedResult);
-    return parsedResult;
+    if (parsedResult.event === "eventsCreated") {
+      console.log(
+        `${parsedResult.event} webhook created, events data will be posted to ${parsedResult.url}`
+      );
+    }
   } catch (err) {
     console.log(err);
     return err;
@@ -58,11 +67,7 @@ const createWebhook = async (webhooks) => {
 };
 
 export const setupEventsWebhook = () => {
-  console.log("Set up eventsCreated webhook");
-
   // Check if the webhook exists
-
-  fetchWebhooks().then(createWebhook);
-
   // If the webhook doesn't exist, create it
+  fetchWebhooks().then(createWebhook);
 };

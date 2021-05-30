@@ -197,6 +197,26 @@ const createEventsWebhookCallback = (req, res) => {
   console.log(`/api/events/fub/callback`);
   console.log(`req.body:`);
   console.log(req.body);
+
+  // add a new event with the basic details to the db (eventId, eventCreated, resourceIds, and uri)
+  // send a GET to another endpoint which will trigger a background process to find more details about the event
+
+  try {
+    const id = req.body.resourceIds[0];
+    const event = new Event({
+      id: id,
+    });
+    await event.save();
+
+    // schedule a background process to figure out all of the event details beyond this
+    // const result = await fetch(url, options);
+
+    // create a simple
+  } catch (err) {
+    console.log(`Event not saved to the database: ${req.body.uri}`);
+    console.log(err);
+  }
+
   res.send(200);
 };
 
