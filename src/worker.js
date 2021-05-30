@@ -19,6 +19,7 @@ function sleep(ms) {
 }
 
 function start() {
+  console.log(`worker process: start() running...`);
   // Connect to the named work queue
   let workQueue = new Queue("work", REDIS_URL);
 
