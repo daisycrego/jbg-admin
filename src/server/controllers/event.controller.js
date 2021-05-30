@@ -217,7 +217,7 @@ const createEventsWebhookCallback = (req, res) => {
     console.log(err);
   }
 */
-  res.send(200);
+  res.sendStatus(200);
 };
 
 export default {
