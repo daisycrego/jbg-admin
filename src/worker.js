@@ -56,9 +56,13 @@ function start() {
       eventId: job.data.eventId,
     }).countDocuments();
 
+    let personData;
+    let isNewLead;
+    let isZillowEvent;
+    let isPossibleZillowExemption;
+
     if (!existingEvents) {
       try {
-        let personData;
         const event = new Event({
           eventId: job.data.eventId,
           resourceIds: job.data.resourceIds,
@@ -89,7 +93,7 @@ function start() {
           const testLeadCreatedDate = new Date(dateString);
           */
 
-          const isNewLead = !isDateBeforeToday(leadCreatedDate);
+          isNewLead = !isDateBeforeToday(leadCreatedDate);
           if (isNewLead) {
             console.log(`This is a new lead, created: ${leadCreatedDate}`);
           } else {
@@ -106,6 +110,8 @@ function start() {
 
           if (isZillowEvent && !isNewLead) {
             console.log(`Possible Zillow Exemption -> Sending email alert`);
+
+            isPossibleZillowExemption = true;
 
             const text = `Possible Zillow Exemption Identified
                 Event Details:
@@ -192,6 +198,7 @@ function start() {
               console.log(err);
             }
           } else {
+            isPossibleZillowExemption = false;
             console.log(
               `No Zillow Exemption identified, still saving the event data.`
             );
@@ -200,6 +207,7 @@ function start() {
           try {
             event.isNewLead = isNewLead;
             event.isZillowEvent = isZillowEvent;
+            event.isPossibleZillowExemption = isPossibleZillowExemption;
             event.source = eventData.source;
             event.created = eventData.created;
             event.personId = eventData.personId;

@@ -59,5 +59,9 @@ const EventSchema = new mongoose.Schema({
     type: Boolean,
     required: false,
   },
+  isPossibleZillowExemption: {
+    type: Boolean,
+    required: false,
+  },
 });
 module.exports = mongoose.model("Event", EventSchema);
