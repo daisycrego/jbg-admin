@@ -1,6 +1,7 @@
 let throng = require("throng");
 let Queue = require("bull");
 let Event = require("./server/models/event.model");
+let Log = require("./server/models/log.model");
 const config = require("./config/config");
 const mongoose = require("mongoose");
 const { fubGET } = require("./fetch-fub");
@@ -218,10 +219,40 @@ function start() {
             `Failed to fetch additional event data for event ${job.data.eventId} from ${job.data.uri}.`
           );
         }
+
+        try {
+          const log = new Log({
+            eventId: event.eventId,
+            eventCreated: event.created,
+            resourceIds: job.data.resourceIds,
+            uri: job.data.uri,
+            eventData: eventData,
+            personId: eventData.personId,
+            personData: personData,
+            isNewLead: isNewLead,
+            isZillowEvent: isZillowEvent,
+            isPossibleZillowExemption: isPossibleZillowExemption,
+          });
+          log.save();
+        } catch (err) {
+          console.log(err);
+        }
       } catch (err) {
         console.log(err);
       }
     } else {
+      try {
+        const log = new Log({
+          eventId: job.data.eventId,
+          eventCreated: job.data.eventCreated,
+          resourceIds: job.data.resourceIds,
+          uri: job.data.uri,
+          errorMessage: `This event already exists in our DB, skipping it!`,
+        });
+        log.save();
+      } catch (err) {
+        console.log(err);
+      }
       console.log(`This event already exists in our DB, skipping it!`);
     }
     progress = 100;
