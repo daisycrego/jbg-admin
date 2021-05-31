@@ -7,6 +7,18 @@ const fetch = require("node-fetch");
 const config = require("./config/config");
 const mongoose = require("mongoose");
 const { fubGET } = require("./fetch-fub");
+const nodemailer = require("nodemailer");
+
+// create reusable transporter object using the default SMTP transport
+let transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // true for 465, false for other ports
+  auth: {
+    user: process.env.SMTP_USER, // generated ethereal user
+    pass: process.env.SMTP_PASS, // generated ethereal password
+  },
+});
 
 function isDateBeforeToday(date) {
   console.log(`isDateBeforeToday(): ${date.getUTCDate()}`);
@@ -157,6 +169,102 @@ function start() {
 
           if (isZillowEvent && !isNewLead) {
             console.log(`Possible Zillow Exemption -> Send email alert`);
+
+            const text = `Possible Zillow Exemption Identified
+            Event Details:
+            Event ID: ${event.eventId}
+            Resource IDs: ${event.resourceIds}
+            Event URI: ${event.resourceIds}
+            Event type: ${eventData.type}
+            Event source: ${eventData.source}
+            Property id: ${eventData.property.id}
+            Property street: ${eventData.property.street}
+            Property city: ${eventData.property.city}
+            Property state: ${eventData.property.state}
+            Property zipcode: ${eventData.property.code}
+            Property MLS: ${eventData.property.mlsNumber}
+            Property Price: ${eventData.property.price}
+            Property for Rent: ${eventData.property.forRent}
+            Property URL: ${eventData.property.url}
+
+            Person Details:
+            Person ID: ${personData.id}
+            Created: ${personData.created}
+            Updated: ${personData.updated}
+            Created via: ${personData.createdVia}
+            Last activity: ${personData.lastActivity}
+            Name: ${personData.name}
+            Emails: ${personData.emails}
+            Phones: ${personData.phones}
+            Stage: ${personData.stage}
+            Source: ${personData.source}
+            Source URL: ${personData.sourceUrl}
+            Price: ${personData.price}
+            Assigned to: ${personData.assignedTo}
+
+            `;
+
+            const html = `
+            <div>
+                <h2> Possible Zillow Exemption Identified </h2>
+                <h3> Event Details </h3>
+                <ul>
+                    <li> Event ID: ${event.eventId} </li>
+                    <li> Event type: ${eventData.type} </li>
+                    <li> Event source: ${eventData.source} </li>
+                    <li> Property id: ${eventData.property.id} </li>
+                    <li> Property street: ${eventData.property.street} </li>
+                    <li> Property city: ${eventData.property.city} </li>
+                    <li> Property state: ${eventData.property.state} </li>
+                    <li> Property zipcode: ${eventData.property.code} </li>
+                    <li> Property MLS: ${eventData.property.mlsNumber} </li>
+                    <li> Property Price: ${eventData.property.price} </li>
+                    <li> Property for Rent: ${eventData.property.forRent} </li>
+                    <li> Property URL: ${eventData.property.url} </li>
+                </ul>
+
+
+                <h3> Person Details </h3>
+                <ul>
+                <li> Person ID: ${personData.id} </li>
+                <li> Created: ${personData.created} </li>
+                <li> Updated: ${personData.updated} </li>
+                <li> Created via: ${personData.createdVia} </li>
+                <li> Last activity: ${personData.lastActivity} </li>
+                <li> Name: ${personData.name} </li>
+                <li> Emails: ${personData.emails} </li>
+                <li> Phones: ${personData.phones} </li>
+                <li> Stage: ${personData.stage} </li>
+                <li> Source: ${personData.source} </li>
+                <li> Source URL: ${personData.sourceUrl} </li>
+                <li> Price: ${personData.price} </li>
+                <li> Assigned to: ${personData.assignedTo} </li>
+                </ul>
+            </div>
+            `;
+
+            try {
+              // send mail with defined transport object
+              let info = await transporter.sendMail({
+                from: '"cregodev7@gmail.com', // sender address
+                to: "daisycrego@gmail.com, cregodev7@gmail.com", // list of receivers
+                subject: "Possible Zillow Exemption", // Subject line
+                text: text, // plain text body
+                html: html, // html body
+              });
+
+              console.log("Message sent: %s", info.messageId);
+              // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+
+              // Preview only available when sending through an Ethereal account
+              console.log(
+                "Preview URL: %s",
+                nodemailer.getTestMessageUrl(info)
+              );
+              // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+            } catch (err) {
+              console.log(err);
+            }
           } else {
             console.log(
               `No Zillow Exemption identified, saving the event data`
