@@ -203,8 +203,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function EventsTable({ rows }) {
-  console.log(`EventsTable`);
-  console.log(rows);
   const classes = useStyles();
   const [order, setOrder] = React.useState("desc");
   const [orderBy, setOrderBy] = React.useState("created");

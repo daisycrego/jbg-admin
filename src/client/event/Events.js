@@ -47,7 +47,6 @@ export default function Events() {
       if (data && data.error) {
         console.log(data.error);
       } else {
-        console.log(`setting events to`);
         setEvents(data);
       }
     });

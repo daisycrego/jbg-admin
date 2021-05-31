@@ -1,10 +1,5 @@
 const mongoose = require("mongoose");
 const EventSchema = new mongoose.Schema({
-  /*id: {
-    type: Number,
-    trim: true,
-    required: true,
-  },*/
   eventId: {
     type: String,
     required: false,
@@ -46,6 +41,14 @@ const EventSchema = new mongoose.Schema({
   },
   propertyId: {
     type: Number,
+    required: false,
+  },
+  property: {
+    type: mongoose.Schema.Types.Mixed,
+    required: false,
+  },
+  person: {
+    type: mongoose.Schema.Types.Mixed,
     required: false,
   },
   isNewLead: {

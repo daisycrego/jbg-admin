@@ -35,8 +35,7 @@ async function addJob() {
     resourceIds: [ 90490 ],
     uri: 'https://api.followupboss.com/v1/events/90490'
   };
-  console.log("POSTing to api/events/fub/callback/");
-  console.log(body);
+  
   let res = await fetch("api/events/fub/callback/", 
   { 
     method: "POST", 

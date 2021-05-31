@@ -11,18 +11,14 @@ const fubGET = async (endpoint) => {
       "Content-Type": "application/json; charset=utf-8",
     },
   };
-  console.log(`Sending a POST to ${endpoint}`);
 
   const eventData = fetch(endpoint, options)
     .then(function (res) {
       return res.json();
     })
     .then(function (json) {
-      console.log(json);
       return json;
     });
-  console.log(`returning eventData from fubGET`);
-  console.log(eventData);
   return eventData;
 };
 
