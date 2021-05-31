@@ -228,7 +228,7 @@ function start() {
             uri: job.data.uri,
             eventData: eventData,
             personId: eventData.personId,
-            personData: personData,
+            personData: personData ? personData : null,
             isNewLead: isNewLead,
             isZillowEvent: isZillowEvent,
             isPossibleZillowExemption: isPossibleZillowExemption,
