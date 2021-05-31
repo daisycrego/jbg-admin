@@ -32,7 +32,7 @@ const LogSchema = new mongoose.Schema({
     type: Boolean,
     required: false,
   },
-  isZillowEvent: {
+  isZillowFlexEvent: {
     type: Boolean,
     required: false,
   },

@@ -58,7 +58,7 @@ function start() {
 
     let personData;
     let isNewLead;
-    let isZillowEvent;
+    let isZillowFlexEvent;
     let isPossibleZillowExemption;
 
     if (!existingEvents) {
@@ -102,13 +102,13 @@ function start() {
             );
           }
 
-          const isZillowEvent = eventData.source
+          const isZillowFlexEvent = eventData.source
             .toLowerCase()
-            .includes("zillow")
+            .includes("zillow flex")
             ? true
             : false;
 
-          if (isZillowEvent && !isNewLead) {
+          if (isZillowFlexEvent && !isNewLead) {
             console.log(`Possible Zillow Exemption -> Sending email alert`);
 
             isPossibleZillowExemption = true;
@@ -206,7 +206,7 @@ function start() {
 
           try {
             event.isNewLead = isNewLead;
-            event.isZillowEvent = isZillowEvent;
+            event.isZillowFlexEvent = isZillowFlexEvent;
             event.isPossibleZillowExemption = isPossibleZillowExemption;
             event.source = eventData.source;
             event.created = eventData.created;
@@ -239,7 +239,7 @@ function start() {
             personId: eventData.personId,
             personData: personData ? personData : null,
             isNewLead: isNewLead,
-            isZillowEvent: isZillowEvent,
+            isZillowFlexEvent: isZillowFlexEvent,
             isPossibleZillowExemption: isPossibleZillowExemption,
           });
           await log.save();
