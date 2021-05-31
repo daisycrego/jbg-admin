@@ -3,6 +3,7 @@ import extend from "lodash/extend";
 import errorHandler from "./../helpers/dbErrorHandler";
 import fetch from "node-fetch";
 import config from "../../config/config";
+import Queue from "bull";
 
 const create = async (req, res) => {
   const event = new Event(req.body);
@@ -193,10 +194,25 @@ const syncEvents = async (req, res) => {
   });
 };
 
+// Connect to a local redis intance locally, and the Heroku-provided URL in production
+let REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
+
+// Create / Connect to a named work queue
+let workQueue = new Queue("work", REDIS_URL);
+
 const createEventsWebhookCallback = (req, res) => {
   console.log(`/api/events/fub/callback`);
   console.log(`req.body:`);
   console.log(req.body);
+
+  // This would be where you could pass arguments to the job
+  // Ex: workQueue.add({ url: 'https://www.heroku.com' })
+  // Docs: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueadd
+
+  // TODO - Try this:
+  let job;
+  workQueue.add(req.body).then((result) => (job = result));
+  console.log(`job ${job && job.id ? job.id : "null"} added to the work queue`);
 
   // add a new event with the basic details to the db (eventId, eventCreated, resourceIds, and uri)
   // send a GET to another endpoint which will trigger a background process to find more details about the event

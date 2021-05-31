@@ -1,9 +1,13 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 const EventSchema = new mongoose.Schema({
-  id: {
+  /*id: {
     type: Number,
     trim: true,
     required: true,
+  },*/
+  eventId: {
+    type: String,
+    required: false,
   },
   updated: Date,
   created: {
@@ -14,6 +18,24 @@ const EventSchema = new mongoose.Schema({
     type: Number,
     required: false,
   },
+  type: {
+    type: String,
+    required: false,
+  },
+  message: {
+    type: String,
+    required: false,
+  },
+  processed: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
+  processedAt: {
+    type: Date,
+    required: true,
+    default: new Date(),
+  },
   noteId: {
     type: Number,
     required: false,
@@ -22,14 +44,17 @@ const EventSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-  property: {
-    type: mongoose.Schema.Types.Mixed,
+  propertyId: {
+    type: Number,
     required: false,
   },
   isNewLead: {
     type: Boolean,
     required: false,
   },
+  isZillowEvent: {
+    type: Boolean,
+    required: false,
+  },
 });
-
-export default mongoose.model("Event", EventSchema);
+module.exports = mongoose.model("Event", EventSchema);

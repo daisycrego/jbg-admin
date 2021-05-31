@@ -15,4 +15,4 @@ const config = {
       "/jbgadmin",
 };
 
-export default config;
+module.exports = config;

@@ -28,7 +28,24 @@ let jobs = {};
 
 // Kick off a new job by POST-ing to the server
 async function addJob() {
-  let res = await fetch("job/", { method: "POST" });
+  let body = {
+    eventId: 'dc6d4d68-f27a-4940-bd10-e60b4fe3b5dc',
+    eventCreated: '2021-05-30T21:46:02+00:00',
+    event: 'eventsCreated',
+    resourceIds: [ 90490 ],
+    uri: 'https://api.followupboss.com/v1/events/90490'
+  };
+  console.log("POSTing to api/events/fub/callback/");
+  console.log(body);
+  let res = await fetch("api/events/fub/callback/", 
+  { 
+    method: "POST", 
+    headers: { 
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    }, 
+    body: JSON.stringify(body) 
+  });
   let job = await res.json();
   jobs[job.id] = { id: job.id, state: "queued" };
   render();
