@@ -18,6 +18,10 @@ const fubGET = async (endpoint) => {
     })
     .then(function (json) {
       return json;
+    })
+    .catch(function (err) {
+      console.log(err);
+      return {};
     });
   return eventData;
 };
