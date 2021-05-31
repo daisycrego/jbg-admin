@@ -58,6 +58,7 @@ function start() {
 
     if (!existingEvents) {
       try {
+        let personData;
         const event = new Event({
           eventId: job.data.eventId,
           resourceIds: job.data.resourceIds,
@@ -69,7 +70,7 @@ function start() {
         if (eventData) {
           // ask Dan if he wants to also maintain the leads in our own database...
 
-          const personData = await fubGET(
+          personData = await fubGET(
             `https://api.followupboss.com/v1/people/${eventData.personId}`
           );
 
@@ -228,7 +229,7 @@ function start() {
             uri: job.data.uri,
             eventData: eventData,
             personId: eventData.personId,
-            personData: personData,
+            personData: personData ? personData : null,
             isNewLead: isNewLead,
             isZillowEvent: isZillowEvent,
             isPossibleZillowExemption: isPossibleZillowExemption,
