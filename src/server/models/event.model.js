@@ -63,5 +63,16 @@ const EventSchema = new mongoose.Schema({
     type: Boolean,
     required: false,
   },
+  status: {
+    type: String,
+    enum: [
+      "No action",
+      "Notified Zillow",
+      "Zillow Approves Exemption",
+      "Zillow Rejected Exemption",
+    ],
+    required: true,
+    default: "No action",
+  },
 });
 module.exports = mongoose.model("Event", EventSchema);
