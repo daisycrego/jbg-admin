@@ -90,6 +90,7 @@ export default function Events() {
       <Typography variant="h6" className={classes.title}>
         All Events
       </Typography>
+      {/*
       <Button
         variant="contained"
         color="primary"
@@ -99,6 +100,7 @@ export default function Events() {
       >
         Sync Events
       </Button>
+      */}
       <EventsTable rows={events} />
     </Paper>
   );
