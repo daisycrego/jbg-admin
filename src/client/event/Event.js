@@ -50,6 +50,10 @@ export default function Event({ match }) {
       if (data && data.error) {
         setRedirectToSignin(true);
       } else {
+        data.message = data.message.match(/.{1,50}/g);
+        if (data.property && data.property.url) {
+          data.property.url = data.property.url.match(/.{1,50}/g);
+        }
         setEvent(data);
       }
     });
@@ -62,6 +66,7 @@ export default function Event({ match }) {
   if (redirectToSignin) {
     return <Redirect to="/signin" />;
   }
+  // prettier-ignore
   return (
     <Paper className={classes.root} elevation={4}>
       <Typography variant="h6" className={classes.title}>
@@ -88,21 +93,21 @@ export default function Event({ match }) {
         </ListItem>
         <Divider />
         <ListItem>
-          <ListItemText primary={`ID (FUB): ${event.id}`} />
+          <ListItemText primary={`ID (FUB): ${event._id}`} />
         </ListItem>
         <ListItem>
           <ListItemText primary={`Person ID: ${event.personId}`} />
         </ListItem>
         <ListItem>
-          <ListItemText primary={`Note ID: ${event.noteId}`} />
+          <ListItemText primary={`Property URL:`}/>
         </ListItem>
         <ListItem>
-          <ListItemText primary={`Source: ${event.source}`} />
+          <a href={event.property?.url}>{event.property?.url}</a>
         </ListItem>
         <ListItem>
-          <ListItemText primary={`Property ID: ${event.property?.id}`} />
-          <ListItemText primary={`URL: ${event.property?.url.toString()}`} />
+          <ListItemText primary={`Message: ${event.message}`} />
         </ListItem>
+
         <ListItem>
           <ListItemText
             primary={"Created: " + new Date(event.created).toDateString()}
@@ -112,6 +117,9 @@ export default function Event({ match }) {
           <ListItemText
             primary={"Updated: " + new Date(event.updated).toDateString()}
           />
+        </ListItem>
+        <ListItem style={{ wordWrap: "break-word" }}>
+          <pre>{JSON.stringify(event, undefined, 2)}</pre>
         </ListItem>
       </List>
     </Paper>
