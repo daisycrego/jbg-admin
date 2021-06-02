@@ -2,12 +2,13 @@ import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
-import { list, sync_events } from "./api-event.js";
+import { list, read, sync_events } from "./api-event.js";
 import auth from "./../auth/auth-helper";
 import { Snackbar } from "@material-ui/core";
 import Button from "@material-ui/core/Button";
 import SyncIcon from "@material-ui/icons/Sync";
 import EventsTable from "./EventsTable";
+import { Redirect, Link } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   root: theme.mixins.gutters({
@@ -29,11 +30,23 @@ export default function Events() {
   const [events, setEvents] = useState([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [redirectToSignin, setRedirectToSignin] = useState(false);
 
   useEffect(() => {
+    if (!jwt) {
+      setRedirectToSignin(true);
+    }
+
     const abortController = new AbortController();
     const signal = abortController.signal;
-
+    list(signal).then((data) => {
+      if (data && data.error) {
+        console.log(data.error);
+        setRedirectToSignin(true);
+      } else {
+        setEvents(data);
+      }
+    });
     // currently we call `list` and pass it a signal,
     // and it returns ALL the events data available
     // but we want it return a subset (most recent 20, e.g.)
@@ -44,13 +57,6 @@ export default function Events() {
     // we make the page longer and longer as we need.
     // this way the page still has access to all events,
     // it's just a matter of what we display.
-    list(signal).then((data) => {
-      if (data && data.error) {
-        console.log(data.error);
-      } else {
-        setEvents(data);
-      }
-    });
 
     return function cleanup() {
       abortController.abort();
@@ -80,6 +86,9 @@ export default function Events() {
     }
   };
 
+  if (redirectToSignin) {
+    return <Redirect to="/signin" />;
+  }
   return (
     <Paper className={classes.root} elevation={4}>
       <Snackbar

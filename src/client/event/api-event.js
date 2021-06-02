@@ -38,9 +38,6 @@ const update = async (params, credentials, event) => {
   console.log(`event:`);
   console.log(event);
 
-  console.log(`jwt.verify(credentials.t, process.env.JWT_SECRET`);
-  console.log();
-
   //const decoded = await jwt.verify(credentials.t, config.jwtSecret);
   //const userId = decoded.user._id;
 
