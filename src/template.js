@@ -123,6 +123,7 @@ window.onload = function () {
       </div>
     </div>
   </script>
+  <!--
   <div class="main-content flex flex-column justify-center items-center w-100 mt4">
     <div class='br2 flex flex-column items-center pv3'>
       <div class='f1 mt2 mb1'>Create long-running jobs</div>
@@ -138,5 +139,6 @@ window.onload = function () {
       </div>
     </div>
   </div>
+  -->
       </html>`;
 };
