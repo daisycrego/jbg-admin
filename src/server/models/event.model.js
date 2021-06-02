@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const options = require("../../lib/constants");
 const EventSchema = new mongoose.Schema({
   eventId: {
     type: String,
@@ -65,12 +66,7 @@ const EventSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: [
-      "No action",
-      "Notified Zillow",
-      "Zillow Approves Exemption",
-      "Zillow Rejected Exemption",
-    ],
+    enum: options,
     required: true,
     default: "No action",
   },

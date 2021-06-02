@@ -21,5 +21,6 @@ router
   .delete(authCtrl.requireSignin, authCtrl.hasAuthorization, eventCtrl.remove);
 
 router.param("eventId", eventCtrl.eventById);
+//router.param("userId", eventCtrl.eventById);
 
 export default router;

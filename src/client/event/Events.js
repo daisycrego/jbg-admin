@@ -24,6 +24,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Events() {
+  const jwt = auth.isAuthenticated();
   const classes = useStyles();
   const [events, setEvents] = useState([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -101,7 +102,7 @@ export default function Events() {
         Sync Events
       </Button>
       */}
-      <EventsTable rows={events} />
+      <EventsTable rows={events} jwt={jwt} />
     </Paper>
   );
 }

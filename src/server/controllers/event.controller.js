@@ -4,6 +4,8 @@ import errorHandler from "./../helpers/dbErrorHandler";
 import fetch from "node-fetch";
 import config from "../../config/config";
 import Queue from "bull";
+import jwt from "jsonwebtoken";
+import User from "../models/user.model";
 
 const create = async (req, res) => {
   const event = new Event(req.body);
@@ -23,6 +25,19 @@ const create = async (req, res) => {
  * Load event and append to req.
  */
 const eventById = async (req, res, next, id) => {
+  try {
+    const userId = jwt.verify(
+      req.headers.authorization.split(" ")[1],
+      config.jwtSecret
+    );
+    let user = await User.findById(userId);
+    req.profile = user;
+  } catch (err) {
+    console.log(err);
+    return res.status("400").json({
+      error: "Could not retrieve user",
+    });
+  }
   try {
     let event = await Event.findById(id);
     if (!event)
@@ -45,7 +60,7 @@ const read = (req, res) => {
 const list = async (req, res) => {
   try {
     let events = await Event.find().select(
-      "id updated created source property"
+      "id updated created source property status"
     );
     res.json(events);
   } catch (err) {
@@ -56,6 +71,9 @@ const list = async (req, res) => {
 };
 
 const update = async (req, res) => {
+  console.log(`update:`);
+  console.log(req);
+
   try {
     let event = req.event;
     event = extend(event, req.body);

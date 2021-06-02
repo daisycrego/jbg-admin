@@ -20,13 +20,18 @@ import FilterListIcon from "@material-ui/icons/FilterList";
 import Button from "@material-ui/core/Button";
 import ArrowForward from "@material-ui/icons/ArrowForward";
 import { Link } from "react-router-dom";
+import Edit from "@material-ui/icons/Edit";
+import Select from "@material-ui/core/Select";
+import MenuItem from "@material-ui/core/MenuItem";
+import SaveIcon from "@material-ui/icons/Save";
+
+import options from "../../lib/constants";
+import { update } from "./api-event";
+import auth from "./../auth/auth-helper";
 
 const actions = [
   {
-    name: "action 1",
-  },
-  {
-    name: "action 2",
+    name: "update status",
   },
 ];
 
@@ -203,6 +208,10 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function EventsTable({ rows }) {
+  const jwt = auth.isAuthenticated();
+  console.log(`EventsTable`);
+  console.log(`jwt`);
+  console.log(jwt);
   const classes = useStyles();
   const [order, setOrder] = React.useState("desc");
   const [orderBy, setOrderBy] = React.useState("created");
@@ -210,6 +219,9 @@ export default function EventsTable({ rows }) {
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
+
+  const [updatingRow, setUpdatingRow] = React.useState(null);
+  const [status, setStatus] = React.useState("");
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -232,6 +244,47 @@ export default function EventsTable({ rows }) {
 
   const emptyRows =
     rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
+
+  const handleUpdateStatusClick = (rowId, rowStatus) => {
+    console.log(`handleUpdateStatusClick`);
+    console.log(rowId);
+    setUpdatingRow(rowId);
+    setStatus(rowStatus);
+  };
+
+  const handleStatusSelectUpdate = (e) => {
+    setStatus(e.target.value);
+  };
+
+  const handleStatusSelectSubmit = (rowId, status, event) => {
+    let eventCopy = event;
+    eventCopy.status = status;
+    console.log(`handleStatusSelectSubmit`);
+    console.log(`rowId: ${rowId}`);
+    console.log(`status: ${status}`);
+    //const jwt = auth.isAuthenticated();
+    console.log(`jwt:`);
+    console.log(jwt);
+    // make a fetch to the API to update the status for this event
+    update(
+      {
+        eventId: event._id,
+      },
+      {
+        t: jwt.token,
+      },
+      {
+        status: status,
+      }
+    ).then((data) => {
+      console.log(data);
+      if (data && data.error) {
+        //setValues({ ...values, error: data.error });
+      } else {
+        //setValues({ ...values, eventId: data._id, redirectToEvent: true });
+      }
+    });
+  };
 
   return (
     <div className={classes.root}>
@@ -258,7 +311,7 @@ export default function EventsTable({ rows }) {
                   const labelId = `enhanced-table-checkbox-${index}`;
 
                   return (
-                    <TableRow hover tabIndex={-1} key={row.id}>
+                    <TableRow hover tabIndex={-1} key={row._id}>
                       <TableCell
                         component="th"
                         id={labelId}
@@ -277,9 +330,51 @@ export default function EventsTable({ rows }) {
                         {row.source}
                       </TableCell>
                       <TableCell align={"default"} padding={"left"}>
-                        {actions.map((action) => (
-                          <Button>{action.name}</Button>
-                        ))}
+                        {actions.map((action) => {
+                          if (updatingRow && row._id === updatingRow) {
+                            return (
+                              <>
+                                <Select
+                                  labelId="status-select"
+                                  id={`status_select_${row._id}`}
+                                  value={status}
+                                  key={`select_${row._id}`}
+                                  onChange={(e) => handleStatusSelectUpdate(e)}
+                                >
+                                  {options.map((option) => (
+                                    <MenuItem key={option} value={option}>
+                                      {option}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                                <Button
+                                  onClick={() =>
+                                    handleStatusSelectSubmit(
+                                      row._id,
+                                      status,
+                                      row
+                                    )
+                                  }
+                                  variant="contained"
+                                  color="secondary"
+                                  startIcon={<SaveIcon />}
+                                />
+                              </>
+                            );
+                          } else {
+                            return (
+                              <Button
+                                key={`status_button_${row._id}`}
+                                onClick={() =>
+                                  handleUpdateStatusClick(row._id, row.status)
+                                }
+                              >
+                                {action.name}
+                                <Edit key={`edit_icon_${row._id}`} />
+                              </Button>
+                            );
+                          }
+                        })}
                       </TableCell>
                       <TableCell align={"default"} padding={"left"}>
                         <Link to={"/event/" + row._id} key={row._id}>
