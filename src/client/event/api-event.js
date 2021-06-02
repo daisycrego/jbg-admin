@@ -30,17 +30,6 @@ const read = async (params, credentials, signal) => {
 };
 
 const update = async (params, credentials, event) => {
-  console.log(`api-event: update()`);
-  console.log(`params:`);
-  console.log(params);
-  console.log(`credentials:`);
-  console.log(credentials);
-  console.log(`event:`);
-  console.log(event);
-
-  //const decoded = await jwt.verify(credentials.t, config.jwtSecret);
-  //const userId = decoded.user._id;
-
   try {
     // add userId as a parameter or somehow access userId from the route!
     let response = await fetch(`/api/events/${params.eventId}`, {

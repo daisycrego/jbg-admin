@@ -90,7 +90,7 @@ const headCells = [
   },
   { id: "created", numeric: true, disablePadding: false, label: "Created" },
   { id: "source", numeric: true, disablePadding: false, label: "Source" },
-  { id: "actions", numeric: true, disablePadding: false, label: "Actions" },
+  { id: "status", numeric: true, disablePadding: false, label: "Status" },
   { id: "more", numeric: true, disablePadding: false, label: "More" },
 ];
 
@@ -286,6 +286,45 @@ export default function EventsTable({ rows }) {
     });
   };
 
+  const data = (row) => {
+    if (updatingRow && row._id === updatingRow) {
+      return (
+        <>
+          <Select
+            labelId="status-select"
+            id={`status_select_${row._id}`}
+            value={status}
+            key={`select_${row._id}`}
+            onChange={(e) => handleStatusSelectUpdate(e)}
+          >
+            {options.map((option) => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </Select>
+
+          <Button
+            onClick={() => handleStatusSelectSubmit(row._id, status, row)}
+            variant="contained"
+            color="secondary"
+            startIcon={<SaveIcon />}
+          />
+        </>
+      );
+    } else {
+      return (
+        <Button
+          key={`status_button_${row._id}`}
+          onClick={() => handleUpdateStatusClick(row._id, row.status)}
+        >
+          {row.status}
+          <Edit key={`edit_icon_${row._id}`} />
+        </Button>
+      );
+    }
+  };
+
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
@@ -330,51 +369,7 @@ export default function EventsTable({ rows }) {
                         {row.source}
                       </TableCell>
                       <TableCell align={"default"} padding={"left"}>
-                        {actions.map((action) => {
-                          if (updatingRow && row._id === updatingRow) {
-                            return (
-                              <>
-                                <Select
-                                  labelId="status-select"
-                                  id={`status_select_${row._id}`}
-                                  value={status}
-                                  key={`select_${row._id}`}
-                                  onChange={(e) => handleStatusSelectUpdate(e)}
-                                >
-                                  {options.map((option) => (
-                                    <MenuItem key={option} value={option}>
-                                      {option}
-                                    </MenuItem>
-                                  ))}
-                                </Select>
-                                <Button
-                                  onClick={() =>
-                                    handleStatusSelectSubmit(
-                                      row._id,
-                                      status,
-                                      row
-                                    )
-                                  }
-                                  variant="contained"
-                                  color="secondary"
-                                  startIcon={<SaveIcon />}
-                                />
-                              </>
-                            );
-                          } else {
-                            return (
-                              <Button
-                                key={`status_button_${row._id}`}
-                                onClick={() =>
-                                  handleUpdateStatusClick(row._id, row.status)
-                                }
-                              >
-                                {action.name}
-                                <Edit key={`edit_icon_${row._id}`} />
-                              </Button>
-                            );
-                          }
-                        })}
+                        {data(row)}
                       </TableCell>
                       <TableCell align={"default"} padding={"left"}>
                         <Link to={"/event/" + row._id} key={row._id}>

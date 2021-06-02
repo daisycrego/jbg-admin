@@ -20,7 +20,6 @@ const create = async (req, res) => {
  * Load user and append to req.
  */
 const userByID = async (req, res, next, id) => {
-  console.log(`userByID is attach user to req.profile`);
   try {
     let user = await User.findById(id);
     if (!user)
@@ -28,7 +27,6 @@ const userByID = async (req, res, next, id) => {
         error: "User not found",
       });
     req.profile = user;
-    console.log(req.profile);
     next();
   } catch (err) {
     return res.status("400").json({
