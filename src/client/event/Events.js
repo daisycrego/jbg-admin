@@ -97,9 +97,6 @@ export default function Events() {
         onClose={() => setSnackbarOpen(false)}
         autoHideDuration={2000}
       />
-      <Typography variant="h6" className={classes.title}>
-        All Events
-      </Typography>
       {/*
       <Button
         variant="contained"
