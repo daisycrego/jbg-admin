@@ -24,37 +24,15 @@ import Edit from "@material-ui/icons/Edit";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 import SaveIcon from "@material-ui/icons/Save";
+import CancelIcon from "@material-ui/icons/Cancel";
+import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
+import CheckBoxIcon from "@material-ui/icons/CheckBox";
 
 import options from "../../lib/constants";
 import { update } from "./api-event";
 import auth from "./../auth/auth-helper";
+import _ from "lodash";
 
-const actions = [
-  {
-    name: "update status",
-  },
-];
-
-function createData(name, calories, fat, carbs, protein) {
-  return { name, calories, fat, carbs, protein };
-}
-/*
-const rows = [
-  createData("Cupcake", 305, 3.7, 67, 4.3),
-  createData("Donut", 452, 25.0, 51, 4.9),
-  createData("Eclair", 262, 16.0, 24, 6.0),
-  createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
-  createData("Gingerbread", 356, 16.0, 49, 3.9),
-  createData("Honeycomb", 408, 3.2, 87, 6.5),
-  createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
-  createData("Jelly Bean", 375, 0.0, 94, 0.0),
-  createData("KitKat", 518, 26.0, 65, 7.0),
-  createData("Lollipop", 392, 0.2, 98, 0.0),
-  createData("Marshmallow", 318, 0, 81, 2.0),
-  createData("Nougat", 360, 19.0, 9, 37.0),
-  createData("Oreo", 437, 18.0, 63, 4.0),
-];
-*/
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
     return -1;
@@ -83,7 +61,7 @@ function stableSort(array, comparator) {
 
 const headCells = [
   {
-    id: "property",
+    id: "propertyStreet",
     numeric: false,
     disablePadding: true,
     label: "Property address",
@@ -121,6 +99,29 @@ function EnhancedTableHead(props) {
                 </span>
               ) : null}
             </TableSortLabel>
+            {headCell.id === "source" && (
+              <Button onClick={props.onSourceFilterClick}>
+                <FilterListIcon />
+              </Button>
+            )}
+            {headCell.id === "source" && props.showSourceFilters && (
+              <ul className={classes.listItem}>
+                {props.sources.map((source) => (
+                  <li key={source}>
+                    {props.activeSources.includes(source) ? (
+                      <IconButton>
+                        <CheckBoxIcon />
+                      </IconButton>
+                    ) : (
+                      <IconButton>
+                        <CheckBoxOutlineBlankIcon />
+                      </IconButton>
+                    )}
+                    {source}
+                  </li>
+                ))}
+              </ul>
+            )}
           </TableCell>
         ))}
       </TableRow>
@@ -168,16 +169,8 @@ const EnhancedTableToolbar = (props) => {
           id="tableTitle"
           component="div"
         >
-          Events
+          Follow-Up Boss Events
         </Typography>
-      }
-
-      {
-        <Tooltip title="Filter list">
-          <IconButton aria-label="filter list">
-            <FilterListIcon />
-          </IconButton>
-        </Tooltip>
       }
     </Toolbar>
   );
@@ -205,13 +198,16 @@ const useStyles = makeStyles((theme) => ({
     top: 20,
     width: 1,
   },
+  listItem: {
+    listStyleType: "none",
+    height: "10em",
+    overflow: "scroll",
+    overflowX: "hidden",
+  },
 }));
 
 export default function EventsTable({ rows }) {
   const jwt = auth.isAuthenticated();
-  console.log(`EventsTable`);
-  console.log(`jwt`);
-  console.log(jwt);
   const classes = useStyles();
   const [order, setOrder] = React.useState("desc");
   const [orderBy, setOrderBy] = React.useState("created");
@@ -219,14 +215,57 @@ export default function EventsTable({ rows }) {
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [activeRows, setActiveRows] = React.useState([]);
+  const [sources, setSources] = React.useState([]);
+  const [showSourceSelect, setShowSourceSelect] = React.useState(false);
+  const [activeSources, setActiveSources] = React.useState(["Zillow Flex"]);
 
   const [updatingRow, setUpdatingRow] = React.useState(null);
   const [status, setStatus] = React.useState("");
 
+  const [showSourceFilters, setShowSourceFilters] = React.useState(false);
+
+  React.useEffect(() => {
+    // Extract property.street from property object (for sorting)
+    const rowsWithPropertyStreet = rows.map((event) => {
+      if (event.property && event.property.street) {
+        event.propertyStreet = event.property.street;
+      } else {
+        event.propertyStreet = "";
+      }
+      return event;
+    });
+    const rowsWithActiveSource = rowsWithPropertyStreet.filter((row) =>
+      activeSources.includes(row.source)
+    );
+    const activeRows = stableSort(
+      rowsWithActiveSource,
+      getComparator(order, orderBy)
+    ).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    const allSources = rows.map((row) => row.source).filter((x) => x);
+    const uniqueSources = _.uniq(allSources);
+    setSources(uniqueSources);
+    setActiveRows(activeRows);
+  }, [rows, order]);
+
   const handleRequestSort = (event, property) => {
+    console.log(`handleRequestSort: property: ${property}`);
     const isAsc = orderBy === property && order === "asc";
-    setOrder(isAsc ? "desc" : "asc");
-    setOrderBy(property);
+    console.log(`isAsc: ${isAsc}`);
+    const newOrder = isAsc ? "desc" : "asc";
+    const newOrderBy = property;
+    const rowsWithActiveSource = rows.filter((row) =>
+      activeSources.includes(row.source)
+    );
+    const activeRows = stableSort(
+      rowsWithActiveSource,
+      getComparator(newOrder, newOrderBy)
+    ).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    console.log(`updating activeRows`);
+    setActiveRows(activeRows);
+    setOrder(newOrder);
+    setOrderBy(newOrderBy);
+    console.log(activeRows);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -242,14 +281,17 @@ export default function EventsTable({ rows }) {
     setDense(event.target.checked);
   };
 
+  const handleSourceFilterClick = () => {
+    setShowSourceFilters(!showSourceFilters);
+  };
+
   const emptyRows =
     rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
 
   const handleUpdateStatusClick = (rowId, rowStatus) => {
-    console.log(`handleUpdateStatusClick`);
-    console.log(rowId);
     setUpdatingRow(rowId);
     setStatus(rowStatus);
+    setShowSourceSelect(!showSourceSelect);
   };
 
   const handleStatusSelectUpdate = (e) => {
@@ -259,12 +301,6 @@ export default function EventsTable({ rows }) {
   const handleStatusSelectSubmit = (rowId, status, event) => {
     let eventCopy = event;
     eventCopy.status = status;
-    console.log(`handleStatusSelectSubmit`);
-    console.log(`rowId: ${rowId}`);
-    console.log(`status: ${status}`);
-    //const jwt = auth.isAuthenticated();
-    console.log(`jwt:`);
-    console.log(jwt);
     // make a fetch to the API to update the status for this event
     update(
       {
@@ -277,7 +313,6 @@ export default function EventsTable({ rows }) {
         status: status,
       }
     ).then((data) => {
-      console.log(data);
       if (data && data.error) {
         //setValues({ ...values, error: data.error });
       } else {
@@ -287,7 +322,7 @@ export default function EventsTable({ rows }) {
   };
 
   const data = (row) => {
-    if (updatingRow && row._id === updatingRow) {
+    if (showSourceSelect && updatingRow && row._id === updatingRow) {
       return (
         <>
           <Select
@@ -303,13 +338,20 @@ export default function EventsTable({ rows }) {
               </MenuItem>
             ))}
           </Select>
-
-          <Button
+          <IconButton
+            aria-label="save"
+            color="primary"
             onClick={() => handleStatusSelectSubmit(row._id, status, row)}
-            variant="contained"
-            color="secondary"
-            startIcon={<SaveIcon />}
-          />
+          >
+            <SaveIcon />
+          </IconButton>
+          <IconButton
+            aria-label="cancel"
+            color="primary"
+            onClick={() => handleUpdateStatusClick(row._id, status)}
+          >
+            <CancelIcon />
+          </IconButton>
         </>
       );
     } else {
@@ -341,46 +383,48 @@ export default function EventsTable({ rows }) {
               order={order}
               orderBy={orderBy}
               onRequestSort={handleRequestSort}
+              onSourceFilterClick={handleSourceFilterClick}
               rowCount={rows.length}
+              showSourceFilters={showSourceFilters}
+              sources={sources}
+              activeSources={activeSources}
             />
             <TableBody>
-              {stableSort(rows, getComparator(order, orderBy))
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row, index) => {
-                  const labelId = `enhanced-table-checkbox-${index}`;
+              {activeRows.map((row, index) => {
+                const labelId = `enhanced-table-checkbox-${index}`;
 
-                  return (
-                    <TableRow hover tabIndex={-1} key={row._id}>
-                      <TableCell
-                        component="th"
-                        id={labelId}
-                        scope="row"
-                        align={"default"}
-                        padding={"left"}
-                      >
-                        {row.property ? row.property.street : ""}
-                      </TableCell>
-                      <TableCell align={"default"} padding={"left"}>
-                        {`${new Date(row.created).toDateString()} ${new Date(
-                          row.created
-                        ).toLocaleTimeString()}`}
-                      </TableCell>
-                      <TableCell align={"default"} padding={"left"}>
-                        {row.source}
-                      </TableCell>
-                      <TableCell align={"default"} padding={"left"}>
-                        {data(row)}
-                      </TableCell>
-                      <TableCell align={"default"} padding={"left"}>
-                        <Link to={"/event/" + row._id} key={row._id}>
-                          <IconButton>
-                            <ArrowForward />
-                          </IconButton>
-                        </Link>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                return (
+                  <TableRow hover tabIndex={-1} key={row._id}>
+                    <TableCell
+                      component="th"
+                      id={labelId}
+                      scope="row"
+                      align={"default"}
+                      padding={"left"}
+                    >
+                      {row.property ? row.property.street : ""}
+                    </TableCell>
+                    <TableCell align={"default"} padding={"left"}>
+                      {`${new Date(row.created).toDateString()} ${new Date(
+                        row.created
+                      ).toLocaleTimeString()}`}
+                    </TableCell>
+                    <TableCell align={"default"} padding={"left"}>
+                      {row.source}
+                    </TableCell>
+                    <TableCell align={"default"} padding={"left"}>
+                      {data(row)}
+                    </TableCell>
+                    <TableCell align={"default"} padding={"left"}>
+                      <Link to={"/event/" + row._id} key={row._id}>
+                        <IconButton>
+                          <ArrowForward />
+                        </IconButton>
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
               {emptyRows > 0 && (
                 <TableRow style={{ height: (dense ? 33 : 53) * emptyRows }}>
                   <TableCell colSpan={6} />
@@ -392,7 +436,7 @@ export default function EventsTable({ rows }) {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25, 50, 100]}
           component="div"
-          count={rows.length}
+          count={activeRows.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onChangePage={handleChangePage}
