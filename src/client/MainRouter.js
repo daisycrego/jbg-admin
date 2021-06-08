@@ -7,7 +7,6 @@ import Signup from "./user/Signup";
 import Event from "./event/Event";
 import Signin from "./auth/Signin";
 import EditProfile from "./user/EditProfile";
-import EditEvent from "./event/EditEvent";
 import Profile from "./user/Profile";
 import PrivateRoute from "./auth/PrivateRoute";
 import Menu from "./core/Menu";
@@ -22,7 +21,6 @@ const MainRouter = () => {
         <Route path="/signup" component={Signup} />
         <Route path="/signin" component={Signin} />
         <PrivateRoute path="/user/edit/:userId" component={EditProfile} />
-        <PrivateRoute path="/event/edit/:eventId" component={EditEvent} />
         <Route path="/user/:userId" component={Profile} />
         <Route path="/event/:eventId" component={Event} />
       </Switch>

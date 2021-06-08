@@ -29,40 +29,6 @@ const read = async (params, credentials, signal) => {
   }
 };
 
-const update = async (params, credentials, event) => {
-  try {
-    // add userId as a parameter or somehow access userId from the route!
-    let response = await fetch(`/api/events/${params.eventId}`, {
-      method: "PUT",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + credentials.t,
-      },
-      body: JSON.stringify(event),
-    });
-    return await response.json();
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-const remove = async (params, credentials) => {
-  try {
-    let response = await fetch("/api/events/" + params.eventId, {
-      method: "DELETE",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + credentials.t,
-      },
-    });
-    return await response.json();
-  } catch (err) {
-    console.log(err);
-  }
-};
-
 const sync_events = async (credentials, signal) => {
   try {
     let response = await fetch("/api/events/sync", {
@@ -80,4 +46,4 @@ const sync_events = async (credentials, signal) => {
   }
 };
 
-export { list, read, update, remove, sync_events };
+export { list, read, sync_events };

@@ -10,9 +10,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import Avatar from "@material-ui/core/Avatar";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
-import Edit from "@material-ui/icons/Edit";
 import Divider from "@material-ui/core/Divider";
-import DeleteEvent from "./DeleteEvent";
 import auth from "./../auth/auth-helper";
 import { read } from "./api-event.js";
 import { Redirect, Link } from "react-router-dom";
@@ -80,16 +78,6 @@ export default function Event({ match }) {
             </Avatar>
           </ListItemAvatar>
           <ListItemText primary={event.name} secondary={event.name} />{" "}
-          {auth.isAuthenticated().user && (
-            <ListItemSecondaryAction>
-              <Link to={"/event/edit/" + event._id}>
-                <IconButton aria-label="Edit" color="primary">
-                  <Edit />
-                </IconButton>
-              </Link>
-              <DeleteEvent eventId={event._id} />
-            </ListItemSecondaryAction>
-          )}
         </ListItem>
         <Divider />
         <ListItem>
