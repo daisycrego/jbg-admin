@@ -16,7 +16,6 @@ import IconButton from "@material-ui/core/IconButton";
 import Tooltip from "@material-ui/core/Tooltip";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Switch from "@material-ui/core/Switch";
-import FilterListIcon from "@material-ui/icons/FilterList";
 import Button from "@material-ui/core/Button";
 import ArrowForward from "@material-ui/icons/ArrowForward";
 import { Link } from "react-router-dom";
@@ -27,6 +26,8 @@ import SaveIcon from "@material-ui/icons/Save";
 import CancelIcon from "@material-ui/icons/Cancel";
 import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@material-ui/icons/CheckBox";
+import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
+import ArrowDropUpIcon from "@material-ui/icons/ArrowDropUp";
 
 import options from "../../lib/constants";
 import { update } from "./api-event";
@@ -78,6 +79,8 @@ function EnhancedTableHead(props) {
     onRequestSort(event, property);
   };
 
+  console.log(props);
+
   return (
     <TableHead>
       <TableRow>
@@ -99,9 +102,14 @@ function EnhancedTableHead(props) {
                 </span>
               ) : null}
             </TableSortLabel>
-            {headCell.id === "source" && (
+            {headCell.id === "source" && !props.showSourceFilters && (
               <Button onClick={props.onSourceFilterClick}>
-                <FilterListIcon />
+                <ArrowDropDownIcon />
+              </Button>
+            )}
+            {headCell.id === "source" && props.showSourceFilters && (
+              <Button onClick={props.onSourceFilterClick}>
+                <ArrowDropUpIcon />
               </Button>
             )}
             {headCell.id === "source" && props.showSourceFilters && (
@@ -135,6 +143,7 @@ EnhancedTableHead.propTypes = {
   order: PropTypes.oneOf(["asc", "desc"]).isRequired,
   orderBy: PropTypes.string.isRequired,
   rowCount: PropTypes.number.isRequired,
+  showSourceSelect: PropTypes.bool.isRequired,
 };
 
 const useToolbarStyles = makeStyles((theme) => ({
@@ -339,10 +348,15 @@ export default function EventsTable({ rows }) {
       rowsWithActiveSource,
       getComparator(order, orderBy)
     );
+    const newPage = 0;
     setActiveRows(newActiveRows);
     setCurrentRows(
-      newActiveRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+      newActiveRows.slice(
+        newPage * rowsPerPage,
+        newPage * rowsPerPage + rowsPerPage
+      )
     );
+    setPage(0);
   };
 
   const data = (row) => {
