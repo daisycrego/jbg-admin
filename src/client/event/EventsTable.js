@@ -274,16 +274,12 @@ export default function EventsTable({ rows }) {
       newPage * rowsPerPage,
       newPage * rowsPerPage + rowsPerPage
     );
-    setActiveRows(newActiveRows);
+    setCurrentRows(newActiveRows);
   };
 
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
-  };
-
-  const handleChangeDense = (event) => {
-    setDense(event.target.checked);
   };
 
   const handleSourceFilterClick = () => {
@@ -327,7 +323,6 @@ export default function EventsTable({ rows }) {
   };
 
   const handleCheckboxClick = (source) => {
-    console.log(`handleCheckboxClick: ${source}`);
     let newActiveSources;
     if (activeSources.includes(source)) {
       newActiveSources = activeSources.filter(
@@ -340,43 +335,10 @@ export default function EventsTable({ rows }) {
     const rowsWithActiveSource = rows.filter((row) =>
       newActiveSources.includes(row.source)
     );
-    console.log(`stableSort(
-      rowsWithActiveSource,
-      getComparator(order, orderBy)
-    )`);
-    console.log(
-      stableSort(rowsWithActiveSource, getComparator(order, orderBy))
-    );
-    console.log(`slicing:`);
-    console.log(`page: ${page}, rowsPerPage: ${rowsPerPage}`);
-    console.log(
-      `from: ${page * rowsPerPage}, to: ${page * rowsPerPage + rowsPerPage}`
-    );
-    console.log(`
-    const newActiveRows = stableSort(
-      rowsWithActiveSource,
-      getComparator(order, orderBy)
-    ).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-    `);
-    console.log(
-      stableSort(rowsWithActiveSource, getComparator(order, orderBy)).slice(
-        page * rowsPerPage,
-        page * rowsPerPage + rowsPerPage
-      )
-    );
     const newActiveRows = stableSort(
       rowsWithActiveSource,
       getComparator(order, orderBy)
     );
-    /*console.log(`const newActiveRows = stableSort(
-      rowsWithActiveSource,
-      getComparator(order, orderBy)`);
-    console.log(
-      stableSort(rowsWithActiveSource, getComparator(order, orderBy))
-    );
-    console.log(`handleCheckboxClick: activeRows:`);
-    console.log(newActiveRows);
-    */
     setActiveRows(newActiveRows);
     setCurrentRows(
       newActiveRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
