@@ -93,29 +93,21 @@ export default function Event({ match }) {
         </ListItem>
         <Divider />
         <ListItem>
-          <ListItemText primary={`ID (FUB): ${event._id}`} />
+          <ListItemText primary={`ID (FUB)`} secondary={event._id} />
         </ListItem>
         <ListItem>
-          <ListItemText primary={`Person ID: ${event.personId}`} />
+          <ListItemText primary={`Person ID:`} secondary={event.personId} />
         </ListItem>
         <ListItem>
-          <ListItemText primary={`Property URL:`}/>
+          <ListItemText primary={`Property URL:`} secondary={<a href={event.property?.url}>{event.property?.url}</a>}/>
         </ListItem>
         <ListItem>
-          <a href={event.property?.url}>{event.property?.url}</a>
-        </ListItem>
-        <ListItem>
-          <ListItemText primary={`Message: ${event.message}`} />
+          <ListItemText primary={`Message:`} secondary={event.message} />
         </ListItem>
 
         <ListItem>
           <ListItemText
-            primary={"Created: " + new Date(event.created).toDateString()}
-          />
-        </ListItem>
-        <ListItem>
-          <ListItemText
-            primary={"Updated: " + new Date(event.updated).toDateString()}
+            primary={"Created:"} secondary={new Date(event.created).toDateString()}
           />
         </ListItem>
         <ListItem style={{ wordWrap: "break-word" }}>

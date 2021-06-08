@@ -143,7 +143,7 @@ EnhancedTableHead.propTypes = {
   order: PropTypes.oneOf(["asc", "desc"]).isRequired,
   orderBy: PropTypes.string.isRequired,
   rowCount: PropTypes.number.isRequired,
-  showSourceSelect: PropTypes.bool.isRequired,
+  showSourceFilters: PropTypes.bool.isRequired,
 };
 
 const useToolbarStyles = makeStyles((theme) => ({
