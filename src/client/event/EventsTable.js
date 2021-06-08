@@ -1,34 +1,40 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { lighten, makeStyles } from "@material-ui/core/styles";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableContainer from "@material-ui/core/TableContainer";
-import TableHead from "@material-ui/core/TableHead";
-import TablePagination from "@material-ui/core/TablePagination";
-import TableRow from "@material-ui/core/TableRow";
-import TableSortLabel from "@material-ui/core/TableSortLabel";
-import Toolbar from "@material-ui/core/Toolbar";
-import Typography from "@material-ui/core/Typography";
-import Paper from "@material-ui/core/Paper";
-import IconButton from "@material-ui/core/IconButton";
-import Button from "@material-ui/core/Button";
-import ArrowForward from "@material-ui/icons/ArrowForward";
-import { Link } from "react-router-dom";
-import Edit from "@material-ui/icons/Edit";
-import Select from "@material-ui/core/Select";
-import MenuItem from "@material-ui/core/MenuItem";
-import SaveIcon from "@material-ui/icons/Save";
-import CancelIcon from "@material-ui/icons/Cancel";
-import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
-import CheckBoxIcon from "@material-ui/icons/CheckBox";
-import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
-import ArrowDropUpIcon from "@material-ui/icons/ArrowDropUp";
-import DoneAllIcon from "@material-ui/icons/DoneAll";
-import ClearAllIcon from "@material-ui/icons/ClearAll";
-import RefreshIcon from "@material-ui/icons/Refresh";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
+  TableSortLabel,
+  Toolbar,
+  Typography,
+  Paper,
+  IconButton,
+  Button,
+  Select,
+  MenuItem,
+  Box,
+} from "@material-ui/core";
 
+import {
+  Edit,
+  Save,
+  Cancel,
+  CheckBoxOutlineBlank,
+  CheckBox,
+  ArrowForward,
+  ArrowDropDown,
+  ArrowDropUp,
+  DoneAll,
+  ClearAll,
+  Refresh,
+} from "@material-ui/icons";
+
+import { Link } from "react-router-dom";
 import options from "../../lib/constants";
 import { update } from "./api-event";
 import auth from "./../auth/auth-helper";
@@ -74,7 +80,27 @@ const headCells = [
 ];
 
 function EnhancedTableHead(props) {
-  const { classes, order, orderBy, rowCount, onRequestSort } = props;
+  const {
+    classes,
+    order,
+    orderBy,
+    onRequestSort,
+    openFilter,
+    onSourceFilterClick,
+    onStatusFilterClick,
+    onSelectAllSources,
+    onClearSources,
+    onResetSources,
+    sources,
+    activeSources,
+    statuses,
+    activeStatuses,
+    onCheckboxClick,
+    onSelectAllStatuses,
+    onClearStatuses,
+    onResetStatuses,
+    onStatusCheckboxClick,
+  } = props;
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
   };
@@ -100,46 +126,101 @@ function EnhancedTableHead(props) {
                 </span>
               ) : null}
             </TableSortLabel>
-            {headCell.id === "source" && !props.showSourceFilters && (
-              <Button onClick={props.onSourceFilterClick}>
-                <ArrowDropDownIcon />
+            {headCell.id === "status" &&
+              (!openFilter || openFilter !== "status") && (
+                <Button onClick={onStatusFilterClick}>
+                  <ArrowDropDown />
+                </Button>
+              )}
+            {headCell.id === "status" && openFilter === "status" && (
+              <Button onClick={onStatusFilterClick}>
+                <ArrowDropUp />
               </Button>
             )}
-            {headCell.id === "source" && props.showSourceFilters && (
-              <Button onClick={props.onSourceFilterClick}>
-                <ArrowDropUpIcon />
+            {headCell.id === "source" &&
+              (!openFilter || openFilter !== "source") && (
+                <Button onClick={onSourceFilterClick}>
+                  <ArrowDropDown />
+                </Button>
+              )}
+            {headCell.id === "source" && openFilter === "source" && (
+              <Button onClick={onSourceFilterClick}>
+                <ArrowDropUp />
               </Button>
             )}
-            {headCell.id === "source" && props.showSourceFilters && (
-              <>
-                <IconButton onClick={() => props.onSelectAllSources(true)}>
-                  <DoneAllIcon />
-                </IconButton>
-                <IconButton onClick={() => props.onClearSources(false)}>
-                  <ClearAllIcon />
-                </IconButton>
-                <IconButton onClick={() => props.onResetSources(null)}>
-                  <RefreshIcon />
-                </IconButton>
-              </>
+            {headCell.id === "source" && openFilter === "source" && (
+              <Box border={1}>
+                {headCell.id === "source" && openFilter === "source" && (
+                  <>
+                    <IconButton onClick={() => onSelectAllSources(true)}>
+                      <DoneAll />
+                    </IconButton>
+                    <IconButton onClick={() => onClearSources(false)}>
+                      <ClearAll />
+                    </IconButton>
+                    <IconButton onClick={() => onResetSources(null)}>
+                      <Refresh />
+                    </IconButton>
+                  </>
+                )}
+                {headCell.id === "source" && openFilter === "source" && (
+                  <ul className={classes.listItem}>
+                    {sources.map((source) => (
+                      <li key={source}>
+                        {activeSources.includes(source) ? (
+                          <IconButton onClick={() => onCheckboxClick(source)}>
+                            <CheckBox />
+                          </IconButton>
+                        ) : (
+                          <IconButton onClick={() => onCheckboxClick(source)}>
+                            <CheckBoxOutlineBlank />
+                          </IconButton>
+                        )}
+                        {source}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Box>
             )}
-            {headCell.id === "source" && props.showSourceFilters && (
-              <ul className={classes.listItem}>
-                {props.sources.map((source) => (
-                  <li key={source}>
-                    {props.activeSources.includes(source) ? (
-                      <IconButton onClick={() => props.onCheckboxClick(source)}>
-                        <CheckBoxIcon />
-                      </IconButton>
-                    ) : (
-                      <IconButton onClick={() => props.onCheckboxClick(source)}>
-                        <CheckBoxOutlineBlankIcon />
-                      </IconButton>
-                    )}
-                    {source}
-                  </li>
-                ))}
-              </ul>
+            {headCell.id === "status" && openFilter === "status" && (
+              <Box border={1}>
+                {headCell.id === "status" && openFilter === "status" && (
+                  <>
+                    <IconButton onClick={() => onSelectAllStatuses(true)}>
+                      <DoneAll />
+                    </IconButton>
+                    <IconButton onClick={() => onClearStatuses(false)}>
+                      <ClearAll />
+                    </IconButton>
+                    <IconButton onClick={() => onResetStatuses(null)}>
+                      <Refresh />
+                    </IconButton>
+                  </>
+                )}
+                {headCell.id === "status" && openFilter === "status" && (
+                  <ul className={classes.listItem}>
+                    {statuses.map((status) => (
+                      <li key={status}>
+                        {activeStatuses.includes(status) ? (
+                          <IconButton
+                            onClick={() => onStatusCheckboxClick(status)}
+                          >
+                            <CheckBox />
+                          </IconButton>
+                        ) : (
+                          <IconButton
+                            onClick={() => onStatusCheckboxClick(status)}
+                          >
+                            <CheckBoxOutlineBlank />
+                          </IconButton>
+                        )}
+                        {status}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Box>
             )}
           </TableCell>
         ))}
@@ -153,8 +234,6 @@ EnhancedTableHead.propTypes = {
   onRequestSort: PropTypes.func.isRequired,
   order: PropTypes.oneOf(["asc", "desc"]).isRequired,
   orderBy: PropTypes.string.isRequired,
-  rowCount: PropTypes.number.isRequired,
-  showSourceFilters: PropTypes.bool.isRequired,
 };
 
 const useToolbarStyles = makeStyles((theme) => ({
@@ -174,6 +253,9 @@ const useToolbarStyles = makeStyles((theme) => ({
         },
   title: {
     flex: "1 1 100%",
+  },
+  sourceFilters: {
+    border: "solid",
   },
 }));
 
@@ -237,15 +319,21 @@ export default function EventsTable({ rows }) {
   const [activeRows, setActiveRows] = React.useState([]);
   const [currentPageRows, setCurrentPageRows] = React.useState([]);
   const [sources, setSources] = React.useState([]);
+  const [openFilter, setOpenFilter] = React.useState(null);
   const [showSourceSelect, setShowSourceSelect] = React.useState(false);
   const [activeSources, setActiveSources] = React.useState(["Zillow Flex"]);
+  const [statuses, setStatuses] = React.useState([]);
+  const [activeStatuses, setActiveStatuses] = React.useState([]);
 
   const [updatingRow, setUpdatingRow] = React.useState(null);
   const [status, setStatus] = React.useState("");
 
-  const [showSourceFilters, setShowSourceFilters] = React.useState(false);
-
   React.useEffect(() => {
+    const allSources = rows.map((row) => row.source).filter((x) => x);
+    const allStatuses = rows.map((row) => row.status).filter((x) => x);
+    const uniqueSources = _.uniq(allSources);
+    const uniqueStatuses = _.uniq(allStatuses);
+
     // Extract property.street from property object (for sorting)
     const rowsWithPropertyStreet = rows.map((event) => {
       if (event.property && event.property.street) {
@@ -258,14 +346,19 @@ export default function EventsTable({ rows }) {
     const rowsWithActiveSource = rowsWithPropertyStreet.filter((row) =>
       activeSources.includes(row.source)
     );
+    const rowsWithActiveStatusAndSource = rowsWithActiveSource.filter((row) =>
+      uniqueStatuses.includes(row.status)
+    );
+
     const active = stableSort(
-      rowsWithActiveSource,
+      rowsWithActiveStatusAndSource,
       getComparator(order, orderBy)
     ).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-    const allSources = rows.map((row) => row.source).filter((x) => x);
-    const uniqueSources = _.uniq(allSources);
+
     setSources(uniqueSources);
     setActiveRows(rowsWithActiveSource);
+    setStatuses(uniqueStatuses);
+    setActiveStatuses(uniqueStatuses);
     setCurrentPageRows(active);
   }, [rows, order]);
 
@@ -303,10 +396,22 @@ export default function EventsTable({ rows }) {
   };
 
   const handleSourceFilterClick = () => {
-    setShowSourceFilters(!showSourceFilters);
+    if (openFilter === "source") {
+      setOpenFilter(null);
+    } else {
+      setOpenFilter("source");
+    }
   };
 
-  const onSelectAllSources = () => {
+  const handleStatusFilterClick = () => {
+    if (openFilter === "status") {
+      setOpenFilter(null);
+    } else {
+      setOpenFilter("status");
+    }
+  };
+
+  const handleSelectAllSources = () => {
     setActiveSources(sources);
     setPage(0);
 
@@ -322,11 +427,74 @@ export default function EventsTable({ rows }) {
     const rowsWithActiveSource = rowsWithPropertyStreet.filter((row) =>
       sources.includes(row.source)
     );
+    const rowsWithActiveStatusAndSource = rowsWithActiveSource.filter((row) =>
+      activeStatuses.includes(row.status)
+    );
     const active = stableSort(
-      rowsWithActiveSource,
+      rowsWithActiveStatusAndSource,
       getComparator(order, orderBy)
     ).slice(0, rowsPerPage);
     setActiveRows(rowsWithActiveSource);
+    setCurrentPageRows(active);
+  };
+
+  const handleSelectAllStatuses = () => {
+    setActiveStatuses(statuses);
+    setPage(0);
+
+    // Extract property.street from property object (for sorting)
+    const rowsWithPropertyStreet = rows.map((event) => {
+      if (event.property && event.property.street) {
+        event.propertyStreet = event.property.street;
+      } else {
+        event.propertyStreet = "";
+      }
+      return event;
+    });
+    const rowsWithActiveStatus = rowsWithPropertyStreet.filter((row) =>
+      statuses.includes(row.status)
+    );
+    const rowsWithActiveStatusAndSource = rowsWithActiveStatus.filter((row) =>
+      activeSources.includes(row.source)
+    );
+    const active = stableSort(
+      rowsWithActiveStatusAndSource,
+      getComparator(order, orderBy)
+    ).slice(0, rowsPerPage);
+    setActiveRows(rowsWithActiveStatus);
+    setCurrentPageRows(active);
+  };
+
+  const handleClearStatuses = () => {
+    setActiveStatuses([]);
+    setPage(0);
+    setActiveRows([]);
+    setCurrentPageRows([]);
+  };
+
+  const handleResetStatuses = () => {
+    setActiveStatuses(statuses);
+    setPage(0);
+    // Extract property.street from property object (for sorting)
+    const rowsWithPropertyStreet = rows.map((event) => {
+      if (event.property && event.property.street) {
+        event.propertyStreet = event.property.street;
+      } else {
+        event.propertyStreet = "";
+      }
+      return event;
+    });
+    const rowsWithActiveStatus = rowsWithPropertyStreet.filter((row) =>
+      activeStatuses.includes(row.status)
+    );
+    const rowsWithActiveStatusAndSource = rowsWithActiveStatus.filter((row) =>
+      activeSources.includes(row.source)
+    );
+    const active = stableSort(
+      rowsWithActiveStatusAndSource,
+      getComparator(order, orderBy)
+    ).slice(0, rowsPerPage);
+    setActiveRows(rowsWithActiveStatus);
     setCurrentPageRows(active);
   };
 
@@ -353,8 +521,11 @@ export default function EventsTable({ rows }) {
     const rowsWithActiveSource = rowsWithPropertyStreet.filter((row) =>
       defaultSources.includes(row.source)
     );
+    const rowsWithActiveStatusAndSource = rowsWithActiveStatus.filter((row) =>
+      activeStatuses.includes(row.status)
+    );
     const active = stableSort(
-      rowsWithActiveSource,
+      rowsWithActiveStatusAndSource,
       getComparator(order, orderBy)
     ).slice(0, rowsPerPage);
     setActiveRows(rowsWithActiveSource);
@@ -425,6 +596,34 @@ export default function EventsTable({ rows }) {
     setPage(0);
   };
 
+  const handleStatusCheckboxClick = (status) => {
+    let newActiveStatuses;
+    if (activeStatuses.includes(status)) {
+      newActiveStatuses = activeStatuses.filter(
+        (activeStatus) => activeStatus != status
+      );
+    } else {
+      newActiveStatuses = [...activeStatuses, status];
+    }
+    setActiveStatuses(newActiveStatuses);
+    const rowsWithActiveStatus = rows.filter((row) =>
+      newActiveStatuses.includes(row.status)
+    );
+    const newActiveRows = stableSort(
+      rowsWithActiveStatus,
+      getComparator(order, orderBy)
+    );
+    const newPage = 0;
+    setActiveRows(newActiveRows);
+    setCurrentPageRows(
+      newActiveRows.slice(
+        newPage * rowsPerPage,
+        newPage * rowsPerPage + rowsPerPage
+      )
+    );
+    setPage(0);
+  };
+
   const data = (row) => {
     if (showSourceSelect && updatingRow && row._id === updatingRow) {
       return (
@@ -447,14 +646,14 @@ export default function EventsTable({ rows }) {
             color="primary"
             onClick={() => handleStatusSelectSubmit(row._id, status, row)}
           >
-            <SaveIcon />
+            <Save />
           </IconButton>
           <IconButton
             aria-label="cancel"
             color="primary"
             onClick={() => handleUpdateStatusClick(row._id, status)}
           >
-            <CancelIcon />
+            <Cancel />
           </IconButton>
         </>
       );
@@ -488,14 +687,20 @@ export default function EventsTable({ rows }) {
               orderBy={orderBy}
               onRequestSort={handleRequestSort}
               onSourceFilterClick={handleSourceFilterClick}
-              rowCount={rows.length}
-              showSourceFilters={showSourceFilters}
+              openFilter={openFilter}
               sources={sources}
               activeSources={activeSources}
+              statuses={statuses}
+              activeStatuses={activeStatuses}
               onCheckboxClick={handleCheckboxClick}
-              onSelectAllSources={onSelectAllSources}
+              onStatusCheckboxClick={handleStatusCheckboxClick}
+              onSelectAllSources={handleSelectAllSources}
               onClearSources={onClearSources}
               onResetSources={onResetSources}
+              onStatusFilterClick={handleStatusFilterClick}
+              onSelectAllStatuses={handleSelectAllStatuses}
+              onClearStatuses={handleClearStatuses}
+              onResetStatuses={handleResetStatuses}
             />
             <TableBody>
               {currentPageRows.map((row, index) => {
