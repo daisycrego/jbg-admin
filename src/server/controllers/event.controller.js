@@ -71,9 +71,6 @@ const list = async (req, res) => {
 };
 
 const update = async (req, res) => {
-  console.log(`update:`);
-  console.log(req);
-
   try {
     let event = req.event;
     event = extend(event, req.body);
@@ -100,7 +97,6 @@ const remove = async (req, res) => {
 };
 
 const addNewEvents = async (events) => {
-  console.log(`addNewEvents(): Processing events ${events.map((x) => x.id)}`);
   if (!events || !events.length) {
     console.log(
       `addNewEvents(): !events or !events.length, events: ${events}, returning FALSE`
@@ -160,8 +156,6 @@ const syncEventsHelper = async (url) => {
       console.log(
         `Got an errorMessage rather than events data from FUB, here's the rest of the result:`
       );
-      console.log(result);
-      console.log(result.status);
       if (result.status === 429) {
         console.log(
           "Too Many Requests! Checking the retry-after from the headers:"
@@ -219,9 +213,6 @@ let REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
 let workQueue = new Queue("work", REDIS_URL);
 
 const createEventsWebhookCallback = (req, res) => {
-  console.log(`/api/events/fub/callback`);
-  console.log(`req.body:`);
-  console.log(req.body);
   // This would be where you could pass arguments to the job
   // Ex: workQueue.add({ url: 'https://www.heroku.com' })
   // Docs: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueadd

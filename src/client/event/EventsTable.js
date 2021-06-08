@@ -226,7 +226,6 @@ export default function EventsTable({ rows }) {
   const [showSourceFilters, setShowSourceFilters] = React.useState(false);
 
   React.useEffect(() => {
-    console.log(`EventsTable: useEffect`);
     // Extract property.street from property object (for sorting)
     const rowsWithPropertyStreet = rows.map((event) => {
       if (event.property && event.property.street) {
@@ -248,16 +247,10 @@ export default function EventsTable({ rows }) {
     setSources(uniqueSources);
     setActiveRows(rowsWithActiveSource);
     setCurrentRows(active);
-    console.log(`activeRows:`);
-    console.log(rowsWithActiveSource);
-    console.log(`currentRows:`);
-    console.log(active);
   }, [rows, order]);
 
   const handleRequestSort = (event, property) => {
-    console.log(`handleRequestSort: property: ${property}`);
     const isAsc = orderBy === property && order === "asc";
-    console.log(`isAsc: ${isAsc}`);
     const newOrder = isAsc ? "desc" : "asc";
     const newOrderBy = property;
     const rowsWithActiveSource = rows.filter((row) =>
@@ -273,19 +266,14 @@ export default function EventsTable({ rows }) {
     );
     setOrder(newOrder);
     setOrderBy(newOrderBy);
-    console.log(activeRows);
   };
 
   const handleChangePage = (event, newPage) => {
-    console.log(`handleChangePage: newPage: ${newPage}`);
     setPage(newPage);
-    console.log(`Setting the page to: ${newPage}`);
     const newActiveRows = activeRows.slice(
       newPage * rowsPerPage,
       newPage * rowsPerPage + rowsPerPage
     );
-    console.log(`Setting the active rows to:`);
-    console.log(newActiveRows);
     setActiveRows(newActiveRows);
   };
 
