@@ -13,9 +13,6 @@ import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
 import IconButton from "@material-ui/core/IconButton";
-import Tooltip from "@material-ui/core/Tooltip";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Switch from "@material-ui/core/Switch";
 import Button from "@material-ui/core/Button";
 import ArrowForward from "@material-ui/icons/ArrowForward";
 import { Link } from "react-router-dom";
@@ -28,6 +25,9 @@ import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@material-ui/icons/CheckBox";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import ArrowDropUpIcon from "@material-ui/icons/ArrowDropUp";
+import DoneAllIcon from "@material-ui/icons/DoneAll";
+import ClearAllIcon from "@material-ui/icons/ClearAll";
+import RefreshIcon from "@material-ui/icons/Refresh";
 
 import options from "../../lib/constants";
 import { update } from "./api-event";
@@ -79,8 +79,6 @@ function EnhancedTableHead(props) {
     onRequestSort(event, property);
   };
 
-  console.log(props);
-
   return (
     <TableHead>
       <TableRow>
@@ -111,6 +109,19 @@ function EnhancedTableHead(props) {
               <Button onClick={props.onSourceFilterClick}>
                 <ArrowDropUpIcon />
               </Button>
+            )}
+            {headCell.id === "source" && props.showSourceFilters && (
+              <>
+                <IconButton onClick={() => props.onSelectAllSources(true)}>
+                  <DoneAllIcon />
+                </IconButton>
+                <IconButton onClick={() => props.onClearSources(false)}>
+                  <ClearAllIcon />
+                </IconButton>
+                <IconButton onClick={() => props.onResetSources(null)}>
+                  <RefreshIcon />
+                </IconButton>
+              </>
             )}
             {headCell.id === "source" && props.showSourceFilters && (
               <ul className={classes.listItem}>
@@ -224,7 +235,7 @@ export default function EventsTable({ rows }) {
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [activeRows, setActiveRows] = React.useState([]);
-  const [currentRows, setCurrentRows] = React.useState([]);
+  const [currentPageRows, setCurrentPageRows] = React.useState([]);
   const [sources, setSources] = React.useState([]);
   const [showSourceSelect, setShowSourceSelect] = React.useState(false);
   const [activeSources, setActiveSources] = React.useState(["Zillow Flex"]);
@@ -255,7 +266,7 @@ export default function EventsTable({ rows }) {
     const uniqueSources = _.uniq(allSources);
     setSources(uniqueSources);
     setActiveRows(rowsWithActiveSource);
-    setCurrentRows(active);
+    setCurrentPageRows(active);
   }, [rows, order]);
 
   const handleRequestSort = (event, property) => {
@@ -270,7 +281,7 @@ export default function EventsTable({ rows }) {
       getComparator(newOrder, newOrderBy)
     );
     setActiveRows(activeRows);
-    setCurrentRows(
+    setCurrentPageRows(
       activeRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
     );
     setOrder(newOrder);
@@ -283,7 +294,7 @@ export default function EventsTable({ rows }) {
       newPage * rowsPerPage,
       newPage * rowsPerPage + rowsPerPage
     );
-    setCurrentRows(newActiveRows);
+    setCurrentPageRows(newActiveRows);
   };
 
   const handleChangeRowsPerPage = (event) => {
@@ -293,6 +304,61 @@ export default function EventsTable({ rows }) {
 
   const handleSourceFilterClick = () => {
     setShowSourceFilters(!showSourceFilters);
+  };
+
+  const onSelectAllSources = () => {
+    setActiveSources(sources);
+    setPage(0);
+
+    // Extract property.street from property object (for sorting)
+    const rowsWithPropertyStreet = rows.map((event) => {
+      if (event.property && event.property.street) {
+        event.propertyStreet = event.property.street;
+      } else {
+        event.propertyStreet = "";
+      }
+      return event;
+    });
+    const rowsWithActiveSource = rowsWithPropertyStreet.filter((row) =>
+      sources.includes(row.source)
+    );
+    const active = stableSort(
+      rowsWithActiveSource,
+      getComparator(order, orderBy)
+    ).slice(0, rowsPerPage);
+    setActiveRows(rowsWithActiveSource);
+    setCurrentPageRows(active);
+  };
+
+  const onClearSources = () => {
+    setActiveSources([]);
+    setPage(0);
+    setActiveRows([]);
+    setCurrentPageRows([]);
+  };
+
+  const onResetSources = () => {
+    const defaultSources = ["Zillow Flex"];
+    setActiveSources(defaultSources);
+    setPage(0);
+    // Extract property.street from property object (for sorting)
+    const rowsWithPropertyStreet = rows.map((event) => {
+      if (event.property && event.property.street) {
+        event.propertyStreet = event.property.street;
+      } else {
+        event.propertyStreet = "";
+      }
+      return event;
+    });
+    const rowsWithActiveSource = rowsWithPropertyStreet.filter((row) =>
+      defaultSources.includes(row.source)
+    );
+    const active = stableSort(
+      rowsWithActiveSource,
+      getComparator(order, orderBy)
+    ).slice(0, rowsPerPage);
+    setActiveRows(rowsWithActiveSource);
+    setCurrentPageRows(active);
   };
 
   const emptyRows =
@@ -350,7 +416,7 @@ export default function EventsTable({ rows }) {
     );
     const newPage = 0;
     setActiveRows(newActiveRows);
-    setCurrentRows(
+    setCurrentPageRows(
       newActiveRows.slice(
         newPage * rowsPerPage,
         newPage * rowsPerPage + rowsPerPage
@@ -427,9 +493,12 @@ export default function EventsTable({ rows }) {
               sources={sources}
               activeSources={activeSources}
               onCheckboxClick={handleCheckboxClick}
+              onSelectAllSources={onSelectAllSources}
+              onClearSources={onClearSources}
+              onResetSources={onResetSources}
             />
             <TableBody>
-              {currentRows.map((row, index) => {
+              {currentPageRows.map((row, index) => {
                 const labelId = `enhanced-table-checkbox-${index}`;
 
                 return (
