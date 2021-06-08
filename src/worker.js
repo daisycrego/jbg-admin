@@ -109,11 +109,13 @@ function start() {
             : false;
 
           if (isZillowFlexEvent && !isNewLead) {
-            console.log(`Possible Zillow Exemption -> Sending email alert`);
+            console.log(
+              `Possible Zillow Flex Exemption -> Sending email alert`
+            );
 
             isPossibleZillowExemption = true;
 
-            const text = `Possible Zillow Exemption Identified
+            const text = `Possible Zillow Flex Exemption Identified
                 Event Details:
                 Event ID: ${event.eventId}
                 Resource IDs: ${event.resourceIds}
@@ -148,7 +150,7 @@ function start() {
 
             const html = `
             <div>
-                <h2> Possible Zillow Exemption Identified </h2>
+                <h2> Possible Zillow Flex Exemption Identified </h2>
                 <h3> Event Details </h3>
                 <ul>
                     <li> Event ID: ${event.eventId} </li>
@@ -190,7 +192,7 @@ function start() {
               let info = await transporter.sendMail({
                 from: '"cregodev7@gmail.com', // sender address
                 to: "daisycrego@gmail.com, cregodev7@gmail.com", // list of receivers
-                subject: "Possible Zillow Exemption", // Subject line
+                subject: "Possible Zillow Flex Exemption", // Subject line
                 text: text, // plain text body
                 html: html, // html body
               });
