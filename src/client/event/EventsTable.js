@@ -84,8 +84,8 @@ function EnhancedTableHead(props) {
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
-            align={"default"}
-            padding={"left"}
+            align={"center"}
+            padding={"default"}
             sortDirection={orderBy === headCell.id ? order : false}
           >
             <TableSortLabel
@@ -109,11 +109,11 @@ function EnhancedTableHead(props) {
                 {props.sources.map((source) => (
                   <li key={source}>
                     {props.activeSources.includes(source) ? (
-                      <IconButton>
+                      <IconButton onClick={() => props.onCheckboxClick(source)}>
                         <CheckBoxIcon />
                       </IconButton>
                     ) : (
-                      <IconButton>
+                      <IconButton onClick={() => props.onCheckboxClick(source)}>
                         <CheckBoxOutlineBlankIcon />
                       </IconButton>
                     )}
@@ -211,11 +211,11 @@ export default function EventsTable({ rows }) {
   const classes = useStyles();
   const [order, setOrder] = React.useState("desc");
   const [orderBy, setOrderBy] = React.useState("created");
-
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [activeRows, setActiveRows] = React.useState([]);
+  const [currentRows, setCurrentRows] = React.useState([]);
   const [sources, setSources] = React.useState([]);
   const [showSourceSelect, setShowSourceSelect] = React.useState(false);
   const [activeSources, setActiveSources] = React.useState(["Zillow Flex"]);
@@ -226,6 +226,7 @@ export default function EventsTable({ rows }) {
   const [showSourceFilters, setShowSourceFilters] = React.useState(false);
 
   React.useEffect(() => {
+    console.log(`EventsTable: useEffect`);
     // Extract property.street from property object (for sorting)
     const rowsWithPropertyStreet = rows.map((event) => {
       if (event.property && event.property.street) {
@@ -238,14 +239,19 @@ export default function EventsTable({ rows }) {
     const rowsWithActiveSource = rowsWithPropertyStreet.filter((row) =>
       activeSources.includes(row.source)
     );
-    const activeRows = stableSort(
+    const active = stableSort(
       rowsWithActiveSource,
       getComparator(order, orderBy)
     ).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     const allSources = rows.map((row) => row.source).filter((x) => x);
     const uniqueSources = _.uniq(allSources);
     setSources(uniqueSources);
-    setActiveRows(activeRows);
+    setActiveRows(rowsWithActiveSource);
+    setCurrentRows(active);
+    console.log(`activeRows:`);
+    console.log(rowsWithActiveSource);
+    console.log(`currentRows:`);
+    console.log(active);
   }, [rows, order]);
 
   const handleRequestSort = (event, property) => {
@@ -260,16 +266,27 @@ export default function EventsTable({ rows }) {
     const activeRows = stableSort(
       rowsWithActiveSource,
       getComparator(newOrder, newOrderBy)
-    ).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-    console.log(`updating activeRows`);
+    );
     setActiveRows(activeRows);
+    setCurrentRows(
+      activeRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+    );
     setOrder(newOrder);
     setOrderBy(newOrderBy);
     console.log(activeRows);
   };
 
   const handleChangePage = (event, newPage) => {
+    console.log(`handleChangePage: newPage: ${newPage}`);
     setPage(newPage);
+    console.log(`Setting the page to: ${newPage}`);
+    const newActiveRows = activeRows.slice(
+      newPage * rowsPerPage,
+      newPage * rowsPerPage + rowsPerPage
+    );
+    console.log(`Setting the active rows to:`);
+    console.log(newActiveRows);
+    setActiveRows(newActiveRows);
   };
 
   const handleChangeRowsPerPage = (event) => {
@@ -319,6 +336,63 @@ export default function EventsTable({ rows }) {
         //setValues({ ...values, eventId: data._id, redirectToEvent: true });
       }
     });
+  };
+
+  const handleCheckboxClick = (source) => {
+    console.log(`handleCheckboxClick: ${source}`);
+    let newActiveSources;
+    if (activeSources.includes(source)) {
+      newActiveSources = activeSources.filter(
+        (activeSource) => activeSource != source
+      );
+    } else {
+      newActiveSources = [...activeSources, source];
+    }
+    setActiveSources(newActiveSources);
+    const rowsWithActiveSource = rows.filter((row) =>
+      newActiveSources.includes(row.source)
+    );
+    console.log(`stableSort(
+      rowsWithActiveSource,
+      getComparator(order, orderBy)
+    )`);
+    console.log(
+      stableSort(rowsWithActiveSource, getComparator(order, orderBy))
+    );
+    console.log(`slicing:`);
+    console.log(`page: ${page}, rowsPerPage: ${rowsPerPage}`);
+    console.log(
+      `from: ${page * rowsPerPage}, to: ${page * rowsPerPage + rowsPerPage}`
+    );
+    console.log(`
+    const newActiveRows = stableSort(
+      rowsWithActiveSource,
+      getComparator(order, orderBy)
+    ).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+    `);
+    console.log(
+      stableSort(rowsWithActiveSource, getComparator(order, orderBy)).slice(
+        page * rowsPerPage,
+        page * rowsPerPage + rowsPerPage
+      )
+    );
+    const newActiveRows = stableSort(
+      rowsWithActiveSource,
+      getComparator(order, orderBy)
+    );
+    /*console.log(`const newActiveRows = stableSort(
+      rowsWithActiveSource,
+      getComparator(order, orderBy)`);
+    console.log(
+      stableSort(rowsWithActiveSource, getComparator(order, orderBy))
+    );
+    console.log(`handleCheckboxClick: activeRows:`);
+    console.log(newActiveRows);
+    */
+    setActiveRows(newActiveRows);
+    setCurrentRows(
+      newActiveRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+    );
   };
 
   const data = (row) => {
@@ -388,9 +462,10 @@ export default function EventsTable({ rows }) {
               showSourceFilters={showSourceFilters}
               sources={sources}
               activeSources={activeSources}
+              onCheckboxClick={handleCheckboxClick}
             />
             <TableBody>
-              {activeRows.map((row, index) => {
+              {currentRows.map((row, index) => {
                 const labelId = `enhanced-table-checkbox-${index}`;
 
                 return (
@@ -399,23 +474,23 @@ export default function EventsTable({ rows }) {
                       component="th"
                       id={labelId}
                       scope="row"
-                      align={"default"}
-                      padding={"left"}
+                      align={"center"}
+                      padding={"default"}
                     >
                       {row.property ? row.property.street : ""}
                     </TableCell>
-                    <TableCell align={"default"} padding={"left"}>
+                    <TableCell align={"center"} padding={"default"}>
                       {`${new Date(row.created).toDateString()} ${new Date(
                         row.created
                       ).toLocaleTimeString()}`}
                     </TableCell>
-                    <TableCell align={"default"} padding={"left"}>
+                    <TableCell align={"center"} padding={"default"}>
                       {row.source}
                     </TableCell>
-                    <TableCell align={"default"} padding={"left"}>
+                    <TableCell align={"center"} padding={"default"}>
                       {data(row)}
                     </TableCell>
-                    <TableCell align={"default"} padding={"left"}>
+                    <TableCell align={"center"} padding={"default"}>
                       <Link to={"/event/" + row._id} key={row._id}>
                         <IconButton>
                           <ArrowForward />
@@ -443,10 +518,6 @@ export default function EventsTable({ rows }) {
           onChangeRowsPerPage={handleChangeRowsPerPage}
         />
       </Paper>
-      <FormControlLabel
-        control={<Switch checked={dense} onChange={handleChangeDense} />}
-        label="Dense padding"
-      />
     </div>
   );
 }
