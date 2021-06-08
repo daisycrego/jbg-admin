@@ -1,6 +1,5 @@
 import React from "react";
 import { Route, Switch } from "react-router-dom";
-import Home from "./core/Home";
 import Users from "./user/Users";
 import Events from "./event/Events";
 import Signup from "./user/Signup";
