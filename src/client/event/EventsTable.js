@@ -22,7 +22,7 @@ import {
 
 import {
   Edit,
-  Save,
+  Check,
   Cancel,
   CheckBoxOutlineBlank,
   CheckBox,
@@ -646,7 +646,7 @@ export default function EventsTable({ rows }) {
             color="primary"
             onClick={() => handleStatusSelectSubmit(row._id, status, row)}
           >
-            <Save />
+            <Check />
           </IconButton>
           <IconButton
             aria-label="cancel"
