@@ -12,6 +12,24 @@ const list = async (signal) => {
   }
 };
 
+const update = async (params, credentials, event) => {
+  try {
+    // add userId as a parameter or somehow access userId from the route!
+    let response = await fetch(`/api/events/${params.eventId}`, {
+      method: "PUT",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + credentials.t,
+      },
+      body: JSON.stringify(event),
+    });
+    return await response.json();
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 const read = async (params, credentials, signal) => {
   try {
     let response = await fetch("/api/events/" + params.eventId, {
@@ -46,4 +64,4 @@ const sync_events = async (credentials, signal) => {
   }
 };
 
-export { list, read, sync_events };
+export { list, read, update, sync_events };

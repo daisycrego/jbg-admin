@@ -561,9 +561,12 @@ export default function EventsTable({ rows }) {
       }
     ).then((data) => {
       if (data && data.error) {
-        //setValues({ ...values, error: data.error });
+        console.log(data.error);
+        setStatus(event.status);
+        setUpdatingRow(null);
       } else {
-        //setValues({ ...values, eventId: data._id, redirectToEvent: true });
+        setUpdatingRow(null);
+        setStatus(data.status);
       }
     });
   };
