@@ -76,6 +76,12 @@ const headCells = [
   { id: "created", numeric: true, disablePadding: false, label: "Created" },
   { id: "source", numeric: true, disablePadding: false, label: "Source" },
   { id: "status", numeric: true, disablePadding: false, label: "Status" },
+  {
+    id: "exemption",
+    numeric: false,
+    disablePadding: false,
+    label: "Possible Zillow Flex exemption?",
+  },
   { id: "more", numeric: true, disablePadding: false, label: "More" },
 ];
 
@@ -115,17 +121,24 @@ function EnhancedTableHead(props) {
             padding={"default"}
             sortDirection={orderBy === headCell.id ? order : false}
           >
-            <TableSortLabel
-              direction={orderBy === headCell.id ? order : "asc"}
-              onClick={createSortHandler(headCell.id)}
-            >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <span className={classes.visuallyHidden}>
-                  {order === "desc" ? "sorted descending" : "sorted ascending"}
-                </span>
-              ) : null}
-            </TableSortLabel>
+            {["propertyStreet", "created"].includes(headCell.id) ? (
+              <TableSortLabel
+                direction={orderBy === headCell.id ? order : "asc"}
+                onClick={createSortHandler(headCell.id)}
+              >
+                {headCell.label}
+                {orderBy === headCell.id ? (
+                  <span className={classes.visuallyHidden}>
+                    {order === "desc"
+                      ? "sorted descending"
+                      : "sorted ascending"}
+                  </span>
+                ) : null}
+              </TableSortLabel>
+            ) : (
+              headCell.label
+            )}
+
             {headCell.id === "status" &&
               (!openFilter || openFilter !== "status") && (
                 <Button onClick={onStatusFilterClick}>
@@ -730,6 +743,9 @@ export default function EventsTable({ rows }) {
                     </TableCell>
                     <TableCell align={"center"} padding={"default"}>
                       {data(row)}
+                    </TableCell>
+                    <TableCell align={"center"} padding={"default"}>
+                      {row.isPossibleZillowExemption ? "YES" : "NO"}
                     </TableCell>
                     <TableCell align={"center"} padding={"default"}>
                       <Link to={"/event/" + row._id} key={row._id}>
