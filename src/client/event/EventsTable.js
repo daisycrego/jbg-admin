@@ -408,7 +408,9 @@ const EnhancedTableToolbar = (props) => {
             className={classes.button}
             startIcon={<GetAppIcon />}
           >
-            <CSVLink data={csv}>Download CSV</CSVLink>
+            <CSVLink style={{ color: "inherit" }} data={csv}>
+              Download CSV
+            </CSVLink>
           </Button>
         </>
       }
