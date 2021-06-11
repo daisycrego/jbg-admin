@@ -85,7 +85,7 @@ export default function Event({ match }) {
           <ListItemText primary={`Person ID:`} secondary={event.personId} />
         </ListItem>
         <ListItem>
-          <ListItemText primary={`Property URL:`} secondary={<a href={event.property?.url}>{event.property?.url}</a>}/>
+          <ListItemText primary={`Property URL:`} secondary={<a target="_blank" href={event.property?.url}>{event.property?.url}</a>}/>
         </ListItem>
         <ListItem>
           <ListItemText primary={`Message:`} secondary={event.message} />
@@ -96,8 +96,11 @@ export default function Event({ match }) {
             primary={"Created:"} secondary={new Date(event.created).toDateString()}
           />
         </ListItem>
-        <ListItem style={{ wordWrap: "break-word" }}>
-          <pre>{JSON.stringify(event, undefined, 2)}</pre>
+        <ListItem style={{ wordWrap: "break-word" }} >
+          <ListItemText
+            primary={"Raw JSON:"} secondary={<pre>{JSON.stringify(event, undefined, 2)}</pre>}
+          />
+        
         </ListItem>
       </List>
     </Paper>

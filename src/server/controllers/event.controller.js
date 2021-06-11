@@ -230,5 +230,4 @@ export default {
   update,
   syncEvents,
   createEventsWebhookCallback,
-  exportCSV,
 };

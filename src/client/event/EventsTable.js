@@ -446,7 +446,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function EventsTable({ rows, handleExportToCSV }) {
+export default function EventsTable({ rows }) {
   const jwt = auth.isAuthenticated();
   const classes = useStyles();
   const [order, setOrder] = React.useState("desc");

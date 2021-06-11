@@ -64,24 +64,4 @@ const sync_events = async (credentials, signal) => {
   }
 };
 
-const exportToCSV = async (credentials, signal) => {
-  console.log(`api-event: exportToCSV`);
-  try {
-    let response = await fetch("/api/events/download", {
-      method: "GET",
-      signal: signal,
-      headers: {
-        Accept: "text/csv",
-        "Content-Type": "text/csv",
-        Authorization: "Bearer " + credentials.t,
-      },
-    });
-    console.log(`response`);
-    console.log(response);
-    return response;
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-export { list, read, update, exportToCSV, sync_events };
+export { list, read, update, sync_events };
