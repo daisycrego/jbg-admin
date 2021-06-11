@@ -191,7 +191,7 @@ function start() {
               // send mail with defined transport object
               let info = await transporter.sendMail({
                 from: '"cregodev7@gmail.com', // sender address
-                to: "daisycrego@gmail.com, cregodev7@gmail.com", // list of receivers
+                to: "daisycrego@gmail.com, cregodev7@gmail.com, dan@jillbiggsgroup.com, support@jillbiggsgroup.com", // list of receivers
                 subject: "Possible Zillow Flex Exemption", // Subject line
                 text: text, // plain text body
                 html: html, // html body
