@@ -8,7 +8,7 @@ export default ({ markup, css }) => {
             content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no"
           >
           <title>JBG Admin</title>
-          <link rel="shortcut icon" type="image/jpg" href="public/favicon.ico"/>
+          <link rel="shortcut icon" href="favicon.ico">
           <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,300,400">
           <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
           <style>
