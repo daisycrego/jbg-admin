@@ -60,7 +60,7 @@ const read = (req, res) => {
 const list = async (req, res) => {
   try {
     let events = await Event.find().select(
-      "id updated created source property status"
+      "id updated created source property status processed processedAt eventId created isNewLead isPossibleZillowExemption isZillowEvent message person personId propertyId type"
     );
     res.json(events);
   } catch (err) {
@@ -230,4 +230,5 @@ export default {
   update,
   syncEvents,
   createEventsWebhookCallback,
+  exportCSV,
 };

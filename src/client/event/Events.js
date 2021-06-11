@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
-import { list, read, sync_events } from "./api-event.js";
+import { exportToCSV, list, read, sync_events } from "./api-event.js";
 import auth from "./../auth/auth-helper";
 import { Snackbar } from "@material-ui/core";
 import Button from "@material-ui/core/Button";

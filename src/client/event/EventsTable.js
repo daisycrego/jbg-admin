@@ -40,6 +40,10 @@ import { update } from "./api-event";
 import auth from "./../auth/auth-helper";
 import _ from "lodash";
 
+import GetAppIcon from "@material-ui/icons/GetApp";
+import { CSVLink } from "react-csv";
+const { Parser } = require("json2csv");
+
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
     return -1;
@@ -275,17 +279,138 @@ const useToolbarStyles = makeStyles((theme) => ({
 const EnhancedTableToolbar = (props) => {
   const classes = useToolbarStyles();
 
+  const fields = [
+    "_id",
+    "eventId",
+    "type",
+    "created",
+    "source",
+    "message",
+    "status",
+    "processed",
+    "processedAt",
+    "isNewLead",
+    "isPossibleZillowExemption",
+    "isZillowEvent",
+    "propertyId",
+    "propertyStreet",
+    "propertyCity",
+    "propertyState",
+    "propertyZipcode",
+    "propertyMlsNumber",
+    "propertyPrice",
+    "propertyForRent",
+    "propertyUrl",
+    "propertyType",
+    "propertyBedrooms",
+    "propertyBathrooms",
+    "propertyArea",
+    "propertyLot",
+    "propertyLat",
+    "propertyLong",
+    "personCreated",
+    "personUpdated",
+    "personId",
+    "personName",
+    "personCreatedVia",
+    "personLastActivity",
+    "personStage",
+    "personStageId",
+    "personSource",
+    "personSourceId",
+    "personSourceUrl",
+    "personDelayed",
+    "personContacted",
+    "personPrice",
+    "personAssignedLenderId",
+    "personAssignedLenderName",
+    "personAssignedUserId",
+    "personAssignedPondId",
+    "personAssignedTo",
+    "personTags",
+    "personEmails",
+    "personPhones",
+    "personAddresses",
+    "personCollaborators",
+    "personTeamLeaders",
+    "personPondMembers",
+  ];
+  const opts = { fields };
+  const parser = new Parser(opts);
+  const flattenedRows = props.rows.map((row) => {
+    row.propertyStreet = row.property ? row.property.street : null;
+    row.propertyCity = row.property ? row.property.city : null;
+    row.propertyState = row.property ? row.property.state : null;
+    row.propertyZipcode = row.property ? row.property.code : null;
+    row.propertyMlsNumber = row.property ? row.property.mlsNumber : null;
+    row.propertyPrice = row.property ? row.property.price : null;
+    row.propertyForRent = row.property ? row.property.forRent : null;
+    row.propertyUrl = row.property ? row.property.url : null;
+    row.propertyType = row.property ? row.property.type : null;
+    row.propertyBedrooms = row.property ? row.property.bedrooms : null;
+    row.propertyBathrooms = row.property ? row.property.bathrooms : null;
+    row.propertyArea = row.property ? row.property.area : null;
+    row.propertyLot = row.property ? row.property.lot : null;
+    row.propertyLat = row.property ? row.property.lat : null;
+    row.propertyLong = row.property ? row.property.long : null;
+    row.personCreated = row.property ? row.person.created : null;
+    row.personUpdated = row.property ? row.person.updated : null;
+    row.personName = row.property ? row.person.name : null;
+    row.personCreatedVia = row.property ? row.person.createdVia : null;
+    row.personLastActivity = row.property ? row.person.lastActivity : null;
+    row.personStage = row.property ? row.person.stage : null;
+    row.personStageId = row.property ? row.person.stageId : null;
+    row.personSource = row.property ? row.person.source : null;
+    row.personSourceId = row.property ? row.person.sourceId : null;
+    row.personSourceUrl = row.property ? row.person.sourceUrl : null;
+    row.personDelayed = row.property ? row.person.delayed : null;
+    row.personContacted = row.property ? row.person.contacted : null;
+    row.personPrice = row.property ? row.person.price : null;
+    row.personAssignedLenderId = row.property
+      ? row.person.assignedLenderId
+      : null;
+    row.personAssignedLenderName = row.property
+      ? row.person.assignedLenderName
+      : null;
+    row.personAssignedUserId = row.property ? row.person.assignedUserId : null;
+    row.personAssignedPondId = row.property ? row.person.assignedPondId : null;
+    row.personAssignedTo = row.property ? row.person.assignedTo : null;
+    row.personTags = row.property ? row.person.tags : null;
+    row.personEmails = row.property ? row.person.emails : null;
+    row.personPhones = row.property ? row.person.phones : null;
+    row.personAddresses = row.property ? row.person.addresses : null;
+    row.personCollaborators = row.property ? row.person.collaborators : null;
+    row.personTeamLeaders = row.property ? row.person.teamLeaders : null;
+    row.personPondMembers = row.property ? row.person.pondMembers : null;
+    return row;
+  });
+
+  const csv = parser.parse(flattenedRows);
+
+  //const csv = parser.parse(props.rows);
+
   return (
     <Toolbar>
       {
-        <Typography
-          className={classes.title}
-          variant="h6"
-          id="tableTitle"
-          component="div"
-        >
-          Follow-Up Boss Events
-        </Typography>
+        <>
+          <Typography
+            className={classes.title}
+            variant="h6"
+            id="tableTitle"
+            component="div"
+          >
+            Follow-Up Boss Events
+          </Typography>
+
+          <Button
+            variant="contained"
+            color="primary"
+            className={classes.button}
+            startIcon={<GetAppIcon />}
+          >
+            <CSVLink data={csv}>Download CSV</CSVLink>
+          </Button>
+        </>
       }
     </Toolbar>
   );
@@ -321,7 +446,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function EventsTable({ rows }) {
+export default function EventsTable({ rows, handleExportToCSV }) {
   const jwt = auth.isAuthenticated();
   const classes = useStyles();
   const [order, setOrder] = React.useState("desc");
@@ -689,7 +814,8 @@ export default function EventsTable({ rows }) {
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
-        <EnhancedTableToolbar />
+        <EnhancedTableToolbar rows={rows} />
+
         <TableContainer>
           <Table
             className={classes.table}
