@@ -146,6 +146,7 @@ function start() {
                 Source URL: ${personData.sourceUrl}
                 Price: ${personData.price}
                 Assigned to: ${personData.assignedTo}
+                View this lead on FUB: https://jillkbiggs.followupboss.com/2/people/view/${eventData.personId}
             `;
 
             const html = `
@@ -176,13 +177,12 @@ function start() {
                 <li> Created via: ${personData.createdVia} </li>
                 <li> Last activity: ${personData.lastActivity} </li>
                 <li> Name: ${personData.name} </li>
-                <li> Emails: ${personData.emails} </li>
-                <li> Phones: ${personData.phones} </li>
                 <li> Stage: ${personData.stage} </li>
                 <li> Source: ${personData.source} </li>
                 <li> Source URL: ${personData.sourceUrl} </li>
                 <li> Price: ${personData.price} </li>
                 <li> Assigned to: ${personData.assignedTo} </li>
+                <li> View this lead on FUB: https://jillkbiggs.followupboss.com/2/people/view/${eventData.personId} </li>
                 </ul>
             </div>
             `;
