@@ -116,6 +116,10 @@ function start() {
             isPossibleZillowExemption = true;
 
             const text = `Possible Zillow Flex Exemption Identified
+                Zillow Property URL: ${eventData.property.url}
+                FUB URL: https://jillkbiggs.followupboss.com/2/people/view/${eventData.personId}
+                Zillow Premier Agent URL: ${personData.sourceUrl}
+
                 Event Details:
                 Event ID: ${event.eventId}
                 Resource IDs: ${event.resourceIds}
@@ -152,6 +156,9 @@ function start() {
             const html = `
             <div>
                 <h2> Possible Zillow Flex Exemption Identified </h2>
+                <p> Zillow Property URL: ${eventData.property.url} </p>
+                <p> FUB URL: https://jillkbiggs.followupboss.com/2/people/view/${eventData.personId} </p>
+                <p> Zillow Premier Agent URL: ${personData.sourceUrl} </p>
                 <h3> Event Details </h3>
                 <ul>
                     <li> Event ID: ${event.eventId} </li>
@@ -165,7 +172,6 @@ function start() {
                     <li> Property MLS: ${eventData.property.mlsNumber} </li>
                     <li> Property Price: ${eventData.property.price} </li>
                     <li> Property for Rent: ${eventData.property.forRent} </li>
-                    <li> Property URL: ${eventData.property.url} </li>
                 </ul>
 
 
@@ -182,7 +188,7 @@ function start() {
                 <li> Source URL: ${personData.sourceUrl} </li>
                 <li> Price: ${personData.price} </li>
                 <li> Assigned to: ${personData.assignedTo} </li>
-                <li> View this lead on FUB: https://jillkbiggs.followupboss.com/2/people/view/${eventData.personId} </li>
+                
                 </ul>
             </div>
             `;
