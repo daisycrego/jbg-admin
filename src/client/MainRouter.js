@@ -4,6 +4,7 @@ import Users from "./user/Users";
 import Events from "./event/Events";
 import Signup from "./user/Signup";
 import Event from "./event/Event";
+import Leads from "./lead/Leads";
 import Signin from "./auth/Signin";
 import EditProfile from "./user/EditProfile";
 import Profile from "./user/Profile";
@@ -16,6 +17,7 @@ const MainRouter = () => {
       <Menu />
       <Switch>
         <Route exact path="/" component={Events} />
+        <Route path="/leads" component={Leads} />
         <Route path="/users" component={Users} />
         <Route path="/signup" component={Signup} />
         <Route path="/signin" component={Signin} />

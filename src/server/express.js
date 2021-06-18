@@ -9,6 +9,7 @@ import Template from "./../template";
 import userRoutes from "./routes/user.routes";
 import eventRoutes from "./routes/event.routes";
 import authRoutes from "./routes/auth.routes";
+import leadRoutes from "./routes/lead.routes";
 
 // modules for server side rendering
 import React from "react";
@@ -47,6 +48,12 @@ app.use(cors());
 
 app.use("/dist", express.static(path.join(CURRENT_WORKING_DIR, "dist")));
 
+// mount routes
+app.use("/", userRoutes);
+app.use("/", eventRoutes);
+app.use("/", authRoutes);
+app.use("/", leadRoutes);
+
 // Kick off a new job by adding it to the work queue
 app.post("/job", async (req, res) => {
   // This would be where you could pass arguments to the job
@@ -75,11 +82,6 @@ app.get("/job/:id", async (req, res) => {
 workQueue.on("global:completed", (jobId, result) => {
   console.log(`Job completed with result ${result}`);
 });
-
-// mount routes
-app.use("/", userRoutes);
-app.use("/", eventRoutes);
-app.use("/", authRoutes);
 
 // set up `eventsCreated` FUB webhook if it doesn't exist
 setupEventsWebhook();
