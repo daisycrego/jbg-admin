@@ -531,8 +531,13 @@ export default function EventsTable({ rows }) {
   };
 
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+    const newRowsPerPage = parseInt(event.target.value, 10);
+    const newActiveRows = activeRows.slice(
+      page * newRowsPerPage,
+      page * newRowsPerPage + newRowsPerPage
+    );
+    setRowsPerPage(newRowsPerPage);
+    setCurrentPageRows(newActiveRows);
   };
 
   const handleSourceFilterClick = () => {
