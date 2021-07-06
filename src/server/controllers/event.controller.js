@@ -6,6 +6,33 @@ import config from "../../config/config";
 import Queue from "bull";
 import jwt from "jsonwebtoken";
 import User from "../models/user.model";
+import _ from "lodash";
+
+function descendingComparator(a, b, orderBy) {
+  if (b[orderBy] < a[orderBy]) {
+    return -1;
+  }
+  if (b[orderBy] > a[orderBy]) {
+    return 1;
+  }
+  return 0;
+}
+
+function getComparator(order, orderBy) {
+  return order === "desc"
+    ? (a, b) => descendingComparator(a, b, orderBy)
+    : (a, b) => -descendingComparator(a, b, orderBy);
+}
+
+function stableSort(array, comparator) {
+  const stabilizedThis = array.map((el, index) => [el, index]);
+  stabilizedThis.sort((a, b) => {
+    const order = comparator(a[0], b[0]);
+    if (order !== 0) return order;
+    return a[1] - b[1];
+  });
+  return stabilizedThis.map((el) => el[0]);
+}
 
 const create = async (req, res) => {
   const event = new Event(req.body);
@@ -20,7 +47,6 @@ const create = async (req, res) => {
     });
   }
 };
-
 /**
  * Load event and append to req.
  */
@@ -58,12 +84,32 @@ const read = (req, res) => {
 };
 
 const list = async (req, res) => {
+  const activeSources = req.body.activeSources;
+  const activeStatuses = req.body.activeStatuses;
+
+  const order = req.body.order;
+
+  // orderBy not currently used because it only ever has 1 value: created
+  const orderBy = req.body.orderBy;
+
   try {
-    let events = await Event.find().select(
-      "id updated created source property status processed processedAt eventId created isNewLead isPossibleZillowExemption isZillowEvent message person personId propertyId type"
-    );
-    res.json(events);
+    let events = await Event.find({
+      source: activeSources,
+      status: activeStatuses,
+    }).sort({
+      created: order === "desc" ? -1 : 1,
+    });
+
+    const allSources = await Event.distinct("source");
+    const allStatuses = await Event.distinct("status");
+
+    res.json({
+      events: events,
+      sources: allSources,
+      statuses: allStatuses,
+    });
   } catch (err) {
+    console.log(err);
     return res.status(400).json({
       error: errorHandler.getErrorMessage(err),
     });

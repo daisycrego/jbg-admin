@@ -9,6 +9,7 @@ import Button from "@material-ui/core/Button";
 import SyncIcon from "@material-ui/icons/Sync";
 import EventsTable from "./EventsTable";
 import { Redirect, Link } from "react-router-dom";
+import zillowStatusOptions from "../../lib/constants";
 
 const useStyles = makeStyles((theme) => ({
   root: theme.mixins.gutters({
@@ -31,6 +32,43 @@ export default function Events() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [redirectToSignin, setRedirectToSignin] = useState(false);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [sources, setSources] = React.useState([]);
+  const [activeSources, setActiveSources] = React.useState(["Zillow Flex"]);
+  const [statuses, setStatuses] = React.useState([]);
+  const [activeStatuses, setActiveStatuses] =
+    React.useState(zillowStatusOptions);
+  const [order, setOrder] = React.useState("desc");
+  const [orderBy, setOrderBy] = React.useState("created");
+
+  const updateEvents = (
+    newActiveSources = ["Zillow Flex"],
+    newActiveStatuses = null,
+    newOrder = "desc",
+    newOrderBy = "created"
+  ) => {
+    const abortController = new AbortController();
+    const signal = abortController.signal;
+
+    const options = {
+      activeSources: newActiveSources,
+      activeStatuses: newActiveStatuses,
+      order: newOrder,
+      orderBy: newOrderBy,
+    };
+
+    list(signal, options).then((data) => {
+      if (data && data.error) {
+        console.log(data.error);
+        setRedirectToSignin(true);
+      } else {
+        setEvents(data.events);
+        setSources(data.sources);
+        setStatuses(data.statuses);
+      }
+    });
+  };
 
   useEffect(() => {
     if (!jwt) {
@@ -39,24 +77,24 @@ export default function Events() {
 
     const abortController = new AbortController();
     const signal = abortController.signal;
-    list(signal).then((data) => {
+
+    const options = {
+      activeSources: activeSources,
+      activeStatuses: activeStatuses,
+      order: order,
+      orderBy: orderBy,
+    };
+
+    list(signal, options).then((data) => {
       if (data && data.error) {
         console.log(data.error);
         setRedirectToSignin(true);
       } else {
-        setEvents(data);
+        setEvents(data.events);
+        setSources(data.sources);
+        setStatuses(data.statuses);
       }
     });
-    // currently we call `list` and pass it a signal,
-    // and it returns ALL the events data available
-    // but we want it return a subset (most recent 20, e.g.)
-    // as well as a `nextLink` or an idea of what page that was,
-    // so we can return the next page of events...
-
-    // or, we could do a "See more" feature where
-    // we make the page longer and longer as we need.
-    // this way the page still has access to all events,
-    // it's just a matter of what we display.
 
     return function cleanup() {
       abortController.abort();
@@ -86,6 +124,47 @@ export default function Events() {
     }
   };
 
+  const handleUpdatePage = (newPage) => {
+    setPage(newPage);
+  };
+
+  const handleUpdatePageSize = (newPageSize) => {
+    setPageSize(newPageSize);
+  };
+
+  const handleUpdate = (newData, type) => {
+    switch (type) {
+      case "source":
+        setActiveSources(newData);
+        updateEvents(
+          newData, // new activeSources
+          activeStatuses,
+          order,
+          orderBy
+        );
+        break;
+      case "status":
+        setActiveStatuses(newData);
+        updateEvents(
+          activeSources,
+          newData, // new activeStatuses
+          order,
+          orderBy
+        );
+        break;
+      case "order":
+        setOrder(newData);
+        updateEvents(activeSources, activeStatuses, newData, orderBy);
+        break;
+      case "orderBy":
+        setOrderBy(newData);
+        updateEvents(activeSources, activeStatuses, order, newData);
+        break;
+      default:
+        break;
+    }
+  };
+
   if (redirectToSignin) {
     return <Redirect to="/signin" />;
   }
@@ -108,7 +187,24 @@ export default function Events() {
         Sync Events
       </Button>
       */}
-      <EventsTable rows={events} jwt={jwt} />
+      <EventsTable
+        rows={events}
+        jwt={jwt}
+        page={page}
+        pageSize={pageSize}
+        updatePage={handleUpdatePage}
+        updatePageSize={handleUpdatePageSize}
+        sources={sources}
+        statuses={statuses}
+        activeSources={activeSources}
+        activeStatuses={activeStatuses}
+        updateActiveSources={(e) => handleUpdate(e, "source")}
+        updateActiveStatuses={(e) => handleUpdate(e, "status")}
+        order={order}
+        updateOrder={(e) => handleUpdate(e, "order")}
+        orderBy={orderBy}
+        updateOrderBy={(e) => handleUpdate(e, "orderBy")}
+      />
     </Paper>
   );
 }

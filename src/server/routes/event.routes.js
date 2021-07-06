@@ -4,7 +4,9 @@ import authCtrl from "../controllers/auth.controller";
 
 const router = express.Router();
 
-router.route("/api/events").get(eventCtrl.list).post(eventCtrl.create);
+router.route("/api/events/search").post(eventCtrl.list);
+
+router.route("/api/events/").get(eventCtrl.list).post(eventCtrl.create);
 
 router
   .route("/api/events/sync")
@@ -15,7 +17,7 @@ router
   .post(eventCtrl.createEventsWebhookCallback);
 
 router
-  .route("/api/events/:eventId")
+  .route("/api/event/:eventId")
   .get(authCtrl.requireSignin, eventCtrl.read)
   .put(authCtrl.requireSignin, authCtrl.hasAuthorization, eventCtrl.update)
   .delete(authCtrl.requireSignin, authCtrl.hasAuthorization, eventCtrl.remove);

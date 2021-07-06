@@ -44,32 +44,6 @@ import GetAppIcon from "@material-ui/icons/GetApp";
 import { CSVLink } from "react-csv";
 const { Parser } = require("json2csv");
 
-function descendingComparator(a, b, orderBy) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
-function getComparator(order, orderBy) {
-  return order === "desc"
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function stableSort(array, comparator) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
-}
-
 const headCells = [
   {
     id: "propertyStreet",
@@ -448,84 +422,52 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function EventsTable({ rows }) {
+export default function EventsTable({
+  rows,
+  page,
+  pageSize,
+  updatePage,
+  updatePageSize,
+  sources,
+  statuses,
+  activeSources,
+  activeStatuses,
+  updateActiveSources,
+  updateActiveStatuses,
+  order,
+  updateOrder,
+  orderBy,
+  updateOrderBy,
+}) {
   const jwt = auth.isAuthenticated();
   const classes = useStyles();
-  const [order, setOrder] = React.useState("desc");
-  const [orderBy, setOrderBy] = React.useState("created");
-  const [page, setPage] = React.useState(0);
-  const [dense, setDense] = React.useState(false);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
-  const [activeRows, setActiveRows] = React.useState([]);
-  const [currentPageRows, setCurrentPageRows] = React.useState([]);
-  const [sources, setSources] = React.useState([]);
+  const [activeRows, setActiveRows] = React.useState(rows);
+  const [currentPageRows, setCurrentPageRows] = React.useState(rows);
   const [openFilter, setOpenFilter] = React.useState(null);
   const [showSourceSelect, setShowSourceSelect] = React.useState(false);
-  const [activeSources, setActiveSources] = React.useState(["Zillow Flex"]);
-  const [statuses, setStatuses] = React.useState([]);
-  const [activeStatuses, setActiveStatuses] = React.useState([]);
 
   const [updatingRow, setUpdatingRow] = React.useState(null);
   const [status, setStatus] = React.useState("");
 
   React.useEffect(() => {
-    const allSources = rows.map((row) => row.source).filter((x) => x);
-    const allStatuses = rows.map((row) => row.status).filter((x) => x);
-    const uniqueSources = _.uniq(allSources);
-    const uniqueStatuses = _.uniq(allStatuses);
-
-    // Extract property.street from property object (for sorting)
-    const rowsWithPropertyStreet = rows.map((event) => {
-      if (event.property && event.property.street) {
-        event.propertyStreet = event.property.street;
-      } else {
-        event.propertyStreet = "";
-      }
-      return event;
-    });
-    const rowsWithActiveSource = rowsWithPropertyStreet.filter((row) =>
-      activeSources.includes(row.source)
-    );
-    const rowsWithActiveStatusAndSource = rowsWithActiveSource.filter((row) =>
-      uniqueStatuses.includes(row.status)
-    );
-
-    const active = stableSort(
-      rowsWithActiveStatusAndSource,
-      getComparator(order, orderBy)
-    ).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-
-    setSources(uniqueSources);
-    setActiveRows(rowsWithActiveSource);
-    setStatuses(uniqueStatuses);
-    setActiveStatuses(uniqueStatuses);
-    setCurrentPageRows(active);
+    setActiveRows(rows);
+    setCurrentPageRows(rows.slice(page * pageSize, page * pageSize + pageSize));
   }, [rows, order]);
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
     const newOrder = isAsc ? "desc" : "asc";
     const newOrderBy = property;
-    const rowsWithActiveSource = rows.filter((row) =>
-      activeSources.includes(row.source)
-    );
-    const activeRows = stableSort(
-      rowsWithActiveSource,
-      getComparator(newOrder, newOrderBy)
-    );
-    setActiveRows(activeRows);
-    setCurrentPageRows(
-      activeRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-    );
-    setOrder(newOrder);
-    setOrderBy(newOrderBy);
+
+    updateOrder(newOrder);
+    updateOrderBy(newOrderBy);
   };
 
   const handleChangePage = (event, newPage) => {
-    setPage(newPage);
+    updatePage(newPage);
     const newActiveRows = activeRows.slice(
-      newPage * rowsPerPage,
-      newPage * rowsPerPage + rowsPerPage
+      newPage * pageSize,
+      newPage * pageSize + pageSize
     );
     setCurrentPageRows(newActiveRows);
   };
@@ -536,7 +478,7 @@ export default function EventsTable({ rows }) {
       page * newRowsPerPage,
       page * newRowsPerPage + newRowsPerPage
     );
-    setRowsPerPage(newRowsPerPage);
+    updatePageSize(newRowsPerPage);
     setCurrentPageRows(newActiveRows);
   };
 
@@ -557,128 +499,37 @@ export default function EventsTable({ rows }) {
   };
 
   const handleSelectAllSources = () => {
-    setActiveSources(sources);
-    setPage(0);
-
-    // Extract property.street from property object (for sorting)
-    const rowsWithPropertyStreet = rows.map((event) => {
-      if (event.property && event.property.street) {
-        event.propertyStreet = event.property.street;
-      } else {
-        event.propertyStreet = "";
-      }
-      return event;
-    });
-    const rowsWithActiveSource = rowsWithPropertyStreet.filter((row) =>
-      sources.includes(row.source)
-    );
-    const rowsWithActiveStatusAndSource = rowsWithActiveSource.filter((row) =>
-      activeStatuses.includes(row.status)
-    );
-    const active = stableSort(
-      rowsWithActiveStatusAndSource,
-      getComparator(order, orderBy)
-    ).slice(0, rowsPerPage);
-    setActiveRows(rowsWithActiveSource);
-    setCurrentPageRows(active);
+    updateActiveSources(sources);
+    updatePage(0);
   };
 
   const handleSelectAllStatuses = () => {
-    setActiveStatuses(statuses);
-    setPage(0);
-
-    // Extract property.street from property object (for sorting)
-    const rowsWithPropertyStreet = rows.map((event) => {
-      if (event.property && event.property.street) {
-        event.propertyStreet = event.property.street;
-      } else {
-        event.propertyStreet = "";
-      }
-      return event;
-    });
-    const rowsWithActiveStatus = rowsWithPropertyStreet.filter((row) =>
-      statuses.includes(row.status)
-    );
-    const rowsWithActiveStatusAndSource = rowsWithActiveStatus.filter((row) =>
-      activeSources.includes(row.source)
-    );
-    const active = stableSort(
-      rowsWithActiveStatusAndSource,
-      getComparator(order, orderBy)
-    ).slice(0, rowsPerPage);
-    setActiveRows(rowsWithActiveStatus);
-    setCurrentPageRows(active);
+    updateActiveStatuses(statuses);
+    updatePage(0);
   };
 
   const handleClearStatuses = () => {
-    setActiveStatuses([]);
-    setPage(0);
-    setActiveRows([]);
-    setCurrentPageRows([]);
+    updateActiveStatuses([]);
+    updatePage(0);
   };
 
   const handleResetStatuses = () => {
-    setActiveStatuses(statuses);
-    setPage(0);
-    // Extract property.street from property object (for sorting)
-    const rowsWithPropertyStreet = rows.map((event) => {
-      if (event.property && event.property.street) {
-        event.propertyStreet = event.property.street;
-      } else {
-        event.propertyStreet = "";
-      }
-      return event;
-    });
-    const rowsWithActiveStatus = rowsWithPropertyStreet.filter((row) =>
-      activeStatuses.includes(row.status)
-    );
-    const rowsWithActiveStatusAndSource = rowsWithActiveStatus.filter((row) =>
-      activeSources.includes(row.source)
-    );
-    const active = stableSort(
-      rowsWithActiveStatusAndSource,
-      getComparator(order, orderBy)
-    ).slice(0, rowsPerPage);
-    setActiveRows(rowsWithActiveStatus);
-    setCurrentPageRows(active);
+    updateActiveStatuses(statuses);
+    updatePage(0);
   };
 
   const onClearSources = () => {
-    setActiveSources([]);
-    setPage(0);
-    setActiveRows([]);
-    setCurrentPageRows([]);
+    updateActiveSources([]);
+    updatePage(0);
   };
 
   const onResetSources = () => {
-    const defaultSources = ["Zillow Flex"];
-    setActiveSources(defaultSources);
-    setPage(0);
-    // Extract property.street from property object (for sorting)
-    const rowsWithPropertyStreet = rows.map((event) => {
-      if (event.property && event.property.street) {
-        event.propertyStreet = event.property.street;
-      } else {
-        event.propertyStreet = "";
-      }
-      return event;
-    });
-    const rowsWithActiveSource = rowsWithPropertyStreet.filter((row) =>
-      defaultSources.includes(row.source)
-    );
-    const rowsWithActiveStatusAndSource = rowsWithActiveStatus.filter((row) =>
-      activeStatuses.includes(row.status)
-    );
-    const active = stableSort(
-      rowsWithActiveStatusAndSource,
-      getComparator(order, orderBy)
-    ).slice(0, rowsPerPage);
-    setActiveRows(rowsWithActiveSource);
-    setCurrentPageRows(active);
+    updateActiveSources(["Zillow Flex"]);
+    updatePage(0);
   };
 
   const emptyRows =
-    rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
+    pageSize - Math.min(pageSize, rows.length - page * pageSize);
 
   const handleUpdateStatusClick = (rowId, rowStatus) => {
     setUpdatingRow(rowId);
@@ -725,23 +576,8 @@ export default function EventsTable({ rows }) {
     } else {
       newActiveSources = [...activeSources, source];
     }
-    setActiveSources(newActiveSources);
-    const rowsWithActiveSource = rows.filter((row) =>
-      newActiveSources.includes(row.source)
-    );
-    const newActiveRows = stableSort(
-      rowsWithActiveSource,
-      getComparator(order, orderBy)
-    );
-    const newPage = 0;
-    setActiveRows(newActiveRows);
-    setCurrentPageRows(
-      newActiveRows.slice(
-        newPage * rowsPerPage,
-        newPage * rowsPerPage + rowsPerPage
-      )
-    );
-    setPage(0);
+    updateActiveSources(newActiveSources);
+    updatePage(0);
   };
 
   const handleStatusCheckboxClick = (status) => {
@@ -753,23 +589,8 @@ export default function EventsTable({ rows }) {
     } else {
       newActiveStatuses = [...activeStatuses, status];
     }
-    setActiveStatuses(newActiveStatuses);
-    const rowsWithActiveStatus = rows.filter((row) =>
-      newActiveStatuses.includes(row.status)
-    );
-    const newActiveRows = stableSort(
-      rowsWithActiveStatus,
-      getComparator(order, orderBy)
-    );
-    const newPage = 0;
-    setActiveRows(newActiveRows);
-    setCurrentPageRows(
-      newActiveRows.slice(
-        newPage * rowsPerPage,
-        newPage * rowsPerPage + rowsPerPage
-      )
-    );
-    setPage(0);
+    updateActiveStatuses(newActiveStatuses);
+    updatePage(0);
   };
 
   const data = (row) => {
@@ -827,7 +648,7 @@ export default function EventsTable({ rows }) {
           <Table
             className={classes.table}
             aria-labelledby="tableTitle"
-            size={dense ? "small" : "medium"}
+            size={"medium"}
             aria-label="enhanced table"
           >
             <EnhancedTableHead
@@ -891,7 +712,7 @@ export default function EventsTable({ rows }) {
                 );
               })}
               {emptyRows > 0 && (
-                <TableRow style={{ height: (dense ? 33 : 53) * emptyRows }}>
+                <TableRow style={{ height: 53 * emptyRows }}>
                   <TableCell colSpan={6} />
                 </TableRow>
               )}
@@ -901,8 +722,8 @@ export default function EventsTable({ rows }) {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25, 50, 100]}
           component="div"
-          count={activeRows.length}
-          rowsPerPage={rowsPerPage}
+          count={rows.length}
+          rowsPerPage={pageSize}
           page={page}
           onChangePage={handleChangePage}
           onChangeRowsPerPage={handleChangeRowsPerPage}
