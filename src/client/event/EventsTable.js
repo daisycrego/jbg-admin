@@ -475,11 +475,13 @@ export default function EventsTable({
 
   const handleChangeRowsPerPage = (event) => {
     const newRowsPerPage = parseInt(event.target.value, 10);
+    const newPage = 0;
     const newActiveRows = activeRows.slice(
-      page * newRowsPerPage,
-      page * newRowsPerPage + newRowsPerPage
+      newPage * newRowsPerPage,
+      newPage * newRowsPerPage + newRowsPerPage
     );
     updatePageSize(newRowsPerPage);
+    updatePage(newPage);
     setCurrentPageRows(newActiveRows);
   };
 
