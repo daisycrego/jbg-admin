@@ -425,7 +425,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function EventsTable({
-  rows,
+  activeRows,
+  currentPageRows,
+  updateCurrentPageRows,
   page,
   pageSize,
   updatePage,
@@ -444,18 +446,10 @@ export default function EventsTable({
 }) {
   const jwt = auth.isAuthenticated();
   const classes = useStyles();
-  const [activeRows, setActiveRows] = React.useState(rows);
-  const [currentPageRows, setCurrentPageRows] = React.useState(rows);
   const [openFilter, setOpenFilter] = React.useState(null);
   const [showSourceSelect, setShowSourceSelect] = React.useState(false);
-
   const [updatingRow, setUpdatingRow] = React.useState(null);
   const [status, setStatus] = React.useState("");
-
-  React.useEffect(() => {
-    setActiveRows(rows);
-    setCurrentPageRows(rows.slice(page * pageSize, page * pageSize + pageSize));
-  }, [rows, order]);
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -471,7 +465,7 @@ export default function EventsTable({
       newPage * pageSize,
       newPage * pageSize + pageSize
     );
-    setCurrentPageRows(newActiveRows);
+    updateCurrentPageRows(newActiveRows);
   };
 
   const handleChangeRowsPerPage = (event) => {
@@ -483,7 +477,7 @@ export default function EventsTable({
     );
     updatePageSize(newRowsPerPage);
     updatePage(newPage);
-    setCurrentPageRows(newActiveRows);
+    updateCurrentPageRows(newActiveRows);
   };
 
   const handleSourceFilterClick = () => {
@@ -533,7 +527,7 @@ export default function EventsTable({
   };
 
   const emptyRows =
-    pageSize - Math.min(pageSize, rows.length - page * pageSize);
+    pageSize - Math.min(pageSize, activeRows.length - page * pageSize);
 
   const handleUpdateStatusClick = (rowId, rowStatus) => {
     setUpdatingRow(rowId);
@@ -646,7 +640,7 @@ export default function EventsTable({
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
-        <EnhancedTableToolbar rows={rows} />
+        <EnhancedTableToolbar rows={activeRows} />
 
         <TableContainer>
           <Table
@@ -734,7 +728,7 @@ export default function EventsTable({
         <TablePagination
           rowsPerPageOptions={[5, 10, 25, 50, 100]}
           component="div"
-          count={rows.length}
+          count={activeRows.length}
           rowsPerPage={pageSize}
           page={page}
           onChangePage={handleChangePage}

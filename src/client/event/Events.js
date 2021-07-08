@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
-import Typography from "@material-ui/core/Typography";
-import { list, read, sync_events } from "./api-event.js";
+import { list, sync_events } from "./api-event.js";
 import auth from "./../auth/auth-helper";
 import { Snackbar } from "@material-ui/core";
-import Button from "@material-ui/core/Button";
-import SyncIcon from "@material-ui/icons/Sync";
 import EventsTable from "./EventsTable";
-import { Redirect, Link } from "react-router-dom";
+import { Redirect } from "react-router-dom";
 import zillowStatusOptions from "../../lib/constants";
 
 const useStyles = makeStyles((theme) => ({
@@ -55,6 +52,7 @@ export default function Events() {
   const jwt = auth.isAuthenticated();
   const classes = useStyles();
   const [events, setEvents] = useState([]);
+  const [currentPageRows, setCurrentPageRows] = React.useState([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [redirectToSignin, setRedirectToSignin] = useState(false);
@@ -93,6 +91,11 @@ export default function Events() {
         setRedirectToSignin(true);
       } else {
         setEvents(data.events);
+        setCurrentPageRows(
+          data.events
+            ? data.events.slice(page * pageSize, page * pageSize + pageSize)
+            : []
+        );
         setSources(data.sources);
         setStatuses(data.statuses);
         setIsLoading(false);
@@ -123,6 +126,11 @@ export default function Events() {
       } else {
         setIsLoading(false);
         setEvents(data.events);
+        setCurrentPageRows(
+          data.events
+            ? data.events.slice(page * pageSize, page * pageSize + pageSize)
+            : []
+        );
         setSources(data.sources);
         setStatuses(data.statuses);
       }
@@ -200,6 +208,9 @@ export default function Events() {
         );
         setEvents(newOrderByEvents);
         break;
+      case "currentPageRows":
+        setCurrentPageRows(newData);
+        break;
       default:
         break;
     }
@@ -229,7 +240,9 @@ export default function Events() {
       */}
       <EventsTable
         isLoading={isLoading}
-        rows={events}
+        activeRows={events}
+        currentPageRows={currentPageRows}
+        updateCurrentPageRows={(e) => handleUpdate(e, "currentPageRows")}
         page={page}
         pageSize={pageSize}
         updatePage={handleUpdatePage}
