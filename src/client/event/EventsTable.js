@@ -440,6 +440,7 @@ export default function EventsTable({
   updateOrder,
   orderBy,
   updateOrderBy,
+  isLoading,
 }) {
   const jwt = auth.isAuthenticated();
   const classes = useStyles();
@@ -675,7 +676,15 @@ export default function EventsTable({
               onClearStatuses={handleClearStatuses}
               onResetStatuses={handleResetStatuses}
             />
+
             <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell>
+                    <h2>Loading...</h2>
+                  </TableCell>
+                </TableRow>
+              ) : null}
               {currentPageRows.map((row, index) => {
                 const labelId = `enhanced-table-checkbox-${index}`;
 

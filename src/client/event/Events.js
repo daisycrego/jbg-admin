@@ -60,13 +60,14 @@ export default function Events() {
   const [redirectToSignin, setRedirectToSignin] = useState(false);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
-  const [sources, setSources] = React.useState([]);
-  const [activeSources, setActiveSources] = React.useState(["Zillow Flex"]);
-  const [statuses, setStatuses] = React.useState([]);
+  const [sources, setSources] = useState([]);
+  const [activeSources, setActiveSources] = useState(["Zillow Flex"]);
+  const [statuses, setStatuses] = useState([]);
   const [activeStatuses, setActiveStatuses] =
     React.useState(zillowStatusOptions);
-  const [order, setOrder] = React.useState("desc");
-  const [orderBy, setOrderBy] = React.useState("created");
+  const [order, setOrder] = useState("desc");
+  const [orderBy, setOrderBy] = useState("created");
+  const [isLoading, setIsLoading] = useState(false);
 
   const updateEvents = (
     newActiveSources = ["Zillow Flex"],
@@ -84,14 +85,17 @@ export default function Events() {
       orderBy: newOrderBy,
     };
 
+    setIsLoading(true);
     list(signal, options).then((data) => {
       if (data && data.error) {
         console.log(data.error);
+        setIsLoading(false);
         setRedirectToSignin(true);
       } else {
         setEvents(data.events);
         setSources(data.sources);
         setStatuses(data.statuses);
+        setIsLoading(false);
       }
     });
   };
@@ -110,12 +114,14 @@ export default function Events() {
       order: order,
       orderBy: orderBy,
     };
-
+    setIsLoading(true);
     list(signal, options).then((data) => {
       if (data && data.error) {
         console.log(data.error);
+        setIsLoading(false);
         setRedirectToSignin(true);
       } else {
+        setIsLoading(false);
         setEvents(data.events);
         setSources(data.sources);
         setStatuses(data.statuses);
@@ -222,8 +228,8 @@ export default function Events() {
       </Button>
       */}
       <EventsTable
+        isLoading={isLoading}
         rows={events}
-        jwt={jwt}
         page={page}
         pageSize={pageSize}
         updatePage={handleUpdatePage}
