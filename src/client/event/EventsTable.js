@@ -443,10 +443,11 @@ export default function EventsTable({
   orderBy,
   updateOrderBy,
   isLoading,
+  openFilter,
+  updateOpenFilter,
 }) {
   const jwt = auth.isAuthenticated();
   const classes = useStyles();
-  const [openFilter, setOpenFilter] = React.useState(null);
   const [showSourceSelect, setShowSourceSelect] = React.useState(false);
   const [updatingRow, setUpdatingRow] = React.useState(null);
   const [status, setStatus] = React.useState("");
@@ -482,17 +483,17 @@ export default function EventsTable({
 
   const handleSourceFilterClick = () => {
     if (openFilter === "source") {
-      setOpenFilter(null);
+      updateOpenFilter(null);
     } else {
-      setOpenFilter("source");
+      updateOpenFilter("source");
     }
   };
 
   const handleStatusFilterClick = () => {
     if (openFilter === "status") {
-      setOpenFilter(null);
+      updateOpenFilter(null);
     } else {
-      setOpenFilter("status");
+      updateOpenFilter("status");
     }
   };
 

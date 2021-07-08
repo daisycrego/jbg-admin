@@ -66,6 +66,7 @@ export default function Events() {
   const [order, setOrder] = useState("desc");
   const [orderBy, setOrderBy] = useState("created");
   const [isLoading, setIsLoading] = useState(false);
+  const [openFilter, setOpenFilter] = useState(null);
 
   const updateEvents = (
     newActiveSources = ["Zillow Flex"],
@@ -88,6 +89,8 @@ export default function Events() {
       if (data && data.error) {
         console.log(data.error);
         setIsLoading(false);
+        handleUpdateOpenFilter(null);
+        set;
         setRedirectToSignin(true);
       } else {
         setEvents(data.events);
@@ -99,6 +102,7 @@ export default function Events() {
         setSources(data.sources);
         setStatuses(data.statuses);
         setIsLoading(false);
+        handleUpdateOpenFilter(null);
       }
     });
   };
@@ -140,6 +144,10 @@ export default function Events() {
       abortController.abort();
     };
   }, []);
+
+  const handleUpdateOpenFilter = (newState) => {
+    setOpenFilter(newState);
+  };
 
   const handleSyncEventsClick = async () => {
     const jwt = auth.isAuthenticated();
@@ -257,6 +265,8 @@ export default function Events() {
         updateOrder={(e) => handleUpdate(e, "order")}
         orderBy={orderBy}
         updateOrderBy={(e) => handleUpdate(e, "orderBy")}
+        openFilter={openFilter}
+        updateOpenFilter={handleUpdateOpenFilter}
       />
     </Paper>
   );
