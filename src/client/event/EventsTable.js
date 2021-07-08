@@ -253,6 +253,7 @@ const useToolbarStyles = makeStyles((theme) => ({
 const EnhancedTableToolbar = (props) => {
   const classes = useToolbarStyles();
 
+  // Fields to use for CSV export
   const fields = [
     "_id",
     "eventId",
@@ -309,6 +310,8 @@ const EnhancedTableToolbar = (props) => {
     "personTeamLeaders",
     "personPondMembers",
   ];
+
+  // Prepare CSV export - flatten all the Events objects
   const opts = { fields };
   const parser = new Parser(opts);
   const flattenedRows = props.rows.map((row) => {
@@ -359,9 +362,8 @@ const EnhancedTableToolbar = (props) => {
     return row;
   });
 
+  // Convert flattened rows to CSV
   const csv = parser.parse(flattenedRows);
-
-  //const csv = parser.parse(props.rows);
 
   return (
     <Toolbar>
@@ -458,7 +460,6 @@ export default function EventsTable({
     const isAsc = orderBy === property && order === "asc";
     const newOrder = isAsc ? "desc" : "asc";
     const newOrderBy = property;
-
     updateOrder(newOrder);
     updateOrderBy(newOrderBy);
   };
