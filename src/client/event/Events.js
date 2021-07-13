@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import { list, sync_events } from "./api-event.js";
@@ -7,6 +7,9 @@ import { Snackbar } from "@material-ui/core";
 import EventsTable from "./EventsTable";
 import { Redirect } from "react-router-dom";
 import zillowStatusOptions from "../../lib/constants";
+import { Datepicker, START_DATE } from "@datepicker-react/styled";
+import Button from "@material-ui/core/Button";
+import SyncIcon from "@material-ui/icons/Sync";
 
 const useStyles = makeStyles((theme) => ({
   root: theme.mixins.gutters({
@@ -48,7 +51,22 @@ function stableSort(array, comparator) {
   return stabilizedThis.map((el) => el[0]);
 }
 
-export default function Events() {
+export default function Events({
+  pageSize,
+  setPageSize,
+  page,
+  setPage,
+  order,
+  setOrder,
+  orderBy,
+  setOrderBy,
+  activeSources,
+  setActiveSources,
+  activeStatuses,
+  setActiveStatuses,
+  pickerState,
+  updatePickerState,
+}) {
   const jwt = auth.isAuthenticated();
   const classes = useStyles();
   const [events, setEvents] = useState([]);
@@ -56,23 +74,19 @@ export default function Events() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [redirectToSignin, setRedirectToSignin] = useState(false);
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
   const [sources, setSources] = useState([]);
-  const [activeSources, setActiveSources] = useState(["Zillow Flex"]);
   const [statuses, setStatuses] = useState([]);
-  const [activeStatuses, setActiveStatuses] =
-    React.useState(zillowStatusOptions);
-  const [order, setOrder] = useState("desc");
-  const [orderBy, setOrderBy] = useState("created");
   const [isLoading, setIsLoading] = useState(false);
   const [openFilter, setOpenFilter] = useState(null);
+  //const [focusedDateInput, setFocusedDateInput] = useState(START_DATE);
 
   const updateEvents = (
     newActiveSources = ["Zillow Flex"],
     newActiveStatuses = null,
     newOrder = "desc",
-    newOrderBy = "created"
+    newOrderBy = "created",
+    newStartDate = null,
+    newEndDate = null
   ) => {
     const abortController = new AbortController();
     const signal = abortController.signal;
@@ -82,6 +96,8 @@ export default function Events() {
       activeStatuses: newActiveStatuses,
       order: newOrder,
       orderBy: newOrderBy,
+      startDate: newStartDate,
+      endDate: newEndDate,
     };
 
     setIsLoading(true);
@@ -120,6 +136,8 @@ export default function Events() {
       activeStatuses: activeStatuses,
       order: order,
       orderBy: orderBy,
+      startDate: pickerState.startDate,
+      endDate: pickerState.endDate,
     };
     setIsLoading(true);
     list(signal, options).then((data) => {
@@ -235,7 +253,6 @@ export default function Events() {
         onClose={() => setSnackbarOpen(false)}
         autoHideDuration={2000}
       />
-      {/*
       <Button
         variant="contained"
         color="primary"
@@ -245,8 +262,14 @@ export default function Events() {
       >
         Sync Events
       </Button>
-      */}
       <EventsTable
+        pickerState={pickerState}
+        updatePickerState={(e) => {
+          console.log(
+            `<EventsTable/>'s updatePickerState calling <Events/>'s setPickerState`
+          );
+          setPickerState(e);
+        }}
         isLoading={isLoading}
         activeRows={events}
         currentPageRows={currentPageRows}

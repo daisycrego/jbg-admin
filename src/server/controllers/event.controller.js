@@ -86,19 +86,31 @@ const read = (req, res) => {
 const list = async (req, res) => {
   const activeSources = req.body.activeSources;
   const activeStatuses = req.body.activeStatuses;
+  const startDate = req.body.startDate;
+  const endDate = req.body.endDate;
 
   const order = req.body.order;
 
   // orderBy not currently used because it only ever has 1 value: created
   const orderBy = req.body.orderBy;
-
+  let events;
   try {
-    let events = await Event.find({
-      source: activeSources,
-      status: activeStatuses,
-    }).sort({
-      created: order === "desc" ? -1 : 1,
-    });
+    if (startDate && endDate) {
+      events = await Event.find({
+        source: activeSources,
+        status: activeStatuses,
+        created: { $gte: new Date(startDate), $lt: new Date(endDate) },
+      }).sort({
+        created: order === "desc" ? -1 : 1,
+      });
+    } else {
+      events = await Event.find({
+        source: activeSources,
+        status: activeStatuses,
+      }).sort({
+        created: order === "desc" ? -1 : 1,
+      });
+    }
 
     const allSources = await Event.distinct("source");
     const allStatuses = await Event.distinct("status");
@@ -160,17 +172,22 @@ const addNewEvents = async (events) => {
       `Processing event: ${eventObj.id}, created: ${eventObj.created}, updated: ${eventObj.updated}`
     );
 
-    const today = new Date();
-    const two_days_ago = today.getTime() - 1000 * 2 * (60 * 60 * 24);
-    const created = new Date(eventObj.created);
-    const oldData = created.getTime() < two_days_ago;
+    //const today = new Date();
+    //const two_weeks_ago = today.getTime() - 1000 * 14 * (60 * 60 * 24);
+    //const created = new Date(eventObj.created);
+    //const oldData = created.getTime() < two_weeks_ago;
 
+    // if the data already exists in the database,
+
+    /*
+    // or if the data is > 14 days old, stop searching
     if (oldData) {
-      console.log(`The event is > 2 days old, skipping`);
+      console.log(`The event is > 2 weeks old, skipping`);
       return false;
     } else {
-      console.log(`Less than 2 days old, processing...`);
+      console.log(`Less than 2 weeks old, processing...`);
     }
+    */
 
     const existingEvent = await Event.find({ id: eventObj.id });
     if (!existingEvent.length) {
@@ -180,10 +197,12 @@ const addNewEvents = async (events) => {
       } catch (err) {
         console.log(err);
       }
+    } else {
+      console.log(`event ${eventObj.id} exists, skipping...`);
     }
   }
 
-  return continueReading;
+  return true;
 };
 
 const syncEventsHelper = async (url) => {

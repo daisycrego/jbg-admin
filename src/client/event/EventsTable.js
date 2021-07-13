@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { lighten, makeStyles } from "@material-ui/core/styles";
 import {
@@ -42,6 +42,9 @@ import _ from "lodash";
 
 import GetAppIcon from "@material-ui/icons/GetApp";
 import { CSVLink } from "react-csv";
+import { Datepicker } from "@datepicker-react/styled";
+import DateRangeIcon from "@material-ui/icons/DateRange";
+import EventAvailableIcon from "@material-ui/icons/EventAvailable";
 const { Parser } = require("json2csv");
 
 const headCells = [
@@ -330,35 +333,35 @@ const EnhancedTableToolbar = (props) => {
     row.propertyLot = row.property ? row.property.lot : null;
     row.propertyLat = row.property ? row.property.lat : null;
     row.propertyLong = row.property ? row.property.long : null;
-    row.personCreated = row.property ? row.person.created : null;
-    row.personUpdated = row.property ? row.person.updated : null;
-    row.personName = row.property ? row.person.name : null;
-    row.personCreatedVia = row.property ? row.person.createdVia : null;
-    row.personLastActivity = row.property ? row.person.lastActivity : null;
-    row.personStage = row.property ? row.person.stage : null;
-    row.personStageId = row.property ? row.person.stageId : null;
-    row.personSource = row.property ? row.person.source : null;
-    row.personSourceId = row.property ? row.person.sourceId : null;
-    row.personSourceUrl = row.property ? row.person.sourceUrl : null;
-    row.personDelayed = row.property ? row.person.delayed : null;
-    row.personContacted = row.property ? row.person.contacted : null;
-    row.personPrice = row.property ? row.person.price : null;
-    row.personAssignedLenderId = row.property
+    row.personCreated = row.person ? row.person.created : null;
+    row.personUpdated = row.person ? row.person.updated : null;
+    row.personName = row.person ? row.person.name : null;
+    row.personCreatedVia = row.person ? row.person.createdVia : null;
+    row.personLastActivity = row.person ? row.person.lastActivity : null;
+    row.personStage = row.person ? row.person.stage : null;
+    row.personStageId = row.person ? row.person.stageId : null;
+    row.personSource = row.person ? row.person.source : null;
+    row.personSourceId = row.person ? row.person.sourceId : null;
+    row.personSourceUrl = row.person ? row.person.sourceUrl : null;
+    row.personDelayed = row.person ? row.person.delayed : null;
+    row.personContacted = row.person ? row.person.contacted : null;
+    row.personPrice = row.person ? row.person.price : null;
+    row.personAssignedLenderId = row.person
       ? row.person.assignedLenderId
       : null;
-    row.personAssignedLenderName = row.property
+    row.personAssignedLenderName = row.person
       ? row.person.assignedLenderName
       : null;
-    row.personAssignedUserId = row.property ? row.person.assignedUserId : null;
-    row.personAssignedPondId = row.property ? row.person.assignedPondId : null;
-    row.personAssignedTo = row.property ? row.person.assignedTo : null;
-    row.personTags = row.property ? row.person.tags : null;
-    row.personEmails = row.property ? row.person.emails : null;
-    row.personPhones = row.property ? row.person.phones : null;
-    row.personAddresses = row.property ? row.person.addresses : null;
-    row.personCollaborators = row.property ? row.person.collaborators : null;
-    row.personTeamLeaders = row.property ? row.person.teamLeaders : null;
-    row.personPondMembers = row.property ? row.person.pondMembers : null;
+    row.personAssignedUserId = row.person ? row.person.assignedUserId : null;
+    row.personAssignedPondId = row.person ? row.person.assignedPondId : null;
+    row.personAssignedTo = row.person ? row.person.assignedTo : null;
+    row.personTags = row.person ? row.person.tags : null;
+    row.personEmails = row.person ? row.person.emails : null;
+    row.personPhones = row.person ? row.person.phones : null;
+    row.personAddresses = row.person ? row.person.addresses : null;
+    row.personCollaborators = row.person ? row.person.collaborators : null;
+    row.personTeamLeaders = row.person ? row.person.teamLeaders : null;
+    row.personPondMembers = row.person ? row.person.pondMembers : null;
     return row;
   });
 
@@ -388,6 +391,38 @@ const EnhancedTableToolbar = (props) => {
               Download CSV
             </CSVLink>
           </Button>
+
+          <div style={{ padding: 10 }}>
+            {props.showDatePicker ? (
+              <>
+                <Datepicker
+                  startDate={props.pickerState.startDate}
+                  endDate={props.pickerState.endDate}
+                  focusedInput={props.pickerState.focusedInput}
+                  onDatesChange={(e) => props.handleDatesChange(e)}
+                  onClose={(e) => props.setShowDatePicker(false)}
+                />
+                <Button
+                  onClick={(e) => props.updatePickerState(props.pickerState)}
+                >
+                  Save Changes
+                  <EventAvailableIcon />
+                </Button>
+              </>
+            ) : (
+              <Button onClick={(e) => props.setShowDatePicker(true)}>
+                {props.pickerState.startDate && props.pickerState.endDate ? (
+                  <>
+                    <p> {props.pickerState.startDate.toLocaleString()} </p>
+                    <p> {props.pickerState.endDate.toLocaleString()} </p>
+                  </>
+                ) : (
+                  "No date range set"
+                )}
+                <DateRangeIcon />
+              </Button>
+            )}
+          </div>
         </>
       }
     </Toolbar>
@@ -445,12 +480,18 @@ export default function EventsTable({
   isLoading,
   openFilter,
   updateOpenFilter,
+  pickerState,
+  updatePickerState,
 }) {
   const jwt = auth.isAuthenticated();
   const classes = useStyles();
-  const [showSourceSelect, setShowSourceSelect] = React.useState(false);
-  const [updatingRow, setUpdatingRow] = React.useState(null);
-  const [status, setStatus] = React.useState("");
+  const [showSourceSelect, setShowSourceSelect] = useState(false);
+  const [updatingRow, setUpdatingRow] = useState(null);
+  const [status, setStatus] = useState("");
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [startDate, setStartDate] = useState(pickerState.startDate);
+  const [endDate, setEndDate] = useState(pickerState.endDate);
+  const [focusedInput, setFocusedInput] = useState(pickerState.focusedInput);
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -458,6 +499,23 @@ export default function EventsTable({
     const newOrderBy = property;
     updateOrder(newOrder);
     updateOrderBy(newOrderBy);
+  };
+
+  const handleDatesChange = (data) => {
+    console.log(`handleDatesChange`);
+    console.log(data);
+    if (!data.focusedInput) {
+      //console.log(data);
+      //setState(data);
+      setStartDate(data.startDate);
+      setEndDate(data.endDate);
+      setFocusedInput(data.focusedInput);
+    } else {
+      //setState(data);
+      setStartDate(data.startDate);
+      setEndDate(data.endDate);
+      setFocusedInput(data.focusedInput);
+    }
   };
 
   const handleChangePage = (event, newPage) => {
@@ -641,7 +699,19 @@ export default function EventsTable({
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
-        <EnhancedTableToolbar rows={activeRows} />
+        <EnhancedTableToolbar
+          rows={activeRows}
+          showDatePicker={showDatePicker}
+          setShowDatePicker={setShowDatePicker}
+          pickerState={{ startDate, endDate, focusedInput }}
+          handleDatesChange={handleDatesChange}
+          updatePickerState={(e) => {
+            updatePickerState(e);
+            console.log(
+              `<EnhancedTableToolbar/> calling <EventsTable/>'s updatePickerState`
+            );
+          }}
+        />
 
         <TableContainer>
           <Table
