@@ -168,6 +168,12 @@ export default function Events({
   };
 
   const handleSyncEventsClick = async () => {
+    const continueSync = confirm(
+      "Are you sure you need to sync the events? Only do this when the system has gone out of sync."
+    );
+    if (!continueSync) {
+      return;
+    }
     const jwt = auth.isAuthenticated();
     const credentials = { t: jwt.token };
     const abortController = new AbortController();
