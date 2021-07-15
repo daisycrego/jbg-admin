@@ -103,7 +103,7 @@ function EnhancedTableHead(props) {
           <TableCell
             key={headCell.id}
             align={"center"}
-            padding={"default"}
+            padding={"normal"}
             sortDirection={orderBy === headCell.id ? order : false}
           >
             {["propertyStreet", "created"].includes(headCell.id) ? (
@@ -799,25 +799,25 @@ export default function EventsTable({
                       id={labelId}
                       scope="row"
                       align={"center"}
-                      padding={"default"}
+                      padding={"normal"}
                     >
                       {row.property ? row.property.street : ""}
                     </TableCell>
-                    <TableCell align={"center"} padding={"default"}>
+                    <TableCell align={"center"} padding={"normal"}>
                       {`${new Date(row.created).toDateString()} ${new Date(
                         row.created
                       ).toLocaleTimeString()}`}
                     </TableCell>
-                    <TableCell align={"center"} padding={"default"}>
+                    <TableCell align={"center"} padding={"normal"}>
                       {row.source}
                     </TableCell>
-                    <TableCell align={"center"} padding={"default"}>
+                    <TableCell align={"center"} padding={"normal"}>
                       {data(row)}
                     </TableCell>
-                    <TableCell align={"center"} padding={"default"}>
+                    <TableCell align={"center"} padding={"normal"}>
                       {row.isPossibleZillowExemption ? "YES" : "NO"}
                     </TableCell>
-                    <TableCell align={"center"} padding={"default"}>
+                    <TableCell align={"center"} padding={"normal"}>
                       <Link to={"/event/" + row._id} key={row._id}>
                         <IconButton>
                           <ArrowForward />
@@ -841,8 +841,8 @@ export default function EventsTable({
           count={activeRows.length}
           rowsPerPage={pageSize}
           page={page}
-          onChangePage={handleChangePage}
-          onChangeRowsPerPage={handleChangeRowsPerPage}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
     </div>

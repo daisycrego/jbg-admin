@@ -122,7 +122,7 @@ function EnhancedTableHead(props) {
           <TableCell
             key={headCell.id}
             align={"center"}
-            padding={"default"}
+            padding={"normal"}
             sortDirection={orderBy === headCell.id ? order : false}
           >
             {["propertyStreet", "created"].includes(headCell.id) ? (
@@ -726,26 +726,26 @@ export default function LeadsTable({ rows }) {
                       id={labelId}
                       scope="row"
                       align={"center"}
-                      padding={"default"}
+                      padding={"normal"}
                     >
                       {row.name ? row.name : `${row.firstName} ${row.lastName}`}
                     </TableCell>
-                    <TableCell align={"center"} padding={"default"}>
+                    <TableCell align={"center"} padding={"normal"}>
                       {`${new Date(row.created).toDateString()} ${new Date(
                         row.created
                       ).toLocaleTimeString()}`}
                     </TableCell>
 
-                    <TableCell align={"center"} padding={"default"}>
+                    <TableCell align={"center"} padding={"normal"}>
                       {data(row)}
                     </TableCell>
-                    <TableCell align={"center"} padding={"default"}>
+                    <TableCell align={"center"} padding={"normal"}>
                       {row.stage}
                     </TableCell>
-                    <TableCell align={"center"} padding={"default"}>
+                    <TableCell align={"center"} padding={"normal"}>
                       {row.zillowStage}
                     </TableCell>
-                    <TableCell align={"center"} padding={"default"}>
+                    <TableCell align={"center"} padding={"normal"}>
                       <Link to={"/lead/" + row._id} key={row._id}>
                         <IconButton>
                           <ArrowForward />

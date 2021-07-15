@@ -6,8 +6,6 @@ import auth from "./../auth/auth-helper";
 import { Snackbar } from "@material-ui/core";
 import EventsTable from "./EventsTable";
 import { Redirect } from "react-router-dom";
-import zillowStatusOptions from "../../lib/constants";
-import { Datepicker, START_DATE } from "@datepicker-react/styled";
 import Button from "@material-ui/core/Button";
 import SyncIcon from "@material-ui/icons/Sync";
 
@@ -78,7 +76,6 @@ export default function Events({
   const [statuses, setStatuses] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [openFilter, setOpenFilter] = useState(null);
-  //const [focusedDateInput, setFocusedDateInput] = useState(START_DATE);
 
   const createSnackbarAlert = (message) => {
     setSnackbarMessage(message);
@@ -217,7 +214,9 @@ export default function Events({
           newData, // new activeSources
           activeStatuses,
           order,
-          orderBy
+          orderBy,
+          pickerState.startDate,
+          pickerState.endDate
         );
         break;
       case "status":
@@ -226,7 +225,9 @@ export default function Events({
           activeSources,
           newData, // new activeStatuses
           order,
-          orderBy
+          orderBy,
+          pickerState.startDate,
+          pickerState.endDate
         );
         break;
       case "order":
