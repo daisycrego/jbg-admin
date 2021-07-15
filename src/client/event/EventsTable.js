@@ -42,9 +42,13 @@ import _ from "lodash";
 
 import GetAppIcon from "@material-ui/icons/GetApp";
 import { CSVLink } from "react-csv";
-import { Datepicker } from "@datepicker-react/styled";
+import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
+import LuxonUtils from "@date-io/luxon"; // peer date library for MUI date picker
+import ClearIcon from "@material-ui/icons/Clear";
 import DateRangeIcon from "@material-ui/icons/DateRange";
+import ExpandLessIcon from "@material-ui/icons/ExpandLess";
 import EventAvailableIcon from "@material-ui/icons/EventAvailable";
+import ArrowRightAltIcon from "@material-ui/icons/ArrowRightAlt";
 const { Parser } = require("json2csv");
 
 const headCells = [
@@ -381,6 +385,73 @@ const EnhancedTableToolbar = (props) => {
             Follow-Up Boss Events
           </Typography>
 
+          <div style={{ padding: 10 }}>
+            {props.showDatePicker ? (
+              <div style={{ backgroundColor: "#f5f5f5", padding: "1em" }}>
+                <Button onClick={() => props.setShowDatePicker(false)}>
+                  <ExpandLessIcon />
+                </Button>
+                <MuiPickersUtilsProvider utils={LuxonUtils}>
+                  <div>
+                    <Typography>from: </Typography>
+                    <DatePicker
+                      value={props.pickerState.startDate}
+                      onChange={(e) => props.handleDatesChange(e, "start")}
+                    />
+                  </div>
+                  <div>
+                    <Typography>to: </Typography>
+                    <DatePicker
+                      value={props.pickerState.endDate}
+                      onChange={(e) => props.handleDatesChange(e, "end")}
+                    />
+                  </div>
+                  <Button
+                    onClick={(e) => props.updatePickerState(props.pickerState)}
+                  >
+                    Apply Changes
+                    <EventAvailableIcon />
+                  </Button>
+                </MuiPickersUtilsProvider>
+              </div>
+            ) : (
+              <Button onClick={(e) => props.setShowDatePicker(true)}>
+                {props.pickerState.startDate && props.pickerState.endDate ? (
+                  <>
+                    <Typography>
+                      {" "}
+                      {props.pickerState.startDate.toLocaleString()}{" "}
+                    </Typography>
+                    <ArrowRightAltIcon />
+                    <Typography>
+                      {" "}
+                      {props.pickerState.endDate.toLocaleString()}{" "}
+                    </Typography>
+                  </>
+                ) : (
+                  "Set Date Range"
+                )}
+                <DateRangeIcon />
+              </Button>
+            )}
+            {(props.pickerState.startDate || props.pickerState.endDate) && (
+              <Button
+                onClick={(e) => {
+                  const newPickerState = {
+                    startDate: null,
+                    endDate: null,
+                  };
+                  props.updatePickerState(newPickerState);
+                  props.setStartDate(null);
+                  props.setEndDate(null);
+                }}
+              >
+                Clear Dates
+                <ClearIcon />
+              </Button>
+            )}
+          </div>
+
           <Button
             variant="contained"
             color="primary"
@@ -391,38 +462,6 @@ const EnhancedTableToolbar = (props) => {
               Download CSV
             </CSVLink>
           </Button>
-
-          <div style={{ padding: 10 }}>
-            {props.showDatePicker ? (
-              <>
-                <Datepicker
-                  startDate={props.pickerState.startDate}
-                  endDate={props.pickerState.endDate}
-                  focusedInput={props.pickerState.focusedInput}
-                  onDatesChange={(e) => props.handleDatesChange(e)}
-                  onClose={(e) => props.setShowDatePicker(false)}
-                />
-                <Button
-                  onClick={(e) => props.updatePickerState(props.pickerState)}
-                >
-                  Save Changes
-                  <EventAvailableIcon />
-                </Button>
-              </>
-            ) : (
-              <Button onClick={(e) => props.setShowDatePicker(true)}>
-                {props.pickerState.startDate && props.pickerState.endDate ? (
-                  <>
-                    <p> {props.pickerState.startDate.toLocaleString()} </p>
-                    <p> {props.pickerState.endDate.toLocaleString()} </p>
-                  </>
-                ) : (
-                  "No date range set"
-                )}
-                <DateRangeIcon />
-              </Button>
-            )}
-          </div>
         </>
       }
     </Toolbar>
@@ -482,6 +521,7 @@ export default function EventsTable({
   updateOpenFilter,
   pickerState,
   updatePickerState,
+  createSnackbarAlert,
 }) {
   const jwt = auth.isAuthenticated();
   const classes = useStyles();
@@ -491,7 +531,6 @@ export default function EventsTable({
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [startDate, setStartDate] = useState(pickerState.startDate);
   const [endDate, setEndDate] = useState(pickerState.endDate);
-  const [focusedInput, setFocusedInput] = useState(pickerState.focusedInput);
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -501,20 +540,22 @@ export default function EventsTable({
     updateOrderBy(newOrderBy);
   };
 
-  const handleDatesChange = (data) => {
-    console.log(`handleDatesChange`);
-    console.log(data);
-    if (!data.focusedInput) {
-      //console.log(data);
-      //setState(data);
-      setStartDate(data.startDate);
-      setEndDate(data.endDate);
-      setFocusedInput(data.focusedInput);
-    } else {
-      //setState(data);
-      setStartDate(data.startDate);
-      setEndDate(data.endDate);
-      setFocusedInput(data.focusedInput);
+  const handleDatesChange = (data, type) => {
+    switch (type) {
+      case "start":
+        if (endDate && data > endDate) {
+          createSnackbarAlert("Start date must come before end date");
+          return;
+        }
+        setStartDate(data);
+        break;
+      case "end":
+        if (startDate && data < startDate) {
+          createSnackbarAlert("End date must come after start date");
+          return;
+        }
+        setEndDate(data);
+        break;
     }
   };
 
@@ -703,14 +744,12 @@ export default function EventsTable({
           rows={activeRows}
           showDatePicker={showDatePicker}
           setShowDatePicker={setShowDatePicker}
-          pickerState={{ startDate, endDate, focusedInput }}
+          pickerState={{ startDate, endDate }}
           handleDatesChange={handleDatesChange}
-          updatePickerState={(e) => {
-            updatePickerState(e);
-            console.log(
-              `<EnhancedTableToolbar/> calling <EventsTable/>'s updatePickerState`
-            );
-          }}
+          updatePickerState={updatePickerState}
+          setStartDate={setStartDate}
+          setEndDate={setEndDate}
+          createSnackbarAlert={createSnackbarAlert}
         />
 
         <TableContainer>

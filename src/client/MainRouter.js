@@ -45,7 +45,6 @@ const MainRouter = () => {
   const [pickerState, setPickerState] = useState({
     startDate: null,
     endDate: null,
-    focusedInput: START_DATE,
   });
   //const [startDate, setStartDate] = useState(null);
   //const [endDate, setEndDate] = useState(null);

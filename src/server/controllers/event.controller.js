@@ -95,11 +95,23 @@ const list = async (req, res) => {
   const orderBy = req.body.orderBy;
   let events;
   try {
-    if (startDate && endDate) {
+    if (startDate || endDate) {
+      let startDateOnly = startDate ? new Date(startDate) : new Date(0);
+      startDateOnly = startDateOnly.toLocaleDateString();
+      startDateOnly = new Date(startDateOnly);
+
+      let endDateOnly = endDate ? new Date(endDate) : new Date();
+      endDateOnly.setDate(endDateOnly.getDate() + 1);
+      endDateOnly = endDateOnly.toLocaleDateString();
+      endDateOnly = new Date(endDateOnly);
+
       events = await Event.find({
         source: activeSources,
         status: activeStatuses,
-        created: { $gte: new Date(startDate), $lt: new Date(endDate) },
+        created: {
+          $gte: startDateOnly,
+          $lt: endDateOnly,
+        },
       }).sort({
         created: order === "desc" ? -1 : 1,
       });

@@ -80,6 +80,11 @@ export default function Events({
   const [openFilter, setOpenFilter] = useState(null);
   //const [focusedDateInput, setFocusedDateInput] = useState(START_DATE);
 
+  const createSnackbarAlert = (message) => {
+    setSnackbarMessage(message);
+    setSnackbarOpen(true);
+  };
+
   const updateEvents = (
     newActiveSources = ["Zillow Flex"],
     newActiveStatuses = null,
@@ -243,6 +248,17 @@ export default function Events({
       case "currentPageRows":
         setCurrentPageRows(newData);
         break;
+      case "datePicker":
+        updatePickerState(newData);
+        updateEvents(
+          activeSources,
+          activeStatuses,
+          order,
+          orderBy,
+          newData.startDate,
+          newData.endDate
+        );
+        break;
       default:
         break;
     }
@@ -270,12 +286,7 @@ export default function Events({
       </Button>
       <EventsTable
         pickerState={pickerState}
-        updatePickerState={(e) => {
-          console.log(
-            `<EventsTable/>'s updatePickerState calling <Events/>'s setPickerState`
-          );
-          setPickerState(e);
-        }}
+        updatePickerState={(e) => handleUpdate(e, "datePicker")}
         isLoading={isLoading}
         activeRows={events}
         currentPageRows={currentPageRows}
@@ -296,6 +307,7 @@ export default function Events({
         updateOrderBy={(e) => handleUpdate(e, "orderBy")}
         openFilter={openFilter}
         updateOpenFilter={handleUpdateOpenFilter}
+        createSnackbarAlert={createSnackbarAlert}
       />
     </Paper>
   );
