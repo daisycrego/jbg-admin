@@ -6,8 +6,6 @@ import auth from "./../auth/auth-helper";
 import { Snackbar } from "@material-ui/core";
 import EventsTable from "./EventsTable";
 import { Redirect } from "react-router-dom";
-import Button from "@material-ui/core/Button";
-import SyncIcon from "@material-ui/icons/Sync";
 
 const useStyles = makeStyles((theme) => ({
   root: theme.mixins.gutters({

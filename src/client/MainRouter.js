@@ -1,4 +1,4 @@
-import React, { useState, createContext, useEffect } from "react";
+import React, { useState } from "react";
 import { Route, Switch } from "react-router-dom";
 import Users from "./user/Users";
 import Events from "./event/Events";
@@ -11,7 +11,6 @@ import Profile from "./user/Profile";
 import PrivateRoute from "./auth/PrivateRoute";
 import Menu from "./core/Menu";
 import zillowStatusOptions from "../lib/constants";
-import { START_DATE } from "@datepicker-react/styled";
 
 const page = 0;
 const pageSize = 10;
@@ -46,8 +45,6 @@ const MainRouter = () => {
     startDate: null,
     endDate: null,
   });
-  //const [startDate, setStartDate] = useState(null);
-  //const [endDate, setEndDate] = useState(null);
 
   return (
     <div>
@@ -72,13 +69,7 @@ const MainRouter = () => {
               orderBy={orderBy}
               setOrderBy={setOrderBy}
               pickerState={pickerState}
-              updatePickerState={(e) => {
-                console.log(
-                  `<Events/>'s updatePickerState calls <MainRouter/>'s setPickerState`
-                );
-                console.log(e);
-                setPickerState(e);
-              }}
+              updatePickerState={(e) => setPickerState(e)}
             />
           )}
         />
