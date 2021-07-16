@@ -11,10 +11,10 @@ import LeadsTable from "./LeadsTable";
 import { Redirect, Link } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
-  root: theme.mixins.gutters({
+  root: {
     padding: theme.spacing(1),
     margin: theme.spacing(5),
-  }),
+  },
   title: {
     margin: `${theme.spacing(4)}px 0 ${theme.spacing(2)}px`,
     color: theme.palette.openTitle,

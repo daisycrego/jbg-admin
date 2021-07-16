@@ -32,6 +32,12 @@ import {
   ClearAll,
   Refresh,
   DateRange,
+  GetApp,
+  Clear,
+  Sync,
+  ExpandLess,
+  EventAvailable,
+  ArrowRightAlt,
 } from "@material-ui/icons";
 import { Link } from "react-router-dom";
 import options from "../../lib/constants";
@@ -277,9 +283,44 @@ const EnhancedTableToolbar = (props) => {
           <>
             {props.showDatePicker ? (
               <div style={{ backgroundColor: "#f5f5f5", padding: "1em" }}>
-                <Button onClick={() => props.setShowDatePicker(false)}>
-                  <ExpandLessIcon />
-                </Button>
+                <div style={{ display: "flex", marginBottom: 5 }}>
+                  <Button
+                    color="primary"
+                    variant="contained"
+                    className={classes.button}
+                    onClick={() => props.setShowDatePicker(false)}
+                    style={{ marginRight: 1 }}
+                  >
+                    <ExpandLess />
+                  </Button>
+                  {(props.startDate || props.endDate) && (
+                    <Button
+                      color="primary"
+                      variant="contained"
+                      className={classes.button}
+                      startIcon={<Clear />}
+                      style={{ marginLeft: 1 }}
+                      onClick={(e) => {
+                        const newPickerState = {
+                          startDate: null,
+                          endDate: null,
+                        };
+                        /*
+                  props.updateQueryState({
+                    ...props.queryState,
+                    newPickerState,
+                  });
+                  */
+                        props.setStartDate(null);
+                        props.setEndDate(null);
+                        props.setShowDatePicker(false);
+                        props.handleUpdate(newPickerState, "datePicker");
+                      }}
+                    >
+                      Clear Dates
+                    </Button>
+                  )}
+                </div>
                 <MuiPickersUtilsProvider utils={LuxonUtils}>
                   <div>
                     <Typography>from: </Typography>
@@ -288,7 +329,7 @@ const EnhancedTableToolbar = (props) => {
                       onChange={(e) => props.handleDatesChange(e, "start")}
                     />
                   </div>
-                  <div>
+                  <div style={{ marginBottom: 5 }}>
                     <Typography>to: </Typography>
                     <DatePicker
                       value={props.endDate}
@@ -296,7 +337,11 @@ const EnhancedTableToolbar = (props) => {
                     />
                   </div>
                   <Button
-                    onClick={(e) =>
+                    color="primary"
+                    variant="contained"
+                    className={classes.button}
+                    startIcon={<EventAvailable />}
+                    onClick={() =>
                       props.updateQueryState({
                         ...props.queryState,
                         startDate: props.startDate,
@@ -305,7 +350,6 @@ const EnhancedTableToolbar = (props) => {
                     }
                   >
                     Apply Changes
-                    <EventAvailableIcon />
                   </Button>
                 </MuiPickersUtilsProvider>
               </div>
@@ -315,44 +359,33 @@ const EnhancedTableToolbar = (props) => {
                 variant="contained"
                 color="primary"
                 className={classes.button}
-                startIcon={<DateRange />}
-                style={{ marginRight: 1 }}
+                style={{
+                  marginRight: 2,
+                  padding: 5,
+                  paddingRight: 20,
+                  paddingLeft: 20,
+                }}
               >
-                {props.startDate && props.endDate ? (
+                {props.startDate || props.endDate ? (
                   <>
                     <Typography>
                       {" "}
-                      {props.startDate.toLocaleString()}{" "}
+                      {props.startDate
+                        ? props.startDate.toLocaleString()
+                        : ""}{" "}
                     </Typography>
-                    <ArrowRightAltIcon />
-                    <Typography> {props.endDate.toLocaleString()} </Typography>
+                    <ArrowRightAlt />
+                    <Typography>
+                      {" "}
+                      {props.endDate ? props.endDate.toLocaleString() : ""}{" "}
+                    </Typography>
                   </>
                 ) : (
-                  "Set Dates"
+                  <>
+                    <DateRange />
+                    Set Dates
+                  </>
                 )}
-              </Button>
-            )}
-            {(props.startDate || props.endDate) && (
-              <Button
-                onClick={(e) => {
-                  const newPickerState = {
-                    startDate: null,
-                    endDate: null,
-                  };
-                  /*
-                  props.updateQueryState({
-                    ...props.queryState,
-                    newPickerState,
-                  });
-                  */
-                  props.setStartDate(null);
-                  props.setEndDate(null);
-                  props.setShowDatePicker(false);
-                  props.handleUpdate(newPickerState, "datePicker");
-                }}
-              >
-                Clear Dates
-                <ClearIcon />
               </Button>
             )}
           </>
@@ -360,10 +393,15 @@ const EnhancedTableToolbar = (props) => {
             variant="contained"
             color="primary"
             className={classes.button}
-            startIcon={<GetAppIcon />}
-            style={{ marginRight: 1, marginLeft: 0 }}
+            style={{
+              marginRight: 3,
+              marginLeft: 3,
+              paddingRight: 5,
+              paddingLeft: 5,
+            }}
           >
-            <CSVLink style={{ color: "inherit" }} data={csv}>
+            <CSVLink style={{ color: "inherit", display: "flex" }} data={csv}>
+              <GetApp />
               Download CSV
             </CSVLink>
           </Button>
@@ -371,7 +409,7 @@ const EnhancedTableToolbar = (props) => {
             variant="contained"
             color="primary"
             className={classes.button}
-            startIcon={<SyncIcon />}
+            startIcon={<Sync />}
             onClick={props.handleSyncEventsClick}
           >
             Sync Events
@@ -715,7 +753,11 @@ export default function EventsTable({
                     </TableCell>
                     <TableCell align={"center"} padding={"normal"}>
                       <Link to={"/event/" + row._id} key={row._id}>
-                        <IconButton>
+                        <IconButton
+                          color="primary"
+                          variant="contained"
+                          className={classes.button}
+                        >
                           <ArrowForward />
                         </IconButton>
                       </Link>

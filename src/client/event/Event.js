@@ -18,12 +18,12 @@ import { Redirect } from "react-router-dom";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 
 const useStyles = makeStyles((theme) => ({
-  root: theme.mixins.gutters({
+  root: {
     maxWidth: 600,
     margin: "auto",
     padding: theme.spacing(3),
     marginTop: theme.spacing(5),
-  }),
+  },
   title: {
     marginTop: theme.spacing(3),
     color: theme.palette.protectedTitle,
