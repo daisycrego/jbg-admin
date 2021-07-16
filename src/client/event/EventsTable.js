@@ -31,6 +31,7 @@ import {
   DoneAll,
   ClearAll,
   Refresh,
+  DateRange,
 } from "@material-ui/icons";
 import { Link } from "react-router-dom";
 import options from "../../lib/constants";
@@ -314,7 +315,7 @@ const EnhancedTableToolbar = (props) => {
                 variant="contained"
                 color="primary"
                 className={classes.button}
-                startIcon={<DateRangeIcon />}
+                startIcon={<DateRange />}
                 style={{ marginRight: 1 }}
               >
                 {props.startDate && props.endDate ? (
@@ -338,9 +339,16 @@ const EnhancedTableToolbar = (props) => {
                     startDate: null,
                     endDate: null,
                   };
-                  props.updateQueryState({ ...queryState, newPickerState });
+                  /*
+                  props.updateQueryState({
+                    ...props.queryState,
+                    newPickerState,
+                  });
+                  */
                   props.setStartDate(null);
                   props.setEndDate(null);
+                  props.setShowDatePicker(false);
+                  props.handleUpdate(newPickerState, "datePicker");
                 }}
               >
                 Clear Dates
@@ -640,6 +648,7 @@ export default function EventsTable({
           handleSyncEventsClick={handleSyncEventsClick}
           queryState={queryState}
           updateQueryState={updateQueryState}
+          handleUpdate={handleUpdate}
         />
 
         <TableContainer>

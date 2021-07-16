@@ -165,14 +165,14 @@ export default function Events({ queryState, setQueryState }) {
         setQueryState({ ...queryState, pageSize: newData });
         break;
       case "source":
-        setQueryState({ ...queryState, activeSources: newData });
+        setQueryState({ ...queryState, activeSources: newData, page: 0 });
         updateEvents({
           ...queryState,
           activeSources: newData,
         });
         break;
       case "status":
-        setQueryState({ ...queryState, activeStatuses: newData });
+        setQueryState({ ...queryState, activeStatuses: newData, page: 0 });
         updateEvents({
           ...queryState,
           activeStatuses: newData,
