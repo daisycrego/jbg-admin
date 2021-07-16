@@ -19,7 +19,6 @@ import {
   MenuItem,
   Box,
 } from "@material-ui/core";
-
 import {
   Edit,
   Check,
@@ -33,23 +32,22 @@ import {
   ClearAll,
   Refresh,
 } from "@material-ui/icons";
-
 import { Link } from "react-router-dom";
 import options from "../../lib/constants";
 import { update } from "./api-event";
 import auth from "./../auth/auth-helper";
 import _ from "lodash";
-
 import GetAppIcon from "@material-ui/icons/GetApp";
 import { CSVLink } from "react-csv";
 import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import LuxonUtils from "@date-io/luxon"; // peer date library for MUI date picker
 import ClearIcon from "@material-ui/icons/Clear";
+import SyncIcon from "@material-ui/icons/Sync";
 import DateRangeIcon from "@material-ui/icons/DateRange";
 import ExpandLessIcon from "@material-ui/icons/ExpandLess";
 import EventAvailableIcon from "@material-ui/icons/EventAvailable";
 import ArrowRightAltIcon from "@material-ui/icons/ArrowRightAlt";
-const { Parser } = require("json2csv");
+import { CSVParser } from "../../lib/csvParser";
 
 const headCells = [
   {
@@ -260,6 +258,7 @@ const useToolbarStyles = makeStyles((theme) => ({
 const EnhancedTableToolbar = (props) => {
   const classes = useToolbarStyles();
 
+  /*
   // Fields to use for CSV export
   const fields = [
     "_id",
@@ -371,6 +370,9 @@ const EnhancedTableToolbar = (props) => {
 
   // Convert flattened rows to CSV
   const csv = parser.parse(flattenedRows);
+  */
+
+  const csv = CSVParser.generateCSV(props.rows);
 
   return (
     <Toolbar>
@@ -384,8 +386,7 @@ const EnhancedTableToolbar = (props) => {
           >
             Follow-Up Boss Events
           </Typography>
-
-          <div style={{ padding: 10 }}>
+          <>
             {props.showDatePicker ? (
               <div style={{ backgroundColor: "#f5f5f5", padding: "1em" }}>
                 <Button onClick={() => props.setShowDatePicker(false)}>
@@ -415,7 +416,14 @@ const EnhancedTableToolbar = (props) => {
                 </MuiPickersUtilsProvider>
               </div>
             ) : (
-              <Button onClick={(e) => props.setShowDatePicker(true)}>
+              <Button
+                onClick={(e) => props.setShowDatePicker(true)}
+                variant="contained"
+                color="primary"
+                className={classes.button}
+                startIcon={<DateRangeIcon />}
+                style={{ marginRight: 1 }}
+              >
                 {props.pickerState.startDate && props.pickerState.endDate ? (
                   <>
                     <Typography>
@@ -429,9 +437,8 @@ const EnhancedTableToolbar = (props) => {
                     </Typography>
                   </>
                 ) : (
-                  "Set Date Range"
+                  "Set Dates"
                 )}
-                <DateRangeIcon />
               </Button>
             )}
             {(props.pickerState.startDate || props.pickerState.endDate) && (
@@ -450,17 +457,26 @@ const EnhancedTableToolbar = (props) => {
                 <ClearIcon />
               </Button>
             )}
-          </div>
-
+          </>
           <Button
             variant="contained"
             color="primary"
             className={classes.button}
             startIcon={<GetAppIcon />}
+            style={{ marginRight: 1, marginLeft: 0 }}
           >
             <CSVLink style={{ color: "inherit" }} data={csv}>
               Download CSV
             </CSVLink>
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            className={classes.button}
+            startIcon={<SyncIcon />}
+            onClick={props.handleSyncEventsClick}
+          >
+            Sync Events
           </Button>
         </>
       }
@@ -522,6 +538,7 @@ export default function EventsTable({
   pickerState,
   updatePickerState,
   createSnackbarAlert,
+  handleSyncEventsClick,
 }) {
   const jwt = auth.isAuthenticated();
   const classes = useStyles();
@@ -750,6 +767,7 @@ export default function EventsTable({
           setStartDate={setStartDate}
           setEndDate={setEndDate}
           createSnackbarAlert={createSnackbarAlert}
+          handleSyncEventsClick={handleSyncEventsClick}
         />
 
         <TableContainer>

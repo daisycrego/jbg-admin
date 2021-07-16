@@ -49,22 +49,7 @@ function stableSort(array, comparator) {
   return stabilizedThis.map((el) => el[0]);
 }
 
-export default function Events({
-  pageSize,
-  setPageSize,
-  page,
-  setPage,
-  order,
-  setOrder,
-  orderBy,
-  setOrderBy,
-  activeSources,
-  setActiveSources,
-  activeStatuses,
-  setActiveStatuses,
-  pickerState,
-  updatePickerState,
-}) {
+export default function Events(props) {
   const jwt = auth.isAuthenticated();
   const classes = useStyles();
   const [events, setEvents] = useState([]);
@@ -114,7 +99,10 @@ export default function Events({
         setEvents(data.events);
         setCurrentPageRows(
           data.events
-            ? data.events.slice(page * pageSize, page * pageSize + pageSize)
+            ? data.events.slice(
+                props.page * props.pageSize,
+                props.page * props.pageSize + props.pageSize
+              )
             : []
         );
         setSources(data.sources);
@@ -134,12 +122,12 @@ export default function Events({
     const signal = abortController.signal;
 
     const options = {
-      activeSources: activeSources,
-      activeStatuses: activeStatuses,
-      order: order,
-      orderBy: orderBy,
-      startDate: pickerState.startDate,
-      endDate: pickerState.endDate,
+      activeSources: props.activeSources,
+      activeStatuses: props.activeStatuses,
+      order: props.order,
+      orderBy: props.orderBy,
+      startDate: props.pickerState.startDate,
+      endDate: props.pickerState.endDate,
     };
     setIsLoading(true);
     list(signal, options).then((data) => {
@@ -152,7 +140,10 @@ export default function Events({
         setEvents(data.events);
         setCurrentPageRows(
           data.events
-            ? data.events.slice(page * pageSize, page * pageSize + pageSize)
+            ? data.events.slice(
+                props.page * props.pageSize,
+                props.page * props.pageSize + props.pageSize
+              )
             : []
         );
         setSources(data.sources);
@@ -169,13 +160,17 @@ export default function Events({
     setOpenFilter(newState);
   };
 
-  const handleSyncEventsClick = async () => {
+  const confirmSyncEventsClick = () => {
     const continueSync = confirm(
       "Are you sure you need to sync the events? Only do this when the system has gone out of sync."
     );
     if (!continueSync) {
       return;
     }
+    handleSyncEventsClick();
+  };
+
+  const handleSyncEventsClick = async () => {
     const jwt = auth.isAuthenticated();
     const credentials = { t: jwt.token };
     const abortController = new AbortController();
@@ -183,7 +178,6 @@ export default function Events({
     setSnackbarMessage("Syncing with FUB /events API...");
     setSnackbarOpen(true);
     const result = await sync_events(credentials, signal);
-    console.log(result);
     if (result.message) {
       // { error: "You have reached the rate limit for number of requ…oss.com/reference#rate-limiting for more details."}
       // send to a notify/snackbar
@@ -199,50 +193,50 @@ export default function Events({
   };
 
   const handleUpdatePage = (newPage) => {
-    setPage(newPage);
+    props.setPage(newPage);
   };
 
   const handleUpdatePageSize = (newPageSize) => {
-    setPageSize(newPageSize);
+    props.setPageSize(newPageSize);
   };
 
   const handleUpdate = (newData, type) => {
     switch (type) {
       case "source":
-        setActiveSources(newData);
+        props.setActiveSources(newData);
         updateEvents(
           newData, // new activeSources
-          activeStatuses,
-          order,
-          orderBy,
-          pickerState.startDate,
-          pickerState.endDate
+          props.activeStatuses,
+          props.order,
+          props.orderBy,
+          props.pickerState.startDate,
+          props.pickerState.endDate
         );
         break;
       case "status":
-        setActiveStatuses(newData);
+        props.setActiveStatuses(newData);
         updateEvents(
-          activeSources,
+          props.activeSources,
           newData, // new activeStatuses
-          order,
-          orderBy,
-          pickerState.startDate,
-          pickerState.endDate
+          props.order,
+          props.orderBy,
+          props.pickerState.startDate,
+          props.pickerState.endDate
         );
         break;
       case "order":
-        setOrder(newData);
+        props.setOrder(newData);
         const newOrderEvents = stableSort(
           events,
-          getComparator(newData, orderBy)
+          getComparator(newData, props.orderBy)
         );
         setEvents(newOrderEvents);
         break;
       case "orderBy":
-        setOrderBy(newData);
+        props.setOrderBy(newData);
         const newOrderByEvents = stableSort(
           events,
-          getComparator(order, newData)
+          getComparator(props.order, newData)
         );
         setEvents(newOrderByEvents);
         break;
@@ -250,12 +244,12 @@ export default function Events({
         setCurrentPageRows(newData);
         break;
       case "datePicker":
-        updatePickerState(newData);
+        props.updatePickerState(newData);
         updateEvents(
-          activeSources,
-          activeStatuses,
-          order,
-          orderBy,
+          props.activeSources,
+          props.activeStatuses,
+          props.order,
+          props.orderBy,
           newData.startDate,
           newData.endDate
         );
@@ -276,35 +270,28 @@ export default function Events({
         onClose={() => setSnackbarOpen(false)}
         autoHideDuration={2000}
       />
-      <Button
-        variant="contained"
-        color="primary"
-        className={classes.button}
-        startIcon={<SyncIcon />}
-        onClick={handleSyncEventsClick}
-      >
-        Sync Events
-      </Button>
+
       <EventsTable
-        pickerState={pickerState}
+        handleSyncEventsClick={confirmSyncEventsClick}
+        pickerState={props.pickerState}
         updatePickerState={(e) => handleUpdate(e, "datePicker")}
         isLoading={isLoading}
         activeRows={events}
         currentPageRows={currentPageRows}
         updateCurrentPageRows={(e) => handleUpdate(e, "currentPageRows")}
-        page={page}
-        pageSize={pageSize}
+        page={props.page}
+        pageSize={props.pageSize}
         updatePage={handleUpdatePage}
         updatePageSize={handleUpdatePageSize}
         sources={sources}
         statuses={statuses}
-        activeSources={activeSources}
-        activeStatuses={activeStatuses}
+        activeSources={props.activeSources}
+        activeStatuses={props.activeStatuses}
         updateActiveSources={(e) => handleUpdate(e, "source")}
         updateActiveStatuses={(e) => handleUpdate(e, "status")}
-        order={order}
+        order={props.order}
         updateOrder={(e) => handleUpdate(e, "order")}
-        orderBy={orderBy}
+        orderBy={props.orderBy}
         updateOrderBy={(e) => handleUpdate(e, "orderBy")}
         openFilter={openFilter}
         updateOpenFilter={handleUpdateOpenFilter}
