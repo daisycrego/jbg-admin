@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import Paper from "@material-ui/core/Paper";
 import EventIcon from "@material-ui/icons/Event";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemAvatar from "@material-ui/core/ListItemAvatar";
-import ListItemText from "@material-ui/core/ListItemText";
-import Avatar from "@material-ui/core/Avatar";
-import Typography from "@material-ui/core/Typography";
-import Divider from "@material-ui/core/Divider";
+import {
+  Paper,
+  List,
+  Button,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Avatar,
+  Typography,
+  Divider,
+} from "@material-ui/core";
 import auth from "./../auth/auth-helper";
 import { read } from "./api-event.js";
 import { Redirect } from "react-router-dom";
+import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 
 const useStyles = makeStyles((theme) => ({
   root: theme.mixins.gutters({
@@ -30,6 +34,7 @@ export default function Event({ match }) {
   const classes = useStyles();
   const [event, setEvent] = useState({});
   const [redirectToSignin, setRedirectToSignin] = useState(false);
+  const [redirectToEvents, setRedirectToEvents] = useState(false);
   const jwt = auth.isAuthenticated();
 
   useEffect(() => {
@@ -59,11 +64,26 @@ export default function Event({ match }) {
     };
   }, [match.params.eventId]);
 
+  const handleReturnToSearch = () => {
+    setRedirectToEvents(true);
+  };
+
   if (redirectToSignin) {
     return <Redirect to="/signin" />;
+  } else if (redirectToEvents) {
+    return <Redirect to="/" />;
   }
   // prettier-ignore
   return (
+    <>
+    <Button
+      onClick={handleReturnToSearch}
+      variant="contained"
+      color="primary"
+      className={classes.button}
+      startIcon={<ArrowBackIcon />}
+    >
+      Back to search results</Button>
     <Paper className={classes.root} elevation={4}>
       <Typography variant="h6" className={classes.title}>
         Event
@@ -104,5 +124,6 @@ export default function Event({ match }) {
         </ListItem>
       </List>
     </Paper>
+    </>
   );
 }
