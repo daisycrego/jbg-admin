@@ -30,21 +30,7 @@ const initialState = {
 };
 
 const MainRouter = () => {
-  const [pageSize, setPageSize] = useState(initialState.pageSize);
-  const [page, setPage] = useState(initialState.page);
-  const [order, setOrder] = useState(initialState.order);
-  const [orderBy, setOrderBy] = useState(initialState.orderBy);
-  const [activeSources, setActiveSources] = useState(
-    initialState.activeSources
-  );
-  const [activeStatuses, setActiveStatuses] = useState(
-    initialState.activeStatuses
-  );
-
-  const [pickerState, setPickerState] = useState({
-    startDate: null,
-    endDate: null,
-  });
+  const [queryState, setQueryState] = useState(initialState);
 
   return (
     <div>
@@ -56,20 +42,8 @@ const MainRouter = () => {
           render={(props) => (
             <Events
               {...props}
-              pageSize={pageSize}
-              setPageSize={setPageSize}
-              page={page}
-              setPage={setPage}
-              activeSources={activeSources}
-              setActiveSources={setActiveSources}
-              activeStatuses={activeStatuses}
-              setActiveStatuses={setActiveStatuses}
-              order={order}
-              setOrder={setOrder}
-              orderBy={orderBy}
-              setOrderBy={setOrderBy}
-              pickerState={pickerState}
-              updatePickerState={(e) => setPickerState(e)}
+              queryState={queryState}
+              setQueryState={setQueryState}
             />
           )}
         />

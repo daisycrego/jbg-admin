@@ -71,8 +71,6 @@ const headCells = [
 function EnhancedTableHead(props) {
   const {
     classes,
-    order,
-    orderBy,
     onRequestSort,
     openFilter,
     onSourceFilterClick,
@@ -81,14 +79,13 @@ function EnhancedTableHead(props) {
     onClearSources,
     onResetSources,
     sources,
-    activeSources,
     statuses,
-    activeStatuses,
     onCheckboxClick,
     onSelectAllStatuses,
     onClearStatuses,
     onResetStatuses,
     onStatusCheckboxClick,
+    queryState,
   } = props;
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
@@ -102,17 +99,21 @@ function EnhancedTableHead(props) {
             key={headCell.id}
             align={"center"}
             padding={"normal"}
-            sortDirection={orderBy === headCell.id ? order : false}
+            sortDirection={
+              queryState.orderBy === headCell.id ? queryState.order : false
+            }
           >
             {["propertyStreet", "created"].includes(headCell.id) ? (
               <TableSortLabel
-                direction={orderBy === headCell.id ? order : "asc"}
+                direction={
+                  queryState.orderBy === headCell.id ? queryState.order : "asc"
+                }
                 onClick={createSortHandler(headCell.id)}
               >
                 {headCell.label}
-                {orderBy === headCell.id ? (
+                {queryState.orderBy === headCell.id ? (
                   <span className={classes.visuallyHidden}>
-                    {order === "desc"
+                    {queryState.order === "desc"
                       ? "sorted descending"
                       : "sorted ascending"}
                   </span>
@@ -163,7 +164,7 @@ function EnhancedTableHead(props) {
                   <ul className={classes.listItem}>
                     {sources.map((source) => (
                       <li key={source}>
-                        {activeSources.includes(source) ? (
+                        {queryState.activeSources.includes(source) ? (
                           <IconButton onClick={() => onCheckboxClick(source)}>
                             <CheckBox />
                           </IconButton>
@@ -198,7 +199,7 @@ function EnhancedTableHead(props) {
                   <ul className={classes.listItem}>
                     {statuses.map((status) => (
                       <li key={status}>
-                        {activeStatuses.includes(status) ? (
+                        {queryState.activeStatuses.includes(status) ? (
                           <IconButton
                             onClick={() => onStatusCheckboxClick(status)}
                           >
@@ -228,8 +229,7 @@ function EnhancedTableHead(props) {
 EnhancedTableHead.propTypes = {
   classes: PropTypes.object.isRequired,
   onRequestSort: PropTypes.func.isRequired,
-  order: PropTypes.oneOf(["asc", "desc"]).isRequired,
-  orderBy: PropTypes.string.isRequired,
+  queryState: PropTypes.object.isRequired,
 };
 
 const useToolbarStyles = makeStyles((theme) => ({
@@ -282,19 +282,25 @@ const EnhancedTableToolbar = (props) => {
                   <div>
                     <Typography>from: </Typography>
                     <DatePicker
-                      value={props.pickerState.startDate}
+                      value={props.startDate}
                       onChange={(e) => props.handleDatesChange(e, "start")}
                     />
                   </div>
                   <div>
                     <Typography>to: </Typography>
                     <DatePicker
-                      value={props.pickerState.endDate}
+                      value={props.endDate}
                       onChange={(e) => props.handleDatesChange(e, "end")}
                     />
                   </div>
                   <Button
-                    onClick={(e) => props.updatePickerState(props.pickerState)}
+                    onClick={(e) =>
+                      props.updateQueryState({
+                        ...queryState,
+                        startDate: props.startDate,
+                        endDate: props.endDate,
+                      })
+                    }
                   >
                     Apply Changes
                     <EventAvailableIcon />
@@ -310,31 +316,28 @@ const EnhancedTableToolbar = (props) => {
                 startIcon={<DateRangeIcon />}
                 style={{ marginRight: 1 }}
               >
-                {props.pickerState.startDate && props.pickerState.endDate ? (
+                {props.startDate && props.endDate ? (
                   <>
                     <Typography>
                       {" "}
-                      {props.pickerState.startDate.toLocaleString()}{" "}
+                      {props.startDate.toLocaleString()}{" "}
                     </Typography>
                     <ArrowRightAltIcon />
-                    <Typography>
-                      {" "}
-                      {props.pickerState.endDate.toLocaleString()}{" "}
-                    </Typography>
+                    <Typography> {props.endDate.toLocaleString()} </Typography>
                   </>
                 ) : (
                   "Set Dates"
                 )}
               </Button>
             )}
-            {(props.pickerState.startDate || props.pickerState.endDate) && (
+            {(props.startDate || props.endDate) && (
               <Button
                 onClick={(e) => {
                   const newPickerState = {
                     startDate: null,
                     endDate: null,
                   };
-                  props.updatePickerState(newPickerState);
+                  props.updateQueryState({ ...queryState, newPickerState });
                   props.setStartDate(null);
                   props.setEndDate(null);
                 }}
@@ -403,28 +406,14 @@ const useStyles = makeStyles((theme) => ({
 export default function EventsTable({
   activeRows,
   currentPageRows,
-  updateCurrentPageRows,
-  page,
-  pageSize,
-  updatePage,
-  updatePageSize,
   sources,
   statuses,
-  activeSources,
-  activeStatuses,
-  updateActiveSources,
-  updateActiveStatuses,
-  order,
-  updateOrder,
-  orderBy,
-  updateOrderBy,
   isLoading,
   openFilter,
-  updateOpenFilter,
-  pickerState,
-  updatePickerState,
   createSnackbarAlert,
   handleSyncEventsClick,
+  queryState,
+  handleUpdate,
 }) {
   const jwt = auth.isAuthenticated();
   const classes = useStyles();
@@ -432,15 +421,15 @@ export default function EventsTable({
   const [updatingRow, setUpdatingRow] = useState(null);
   const [status, setStatus] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [startDate, setStartDate] = useState(pickerState.startDate);
-  const [endDate, setEndDate] = useState(pickerState.endDate);
+  const [startDate, setStartDate] = useState(queryState.startDate);
+  const [endDate, setEndDate] = useState(queryState.endDate);
 
   const handleRequestSort = (event, property) => {
-    const isAsc = orderBy === property && order === "asc";
+    const isAsc = queryState.orderBy === property && queryState.order === "asc";
     const newOrder = isAsc ? "desc" : "asc";
     const newOrderBy = property;
-    updateOrder(newOrder);
-    updateOrderBy(newOrderBy);
+    handleUpdate(newOrder, "order");
+    handleUpdate(newOrderBy, "orderBy");
   };
 
   const handleDatesChange = (data, type) => {
@@ -463,12 +452,12 @@ export default function EventsTable({
   };
 
   const handleChangePage = (event, newPage) => {
-    updatePage(newPage);
+    handleUpdate(newPage, "page");
     const newActiveRows = activeRows.slice(
-      newPage * pageSize,
-      newPage * pageSize + pageSize
+      newPage * queryState.pageSize,
+      newPage * queryState.pageSize + queryState.pageSize
     );
-    updateCurrentPageRows(newActiveRows);
+    handleUpdate(newActiveRows, "currentPageRows");
   };
 
   const handleChangeRowsPerPage = (event) => {
@@ -478,59 +467,52 @@ export default function EventsTable({
       newPage * newRowsPerPage,
       newPage * newRowsPerPage + newRowsPerPage
     );
-    updatePageSize(newRowsPerPage);
-    updatePage(newPage);
-    updateCurrentPageRows(newActiveRows);
+    handleUpdate(newRowsPerPage, "pageSize");
+    handleUpdate(newActiveRows, "currentPageRows");
   };
 
-  const handleSourceFilterClick = () => {
-    if (openFilter === "source") {
-      updateOpenFilter(null);
-    } else {
-      updateOpenFilter("source");
+  const handleFilterClick = (type) => {
+    switch (type) {
+      case "source":
+        if (openFilter === "source") {
+          handleUpdate(null, "filter");
+        } else {
+          handleUpdate("source", "filter");
+        }
+        break;
+      case "status":
+        if (openFilter === "status") {
+          handleUpdate(null, "filter");
+        } else {
+          handleUpdate("status", "filter");
+        }
+        break;
+      default:
+        break;
     }
   };
 
-  const handleStatusFilterClick = () => {
-    if (openFilter === "status") {
-      updateOpenFilter(null);
-    } else {
-      updateOpenFilter("status");
+  const handleSelect = (type, newValues) => {
+    switch (type) {
+      case "source":
+        handleUpdate(0, "page");
+        handleUpdate(newValues, "source");
+        break;
+      case "status":
+        handleUpdate(0, "page");
+        handleUpdate(newValues, "status");
+        break;
+      default:
+        break;
     }
-  };
-
-  const handleSelectAllSources = () => {
-    updateActiveSources(sources);
-    updatePage(0);
-  };
-
-  const handleSelectAllStatuses = () => {
-    updateActiveStatuses(statuses);
-    updatePage(0);
-  };
-
-  const handleClearStatuses = () => {
-    updateActiveStatuses([]);
-    updatePage(0);
-  };
-
-  const handleResetStatuses = () => {
-    updateActiveStatuses(statuses);
-    updatePage(0);
-  };
-
-  const onClearSources = () => {
-    updateActiveSources([]);
-    updatePage(0);
-  };
-
-  const onResetSources = () => {
-    updateActiveSources(["Zillow Flex"]);
-    updatePage(0);
   };
 
   const emptyRows =
-    pageSize - Math.min(pageSize, activeRows.length - page * pageSize);
+    queryState.Size -
+    Math.min(
+      queryState.pageSize,
+      activeRows.length - queryState.page * queryState.pageSize
+    );
 
   const handleUpdateStatusClick = (rowId, rowStatus) => {
     setUpdatingRow(rowId);
@@ -570,28 +552,28 @@ export default function EventsTable({
 
   const handleCheckboxClick = (source) => {
     let newActiveSources;
-    if (activeSources.includes(source)) {
-      newActiveSources = activeSources.filter(
+    if (queryState.activeSources.includes(source)) {
+      newActiveSources = queryState.activeSources.filter(
         (activeSource) => activeSource != source
       );
     } else {
-      newActiveSources = [...activeSources, source];
+      newActiveSources = [...queryState.activeSources, source];
     }
-    updateActiveSources(newActiveSources);
-    updatePage(0);
+    handleUpdate(0, "page");
+    handleUpdate(newActiveSources, "source");
   };
 
   const handleStatusCheckboxClick = (status) => {
     let newActiveStatuses;
-    if (activeStatuses.includes(status)) {
-      newActiveStatuses = activeStatuses.filter(
+    if (queryState.activeStatuses.includes(status)) {
+      newActiveStatuses = queryState.activeStatuses.filter(
         (activeStatus) => activeStatus != status
       );
     } else {
-      newActiveStatuses = [...activeStatuses, status];
+      newActiveStatuses = [...queryState.activeStatuses, status];
     }
-    updateActiveStatuses(newActiveStatuses);
-    updatePage(0);
+    handleUpdate(0, "page");
+    handleUpdate(newActiveStatuses, "status");
   };
 
   const data = (row) => {
@@ -647,9 +629,9 @@ export default function EventsTable({
           rows={activeRows}
           showDatePicker={showDatePicker}
           setShowDatePicker={setShowDatePicker}
-          pickerState={{ startDate, endDate }}
+          startDate={startDate}
+          endDate={endDate}
           handleDatesChange={handleDatesChange}
-          updatePickerState={updatePickerState}
           setStartDate={setStartDate}
           setEndDate={setEndDate}
           createSnackbarAlert={createSnackbarAlert}
@@ -665,24 +647,21 @@ export default function EventsTable({
           >
             <EnhancedTableHead
               classes={classes}
-              order={order}
-              orderBy={orderBy}
+              queryState={queryState}
               onRequestSort={handleRequestSort}
-              onSourceFilterClick={handleSourceFilterClick}
+              onSourceFilterClick={() => handleFilterClick("source")}
               openFilter={openFilter}
               sources={sources}
-              activeSources={activeSources}
               statuses={statuses}
-              activeStatuses={activeStatuses}
               onCheckboxClick={handleCheckboxClick}
               onStatusCheckboxClick={handleStatusCheckboxClick}
-              onSelectAllSources={handleSelectAllSources}
-              onClearSources={onClearSources}
-              onResetSources={onResetSources}
-              onStatusFilterClick={handleStatusFilterClick}
-              onSelectAllStatuses={handleSelectAllStatuses}
-              onClearStatuses={handleClearStatuses}
-              onResetStatuses={handleResetStatuses}
+              onSelectAllSources={() => handleSelect("source", sources)}
+              onClearSources={() => handleSelect("source", [])}
+              onResetSources={() => handleSelect("source", sources)}
+              onStatusFilterClick={() => handleFilterClick("status")}
+              onSelectAllStatuses={() => handleSelect("status", statuses)}
+              onClearStatuses={() => handleSelect("status", [])}
+              onResetStatuses={() => handleSelect("status", statuses)}
             />
 
             <TableBody>
@@ -743,8 +722,8 @@ export default function EventsTable({
           rowsPerPageOptions={[5, 10, 25, 50, 100]}
           component="div"
           count={activeRows.length}
-          rowsPerPage={pageSize}
-          page={page}
+          rowsPerPage={queryState.pageSize}
+          page={queryState.page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
         />

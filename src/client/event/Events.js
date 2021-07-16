@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import { list, sync_events } from "./api-event.js";
@@ -47,13 +47,12 @@ function stableSort(array, comparator) {
   return stabilizedThis.map((el) => el[0]);
 }
 
-export default function Events(props) {
+export default function Events({ queryState, setQueryState }) {
   const jwt = auth.isAuthenticated();
   const classes = useStyles();
-  const [events, setEvents] = useState([]);
+  const [allRows, setAllRows] = useState([]);
   const [currentPageRows, setCurrentPageRows] = React.useState([]);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbar, setSnackbar] = useState({ open: false, message: "" });
   const [redirectToSignin, setRedirectToSignin] = useState(false);
   const [sources, setSources] = useState([]);
   const [statuses, setStatuses] = useState([]);
@@ -61,52 +60,34 @@ export default function Events(props) {
   const [openFilter, setOpenFilter] = useState(null);
 
   const createSnackbarAlert = (message) => {
-    setSnackbarMessage(message);
-    setSnackbarOpen(true);
+    setSnackbar({ message, open: true });
   };
 
-  const updateEvents = (
-    newActiveSources = ["Zillow Flex"],
-    newActiveStatuses = null,
-    newOrder = "desc",
-    newOrderBy = "created",
-    newStartDate = null,
-    newEndDate = null
-  ) => {
+  const updateEvents = (initialState) => {
     const abortController = new AbortController();
     const signal = abortController.signal;
 
-    const options = {
-      activeSources: newActiveSources,
-      activeStatuses: newActiveStatuses,
-      order: newOrder,
-      orderBy: newOrderBy,
-      startDate: newStartDate,
-      endDate: newEndDate,
-    };
-
     setIsLoading(true);
-    list(signal, options).then((data) => {
+    list(signal, initialState).then((data) => {
       if (data && data.error) {
         console.log(data.error);
         setIsLoading(false);
-        handleUpdateOpenFilter(null);
+        handleUpdate(null, "filter");
         set;
         setRedirectToSignin(true);
       } else {
-        setEvents(data ? data.events : []);
-        setCurrentPageRows(
-          data & data.events
-            ? data.events.slice(
-                props.page * props.pageSize,
-                props.page * props.pageSize + props.pageSize
-              )
-            : []
-        );
+        setAllRows(data ? data.events : []);
+        const page = data.events
+          ? data.events.slice(
+              queryState.page * queryState.pageSize,
+              queryState.page * queryState.pageSize + queryState.pageSize
+            )
+          : [];
+        setCurrentPageRows(page);
         setSources(data ? data.sources : []);
         setStatuses(data ? data.statuses : []);
         setIsLoading(false);
-        handleUpdateOpenFilter(null);
+        handleUpdate(null, "filter");
       }
     });
   };
@@ -119,28 +100,20 @@ export default function Events(props) {
     const abortController = new AbortController();
     const signal = abortController.signal;
 
-    const options = {
-      activeSources: props.activeSources,
-      activeStatuses: props.activeStatuses,
-      order: props.order,
-      orderBy: props.orderBy,
-      startDate: props.pickerState.startDate,
-      endDate: props.pickerState.endDate,
-    };
     setIsLoading(true);
-    list(signal, options).then((data) => {
+    list(signal, queryState).then((data) => {
       if (data && data.error) {
         console.log(data.error);
         setIsLoading(false);
         setRedirectToSignin(true);
       } else {
         setIsLoading(false);
-        setEvents(data.events);
+        setAllRows(data.events);
         setCurrentPageRows(
           data.events
             ? data.events.slice(
-                props.page * props.pageSize,
-                props.page * props.pageSize + props.pageSize
+                queryState.page * queryState.pageSize,
+                queryState.page * queryState.pageSize + queryState.pageSize
               )
             : []
         );
@@ -153,10 +126,6 @@ export default function Events(props) {
       abortController.abort();
     };
   }, []);
-
-  const handleUpdateOpenFilter = (newState) => {
-    setOpenFilter(newState);
-  };
 
   const confirmSyncEventsClick = () => {
     const continueSync = confirm(
@@ -173,84 +142,74 @@ export default function Events(props) {
     const credentials = { t: jwt.token };
     const abortController = new AbortController();
     const signal = abortController.signal;
-    setSnackbarMessage("Syncing with FUB /events API...");
-    setSnackbarOpen(true);
+    setSnackbar({ message: "Syncing with Follow Up Boss...", open: true });
     const result = await sync_events(credentials, signal);
     if (result.message) {
       // { error: "You have reached the rate limit for number of requ…oss.com/reference#rate-limiting for more details."}
       // send to a notify/snackbar
-      setSnackbarMessage(result.message);
-      setSnackbarOpen(true);
+      setSnackbar({ message: result.message, open: true });
     } else if (result.error) {
-      setSnackbarMessage(result.error);
-      setSnackbarOpen(true);
+      setSnackbar({ open: true, message: result.error });
     } else {
-      setSnackbarMessage(result);
-      setSnackbarOpen(true);
+      setSnackbar({ open: true, message: result });
     }
-  };
-
-  const handleUpdatePage = (newPage) => {
-    props.setPage(newPage);
-  };
-
-  const handleUpdatePageSize = (newPageSize) => {
-    props.setPageSize(newPageSize);
   };
 
   const handleUpdate = (newData, type) => {
     switch (type) {
+      case "page":
+        setQueryState({ ...queryState, page: newData });
+        break;
+      case "pageSize":
+        setQueryState({ ...queryState, pageSize: newData });
+        break;
       case "source":
-        props.setActiveSources(newData);
-        updateEvents(
-          newData, // new activeSources
-          props.activeStatuses,
-          props.order,
-          props.orderBy,
-          props.pickerState.startDate,
-          props.pickerState.endDate
-        );
+        setQueryState({ ...queryState, activeSources: newData });
+        updateEvents({
+          ...queryState,
+          activeSources: newData,
+        });
         break;
       case "status":
-        props.setActiveStatuses(newData);
-        updateEvents(
-          props.activeSources,
-          newData, // new activeStatuses
-          props.order,
-          props.orderBy,
-          props.pickerState.startDate,
-          props.pickerState.endDate
-        );
+        setQueryState({ ...queryState, activeStatuses: newData });
+        updateEvents({
+          ...queryState,
+          activeStatuses: newData,
+        });
         break;
       case "order":
-        props.setOrder(newData);
+        setQueryState({ ...queryState, order: newData });
         const newOrderEvents = stableSort(
-          events,
-          getComparator(newData, props.orderBy)
+          allRows,
+          getComparator(newData, queryState.orderBy)
         );
-        setEvents(newOrderEvents);
+        setAllRows(newOrderEvents);
         break;
       case "orderBy":
-        props.setOrderBy(newData);
+        setQueryState({ ...queryState, orderBy: newData });
         const newOrderByEvents = stableSort(
-          events,
-          getComparator(props.order, newData)
+          allRows,
+          getComparator(queryState.order, newData)
         );
-        setEvents(newOrderByEvents);
+        setAllRows(newOrderByEvents);
         break;
       case "currentPageRows":
         setCurrentPageRows(newData);
         break;
       case "datePicker":
-        props.updatePickerState(newData);
-        updateEvents(
-          props.activeSources,
-          props.activeStatuses,
-          props.order,
-          props.orderBy,
-          newData.startDate,
-          newData.endDate
-        );
+        setQueryState({
+          ...queryState,
+          startDate: newData.startDate,
+          endDate: newData.endDate,
+        });
+        updateEvents({
+          ...queryState,
+          startDate: newData.startDate,
+          endDate: newData.endDate,
+        });
+        break;
+      case "filter":
+        setOpenFilter(newData);
         break;
       default:
         break;
@@ -263,37 +222,24 @@ export default function Events(props) {
   return (
     <Paper className={classes.root} elevation={4}>
       <Snackbar
-        message={snackbarMessage}
-        open={snackbarOpen}
-        onClose={() => setSnackbarOpen(false)}
+        message={snackbar.message}
+        open={snackbar.open}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
         autoHideDuration={2000}
       />
 
       <EventsTable
         handleSyncEventsClick={confirmSyncEventsClick}
-        pickerState={props.pickerState}
-        updatePickerState={(e) => handleUpdate(e, "datePicker")}
         isLoading={isLoading}
-        activeRows={events}
+        activeRows={allRows}
         currentPageRows={currentPageRows}
-        updateCurrentPageRows={(e) => handleUpdate(e, "currentPageRows")}
-        page={props.page}
-        pageSize={props.pageSize}
-        updatePage={handleUpdatePage}
-        updatePageSize={handleUpdatePageSize}
         sources={sources}
         statuses={statuses}
-        activeSources={props.activeSources}
-        activeStatuses={props.activeStatuses}
-        updateActiveSources={(e) => handleUpdate(e, "source")}
-        updateActiveStatuses={(e) => handleUpdate(e, "status")}
-        order={props.order}
-        updateOrder={(e) => handleUpdate(e, "order")}
-        orderBy={props.orderBy}
-        updateOrderBy={(e) => handleUpdate(e, "orderBy")}
         openFilter={openFilter}
-        updateOpenFilter={handleUpdateOpenFilter}
         createSnackbarAlert={createSnackbarAlert}
+        queryState={queryState}
+        updateQueryState={setQueryState}
+        handleUpdate={handleUpdate}
       />
     </Paper>
   );
