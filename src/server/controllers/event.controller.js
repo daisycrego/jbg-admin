@@ -1,10 +1,11 @@
-import Event from "../models/event.model";
 import extend from "lodash/extend";
-import errorHandler from "./../helpers/dbErrorHandler";
 import fetch from "node-fetch";
-import config from "../../config/config";
 import Queue from "bull";
 import jwt from "jsonwebtoken";
+
+import Event from "../models/event.model";
+import errorHandler from "./../helpers/dbErrorHandler";
+import config from "../../config/config";
 import User from "../models/user.model";
 
 const create = async (req, res) => {
