@@ -96,17 +96,17 @@ export default function Events(props) {
         set;
         setRedirectToSignin(true);
       } else {
-        setEvents(data.events);
+        setEvents(data ? data.events : []);
         setCurrentPageRows(
-          data.events
+          data & data.events
             ? data.events.slice(
                 props.page * props.pageSize,
                 props.page * props.pageSize + props.pageSize
               )
             : []
         );
-        setSources(data.sources);
-        setStatuses(data.statuses);
+        setSources(data ? data.sources : []);
+        setStatuses(data ? data.statuses : []);
         setIsLoading(false);
         handleUpdateOpenFilter(null);
       }
