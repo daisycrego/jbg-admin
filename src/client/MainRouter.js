@@ -12,25 +12,21 @@ import PrivateRoute from "./auth/PrivateRoute";
 import Menu from "./core/Menu";
 import zillowStatusOptions from "../lib/constants";
 
-const page = 0;
-const pageSize = 10;
-const activeSources = ["Zillow Flex"];
-const activeStatuses = zillowStatusOptions;
-const order = "desc";
-const orderBy = "created";
-const initialState = {
-  page: page,
-  pageSize: pageSize,
-  activeSources: activeSources,
-  activeStatuses: activeStatuses,
-  order: order,
-  orderBy: orderBy,
+const initialEventSearchState = {
+  page: 0,
+  pageSize: 10,
+  activeSources: ["Zillow Flex"],
+  activeStatuses: zillowStatusOptions,
+  order: "desc",
+  orderBy: "created",
   startDate: null,
   endDate: null,
 };
 
 const MainRouter = () => {
-  const [queryState, setQueryState] = useState(initialState);
+  const [eventSearchState, setEventSearchState] = useState(
+    initialEventSearchState
+  );
 
   return (
     <div>
@@ -42,8 +38,8 @@ const MainRouter = () => {
           render={(props) => (
             <Events
               {...props}
-              queryState={queryState}
-              setQueryState={setQueryState}
+              queryState={eventSearchState}
+              setQueryState={setEventSearchState}
             />
           )}
         />

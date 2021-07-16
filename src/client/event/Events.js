@@ -239,7 +239,7 @@ export default function Events({ queryState, setQueryState }) {
         openFilter={openFilter}
         createSnackbarAlert={createSnackbarAlert}
         queryState={queryState}
-        updateQueryState={setQueryState}
+        updateQueryState={(e) => handleUpdate(e, "datePicker")}
         handleUpdate={handleUpdate}
       />
     </Paper>

@@ -86,6 +86,7 @@ function EnhancedTableHead(props) {
     onResetStatuses,
     onStatusCheckboxClick,
     queryState,
+    updateQueryState,
   } = props;
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
@@ -296,7 +297,7 @@ const EnhancedTableToolbar = (props) => {
                   <Button
                     onClick={(e) =>
                       props.updateQueryState({
-                        ...queryState,
+                        ...props.queryState,
                         startDate: props.startDate,
                         endDate: props.endDate,
                       })
@@ -413,6 +414,7 @@ export default function EventsTable({
   createSnackbarAlert,
   handleSyncEventsClick,
   queryState,
+  updateQueryState,
   handleUpdate,
 }) {
   const jwt = auth.isAuthenticated();
@@ -636,6 +638,8 @@ export default function EventsTable({
           setEndDate={setEndDate}
           createSnackbarAlert={createSnackbarAlert}
           handleSyncEventsClick={handleSyncEventsClick}
+          queryState={queryState}
+          updateQueryState={updateQueryState}
         />
 
         <TableContainer>
