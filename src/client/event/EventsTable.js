@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import { lighten, makeStyles } from "@material-ui/core/styles";
 import {
@@ -39,21 +40,14 @@ import {
   EventAvailable,
   ArrowRightAlt,
 } from "@material-ui/icons";
-import { Link } from "react-router-dom";
+import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
+import LuxonUtils from "@date-io/luxon"; // peer date library for MUI date picker
+import _ from "lodash";
+import { CSVLink } from "react-csv";
+
 import options from "../../lib/constants";
 import { update } from "./api-event";
 import auth from "./../auth/auth-helper";
-import _ from "lodash";
-import GetAppIcon from "@material-ui/icons/GetApp";
-import { CSVLink } from "react-csv";
-import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
-import LuxonUtils from "@date-io/luxon"; // peer date library for MUI date picker
-import ClearIcon from "@material-ui/icons/Clear";
-import SyncIcon from "@material-ui/icons/Sync";
-import DateRangeIcon from "@material-ui/icons/DateRange";
-import ExpandLessIcon from "@material-ui/icons/ExpandLess";
-import EventAvailableIcon from "@material-ui/icons/EventAvailable";
-import ArrowRightAltIcon from "@material-ui/icons/ArrowRightAlt";
 import { CSVParser } from "../../lib/csvParser";
 
 const headCells = [
