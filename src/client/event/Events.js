@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { Redirect } from "react-router-dom";
 import { makeStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
+import { Snackbar } from "@material-ui/core";
+
 import { list, sync_events } from "./api-event.js";
 import auth from "./../auth/auth-helper";
-import { Snackbar } from "@material-ui/core";
 import EventsTable from "./EventsTable";
-import { Redirect } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   root: {
