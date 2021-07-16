@@ -77,12 +77,13 @@ export default function Events({ queryState, setQueryState }) {
         setRedirectToSignin(true);
       } else {
         setAllRows(data ? data.events : []);
-        const page = data.events
-          ? data.events.slice(
-              queryState.page * queryState.pageSize,
-              queryState.page * queryState.pageSize + queryState.pageSize
-            )
-          : [];
+        const page =
+          data && data.events
+            ? data.events.slice(
+                queryState.page * queryState.pageSize,
+                queryState.page * queryState.pageSize + queryState.pageSize
+              )
+            : [];
         setCurrentPageRows(page);
         setSources(data ? data.sources : []);
         setStatuses(data ? data.statuses : []);
