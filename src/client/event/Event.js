@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { Redirect } from "react-router-dom";
+
 import { makeStyles } from "@material-ui/core/styles";
-import EventIcon from "@material-ui/icons/Event";
 import {
   Paper,
   List,
@@ -12,10 +13,13 @@ import {
   Typography,
   Divider,
 } from "@material-ui/core";
+import {
+  Event as EventIcon,
+  ArrowBack as ArrowBackIcon,
+} from "@material-ui/icons";
+
 import auth from "./../auth/auth-helper";
 import { read } from "./api-event.js";
-import { Redirect } from "react-router-dom";
-import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 
 const useStyles = makeStyles((theme) => ({
   root: {
