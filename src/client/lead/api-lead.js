@@ -1,14 +1,12 @@
 const fetch = require("node-fetch");
 
-const list = async (signal) => {
+const list = async (signal, options) => {
   try {
-    let response = await fetch("/api/leads/", {
-      method: "GET",
+    let response = await fetch(`/api/events/search`, {
+      method: "POST",
       signal: signal,
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
+      body: JSON.stringify(options),
+      headers: { "Content-Type": "application/json" },
     });
     return await response.json();
   } catch (err) {
@@ -16,17 +14,17 @@ const list = async (signal) => {
   }
 };
 
-const update = async (params, credentials, lead) => {
+const update = async (params, credentials, event) => {
   try {
     // add userId as a parameter or somehow access userId from the route!
-    let response = await fetch(`/api/leads/${params.leadId}`, {
+    let response = await fetch(`/api/event/${params.eventId}`, {
       method: "PUT",
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
         Authorization: "Bearer " + credentials.t,
       },
-      body: JSON.stringify(lead),
+      body: JSON.stringify(event),
     });
     return await response.json();
   } catch (err) {
@@ -36,7 +34,7 @@ const update = async (params, credentials, lead) => {
 
 const read = async (params, credentials, signal) => {
   try {
-    let response = await fetch("/api/leads/" + params.leadId, {
+    let response = await fetch("/api/event/" + params.eventId, {
       method: "GET",
       signal: signal,
       headers: {
@@ -53,7 +51,7 @@ const read = async (params, credentials, signal) => {
 
 const sync_leads = async (credentials, signal) => {
   try {
-    let response = await fetch("/api/leads/sync", {
+    let response = await fetch("/api/events/sync", {
       method: "GET",
       signal: signal,
       headers: {

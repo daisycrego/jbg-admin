@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import { lighten, makeStyles } from "@material-ui/core/styles";
 import {
@@ -19,7 +20,6 @@ import {
   MenuItem,
   Box,
 } from "@material-ui/core";
-
 import {
   Edit,
   Check,
@@ -32,59 +32,39 @@ import {
   DoneAll,
   ClearAll,
   Refresh,
+  DateRange,
+  GetApp,
+  Clear,
+  Sync,
+  ExpandLess,
+  EventAvailable,
+  ArrowRightAlt,
 } from "@material-ui/icons";
+import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
+import LuxonUtils from "@date-io/luxon"; // peer date library for MUI date picker
+import _ from "lodash";
+import { CSVLink } from "react-csv";
 
-import { Link } from "react-router-dom";
 import options from "../../lib/constants";
 import { update } from "./api-lead";
 import auth from "./../auth/auth-helper";
-import _ from "lodash";
-
-import GetAppIcon from "@material-ui/icons/GetApp";
-import { CSVLink } from "react-csv";
-const { Parser } = require("json2csv");
-
-function descendingComparator(a, b, orderBy) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
-function getComparator(order, orderBy) {
-  return order === "desc"
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function stableSort(array, comparator) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
-}
+import { CSVParser } from "../../lib/csvParser";
 
 const headCells = [
   {
-    id: "name",
+    id: "propertyStreet",
     numeric: false,
     disablePadding: true,
-    label: "Name",
+    label: "Property address",
   },
   { id: "created", numeric: true, disablePadding: false, label: "Created" },
   { id: "source", numeric: true, disablePadding: false, label: "Source" },
-  { id: "stage", numeric: true, disablePadding: false, label: "FUB Stage" },
+  { id: "status", numeric: true, disablePadding: false, label: "Status" },
   {
-    id: "zillowStage",
-    numeric: true,
+    id: "exemption",
+    numeric: false,
     disablePadding: false,
-    label: "Zillow Stage",
+    label: "Possible Zillow Flex / Trulia exemption?",
   },
   { id: "more", numeric: true, disablePadding: false, label: "More" },
 ];
@@ -92,24 +72,22 @@ const headCells = [
 function EnhancedTableHead(props) {
   const {
     classes,
-    order,
-    orderBy,
     onRequestSort,
     openFilter,
     onSourceFilterClick,
-    onStageFilterClick,
+    onStatusFilterClick,
     onSelectAllSources,
     onClearSources,
     onResetSources,
     sources,
-    activeSources,
-    stages,
-    activeStages,
+    statuses,
     onCheckboxClick,
-    onSelectAllStages,
-    onClearStages,
-    onResetStage,
-    onStageCheckboxClick,
+    onSelectAllStatuses,
+    onClearStatuses,
+    onResetStatuses,
+    onStatusCheckboxClick,
+    queryState,
+    updateQueryState,
   } = props;
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
@@ -123,17 +101,21 @@ function EnhancedTableHead(props) {
             key={headCell.id}
             align={"center"}
             padding={"normal"}
-            sortDirection={orderBy === headCell.id ? order : false}
+            sortDirection={
+              queryState.orderBy === headCell.id ? queryState.order : false
+            }
           >
             {["propertyStreet", "created"].includes(headCell.id) ? (
               <TableSortLabel
-                direction={orderBy === headCell.id ? order : "asc"}
+                direction={
+                  queryState.orderBy === headCell.id ? queryState.order : "asc"
+                }
                 onClick={createSortHandler(headCell.id)}
               >
                 {headCell.label}
-                {orderBy === headCell.id ? (
+                {queryState.orderBy === headCell.id ? (
                   <span className={classes.visuallyHidden}>
-                    {order === "desc"
+                    {queryState.order === "desc"
                       ? "sorted descending"
                       : "sorted ascending"}
                   </span>
@@ -143,14 +125,14 @@ function EnhancedTableHead(props) {
               headCell.label
             )}
 
-            {headCell.id === "stage" &&
-              (!openFilter || openFilter !== "stage") && (
-                <Button onClick={onStageFilterClick}>
+            {headCell.id === "status" &&
+              (!openFilter || openFilter !== "status") && (
+                <Button onClick={onStatusFilterClick}>
                   <ArrowDropDown />
                 </Button>
               )}
-            {headCell.id === "stage" && openFilter === "stage" && (
-              <Button onClick={onStageFilterClick}>
+            {headCell.id === "status" && openFilter === "status" && (
+              <Button onClick={onStatusFilterClick}>
                 <ArrowDropUp />
               </Button>
             )}
@@ -184,7 +166,7 @@ function EnhancedTableHead(props) {
                   <ul className={classes.listItem}>
                     {sources.map((source) => (
                       <li key={source}>
-                        {activeSources.includes(source) ? (
+                        {queryState.activeSources.includes(source) ? (
                           <IconButton onClick={() => onCheckboxClick(source)}>
                             <CheckBox />
                           </IconButton>
@@ -200,39 +182,39 @@ function EnhancedTableHead(props) {
                 )}
               </Box>
             )}
-            {headCell.id === "stage" && openFilter === "stage" && (
+            {headCell.id === "status" && openFilter === "status" && (
               <Box border={1}>
-                {headCell.id === "stage" && openFilter === "stage" && (
+                {headCell.id === "status" && openFilter === "status" && (
                   <>
-                    <IconButton onClick={() => onSelectAllStages(true)}>
+                    <IconButton onClick={() => onSelectAllStatuses(true)}>
                       <DoneAll />
                     </IconButton>
-                    <IconButton onClick={() => onClearStages(false)}>
+                    <IconButton onClick={() => onClearStatuses(false)}>
                       <ClearAll />
                     </IconButton>
-                    <IconButton onClick={() => onResetStage(null)}>
+                    <IconButton onClick={() => onResetStatuses(null)}>
                       <Refresh />
                     </IconButton>
                   </>
                 )}
-                {headCell.id === "stage" && openFilter === "stage" && (
+                {headCell.id === "status" && openFilter === "status" && (
                   <ul className={classes.listItem}>
-                    {stages.map((stage) => (
-                      <li key={stage}>
-                        {activeStages.includes(stage) ? (
+                    {statuses.map((status) => (
+                      <li key={status}>
+                        {queryState.activeStatuses.includes(status) ? (
                           <IconButton
-                            onClick={() => onStageCheckboxClick(stage)}
+                            onClick={() => onStatusCheckboxClick(status)}
                           >
                             <CheckBox />
                           </IconButton>
                         ) : (
                           <IconButton
-                            onClick={() => onStageCheckboxClick(stage)}
+                            onClick={() => onStatusCheckboxClick(status)}
                           >
                             <CheckBoxOutlineBlank />
                           </IconButton>
                         )}
-                        {stage}
+                        {status}
                       </li>
                     ))}
                   </ul>
@@ -249,8 +231,7 @@ function EnhancedTableHead(props) {
 EnhancedTableHead.propTypes = {
   classes: PropTypes.object.isRequired,
   onRequestSort: PropTypes.func.isRequired,
-  order: PropTypes.oneOf(["asc", "desc"]).isRequired,
-  orderBy: PropTypes.string.isRequired,
+  queryState: PropTypes.object.isRequired,
 };
 
 const useToolbarStyles = makeStyles((theme) => ({
@@ -279,12 +260,7 @@ const useToolbarStyles = makeStyles((theme) => ({
 const EnhancedTableToolbar = (props) => {
   const classes = useToolbarStyles();
 
-  const fields = ["_id", "personId", "name", "created", "source", "stage"];
-  const opts = { fields };
-  const parser = new Parser(opts);
-  const csv = parser.parse(props.rows);
-
-  //const csv = parser.parse(props.rows);
+  const csv = CSVParser.generateCSV(props.rows);
 
   return (
     <Toolbar>
@@ -296,18 +272,141 @@ const EnhancedTableToolbar = (props) => {
             id="tableTitle"
             component="div"
           >
-            Leads
+            Follow-Up Boss Events
           </Typography>
-
+          <>
+            {props.showDatePicker ? (
+              <div style={{ backgroundColor: "#f5f5f5", padding: "1em" }}>
+                <div style={{ display: "flex", marginBottom: 5 }}>
+                  <Button
+                    color="primary"
+                    variant="contained"
+                    className={classes.button}
+                    onClick={() => props.setShowDatePicker(false)}
+                    style={{ marginRight: 1 }}
+                  >
+                    <ExpandLess />
+                  </Button>
+                  {(props.startDate || props.endDate) && (
+                    <Button
+                      color="primary"
+                      variant="contained"
+                      className={classes.button}
+                      startIcon={<Clear />}
+                      style={{ marginLeft: 1 }}
+                      onClick={(e) => {
+                        const newPickerState = {
+                          startDate: null,
+                          endDate: null,
+                        };
+                        /*
+                  props.updateQueryState({
+                    ...props.queryState,
+                    newPickerState,
+                  });
+                  */
+                        props.setStartDate(null);
+                        props.setEndDate(null);
+                        props.setShowDatePicker(false);
+                        props.handleUpdate(newPickerState, "datePicker");
+                      }}
+                    >
+                      Clear Dates
+                    </Button>
+                  )}
+                </div>
+                <MuiPickersUtilsProvider utils={LuxonUtils}>
+                  <div>
+                    <Typography>from: </Typography>
+                    <DatePicker
+                      value={props.startDate}
+                      onChange={(e) => props.handleDatesChange(e, "start")}
+                    />
+                  </div>
+                  <div style={{ marginBottom: 5 }}>
+                    <Typography>to: </Typography>
+                    <DatePicker
+                      value={props.endDate}
+                      onChange={(e) => props.handleDatesChange(e, "end")}
+                    />
+                  </div>
+                  <Button
+                    color="primary"
+                    variant="contained"
+                    className={classes.button}
+                    startIcon={<EventAvailable />}
+                    onClick={() =>
+                      props.updateQueryState({
+                        ...props.queryState,
+                        startDate: props.startDate,
+                        endDate: props.endDate,
+                      })
+                    }
+                  >
+                    Apply Changes
+                  </Button>
+                </MuiPickersUtilsProvider>
+              </div>
+            ) : (
+              <Button
+                onClick={(e) => props.setShowDatePicker(true)}
+                variant="contained"
+                color="primary"
+                className={classes.button}
+                style={{
+                  marginRight: 2,
+                  padding: 5,
+                  paddingRight: 20,
+                  paddingLeft: 20,
+                }}
+              >
+                {props.startDate || props.endDate ? (
+                  <>
+                    <Typography>
+                      {" "}
+                      {props.startDate
+                        ? props.startDate.toLocaleString()
+                        : ""}{" "}
+                    </Typography>
+                    <ArrowRightAlt />
+                    <Typography>
+                      {" "}
+                      {props.endDate ? props.endDate.toLocaleString() : ""}{" "}
+                    </Typography>
+                  </>
+                ) : (
+                  <>
+                    <DateRange />
+                    Set Dates
+                  </>
+                )}
+              </Button>
+            )}
+          </>
           <Button
             variant="contained"
             color="primary"
             className={classes.button}
-            startIcon={<GetAppIcon />}
+            style={{
+              marginRight: 3,
+              marginLeft: 3,
+              paddingRight: 5,
+              paddingLeft: 5,
+            }}
           >
-            <CSVLink style={{ color: "inherit" }} data={csv}>
+            <CSVLink style={{ color: "inherit", display: "flex" }} data={csv}>
+              <GetApp />
               Download CSV
             </CSVLink>
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            className={classes.button}
+            startIcon={<Sync />}
+            onClick={props.handleSyncEventsClick}
+          >
+            Sync Events
           </Button>
         </>
       }
@@ -345,218 +444,132 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function LeadsTable({ rows }) {
-  console.log(`<LeadsTable />`);
-  console.log(`rows:`);
-  console.log(rows);
-
+export default function LeadsTable({
+  activeRows,
+  currentPageRows,
+  sources,
+  statuses,
+  isLoading,
+  openFilter,
+  createSnackbarAlert,
+  handleSyncEventsClick,
+  queryState,
+  updateQueryState,
+  handleUpdate,
+}) {
   const jwt = auth.isAuthenticated();
   const classes = useStyles();
-  const [order, setOrder] = React.useState("desc");
-  const [orderBy, setOrderBy] = React.useState("created");
-  const [page, setPage] = React.useState(0);
-  const [dense, setDense] = React.useState(false);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
-  const [activeRows, setActiveRows] = React.useState([]);
-  const [currentPageRows, setCurrentPageRows] = React.useState([]);
-  const [sources, setSources] = React.useState([]);
-  const [openFilter, setOpenFilter] = React.useState(null);
-  const [showSourceSelect, setShowSourceSelect] = React.useState(false);
-  const [activeSources, setActiveSources] = React.useState([
-    "Zillow Flex",
-    "Zillow",
-  ]); // TODO - Change to
-  const [stages, setStages] = React.useState([]);
-  const [activeStages, setActiveStages] = React.useState([]);
-
-  const [updatingRow, setUpdatingRow] = React.useState(null);
-  const [stage, setStage] = React.useState("");
-
-  React.useEffect(() => {
-    const allSources = rows.map((row) => row.source).filter((x) => x);
-    const allStages = rows.map((row) => row.stage).filter((x) => x);
-    const uniqueSources = _.uniq(allSources);
-    const uniqueStages = _.uniq(allStages);
-    console.log(`sources:`);
-    console.log(uniqueSources);
-    console.log(`stages:`);
-    console.log(uniqueStages);
-
-    const rowsWithActiveSource = rows.filter((row) =>
-      activeSources.includes(row.source)
-    );
-    console.log(`rowsWithActiveStageAndSource`);
-    const rowsWithActiveStageAndSource = rowsWithActiveSource.filter((row) =>
-      uniqueStages.includes(row.stage)
-    );
-    console.log(rowsWithActiveStageAndSource);
-
-    const active = stableSort(
-      rowsWithActiveStageAndSource,
-      getComparator(order, orderBy)
-    ).slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-
-    setSources(uniqueSources);
-    setActiveRows(rowsWithActiveSource);
-    setStages(uniqueStages);
-    setActiveStages(uniqueStages);
-    setCurrentPageRows(active);
-  }, [rows, order]);
+  const [showSourceSelect, setShowSourceSelect] = useState(false);
+  const [updatingRow, setUpdatingRow] = useState(null);
+  const [status, setStatus] = useState("");
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [startDate, setStartDate] = useState(queryState.startDate);
+  const [endDate, setEndDate] = useState(queryState.endDate);
 
   const handleRequestSort = (event, property) => {
-    const isAsc = orderBy === property && order === "asc";
+    const isAsc = queryState.orderBy === property && queryState.order === "asc";
     const newOrder = isAsc ? "desc" : "asc";
     const newOrderBy = property;
-    const rowsWithActiveSource = rows.filter((row) =>
-      activeSources.includes(row.source)
-    );
-    const activeRows = stableSort(
-      rowsWithActiveSource,
-      getComparator(newOrder, newOrderBy)
-    );
-    setActiveRows(activeRows);
-    setCurrentPageRows(
-      activeRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-    );
-    setOrder(newOrder);
-    setOrderBy(newOrderBy);
+    handleUpdate(newOrder, "order");
+    handleUpdate(newOrderBy, "orderBy");
   };
 
-  const handleChangePage = (newPage) => {
-    setPage(newPage);
+  const handleDatesChange = (data, type) => {
+    switch (type) {
+      case "start":
+        if (endDate && data > endDate) {
+          createSnackbarAlert("Start date must come before end date");
+          return;
+        }
+        setStartDate(data);
+        break;
+      case "end":
+        if (startDate && data < startDate) {
+          createSnackbarAlert("End date must come after start date");
+          return;
+        }
+        setEndDate(data);
+        break;
+    }
+  };
+
+  const handleChangePage = (event, newPage) => {
+    handleUpdate(newPage, "page");
     const newActiveRows = activeRows.slice(
-      newPage * rowsPerPage,
-      newPage * rowsPerPage + rowsPerPage
+      newPage * queryState.pageSize,
+      newPage * queryState.pageSize + queryState.pageSize
     );
-    setCurrentPageRows(newActiveRows);
+    handleUpdate(newActiveRows, "currentPageRows");
   };
 
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+    const newRowsPerPage = parseInt(event.target.value, 10);
+    const newPage = 0;
+    const newActiveRows = activeRows.slice(
+      newPage * newRowsPerPage,
+      newPage * newRowsPerPage + newRowsPerPage
+    );
+    handleUpdate(newRowsPerPage, "pageSize");
+    handleUpdate(newActiveRows, "currentPageRows");
   };
 
-  const handleSourceFilterClick = () => {
-    if (openFilter === "source") {
-      setOpenFilter(null);
-    } else {
-      setOpenFilter("source");
+  const handleFilterClick = (type) => {
+    switch (type) {
+      case "source":
+        if (openFilter === "source") {
+          handleUpdate(null, "filter");
+        } else {
+          handleUpdate("source", "filter");
+        }
+        break;
+      case "status":
+        if (openFilter === "status") {
+          handleUpdate(null, "filter");
+        } else {
+          handleUpdate("status", "filter");
+        }
+        break;
+      default:
+        break;
     }
   };
 
-  const handleStageFilterClick = () => {
-    if (openFilter === "stage") {
-      setOpenFilter(null);
-    } else {
-      setOpenFilter("stage");
+  const handleSelect = (type, newValues) => {
+    switch (type) {
+      case "source":
+        handleUpdate(0, "page");
+        handleUpdate(newValues, "source");
+        break;
+      case "status":
+        handleUpdate(0, "page");
+        handleUpdate(newValues, "status");
+        break;
+      default:
+        break;
     }
-  };
-
-  const handleSelectAllSources = () => {
-    setActiveSources(sources);
-    setPage(0);
-
-    const rowsWithActiveSource = rows.filter((row) =>
-      sources.includes(row.source)
-    );
-    const rowsWithActiveStageAndSource = rowsWithActiveSource.filter((row) =>
-      activeStages.includes(row.stage)
-    );
-    const active = stableSort(
-      rowsWithActiveStageAndSource,
-      getComparator(order, orderBy)
-    ).slice(0, rowsPerPage);
-    setActiveRows(rowsWithActiveSource);
-    setCurrentPageRows(active);
-  };
-
-  const handleSelectAllStages = () => {
-    setActiveStages(stages);
-    setPage(0);
-
-    const rowsWithActiveStage = rows.filter((row) =>
-      stages.includes(row.stage)
-    );
-    const rowsWithActiveStageAndSource = rowsWithActiveStage.filter((row) =>
-      activeSources.includes(row.source)
-    );
-    const active = stableSort(
-      rowsWithActiveStageAndSource,
-      getComparator(order, orderBy)
-    ).slice(0, rowsPerPage);
-    setActiveRows(rowsWithActiveStage);
-    setCurrentPageRows(active);
-  };
-
-  const handleClearStages = () => {
-    setActiveStages([]);
-    setPage(0);
-    setActiveRows([]);
-    setCurrentPageRows([]);
-  };
-
-  const handleResetStage = () => {
-    setActiveStages(stages);
-    setPage(0);
-    // Extract property.street from property object (for sorting)
-    const rowsWithActiveStage = rows.filter((row) =>
-      activeStages.includes(row.stage)
-    );
-    const rowsWithActiveStageAndSource = rowsWithActiveStage.filter((row) =>
-      activeSources.includes(row.source)
-    );
-    const active = stableSort(
-      rowsWithActiveStageAndSource,
-      getComparator(order, orderBy)
-    ).slice(0, rowsPerPage);
-    setActiveRows(rowsWithActiveStage);
-    setCurrentPageRows(active);
-  };
-
-  const onClearSources = () => {
-    setActiveSources([]);
-    setPage(0);
-    setActiveRows([]);
-    setCurrentPageRows([]);
-  };
-
-  const onResetSources = () => {
-    const defaultSources = ["Zillow Flex"];
-    setActiveSources(defaultSources);
-    setPage(0);
-    // Extract property.street from property object (for sorting)
-
-    const rowsWithActiveSource = rows.filter((row) =>
-      defaultSources.includes(row.source)
-    );
-    const rowsWithActiveStageAndSource = rowsWithActiveStage.filter((row) =>
-      activeStages.includes(row.stage)
-    );
-    const active = stableSort(
-      rowsWithActiveStageAndSource,
-      getComparator(order, orderBy)
-    ).slice(0, rowsPerPage);
-    setActiveRows(rowsWithActiveSource);
-    setCurrentPageRows(active);
   };
 
   const emptyRows =
-    rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
+    queryState.Size -
+    Math.min(
+      queryState.pageSize,
+      activeRows.length - queryState.page * queryState.pageSize
+    );
 
-  const handleUpdateStageClick = (rowId, rowStage) => {
+  const handleUpdateStatusClick = (rowId, rowStatus) => {
     setUpdatingRow(rowId);
-    setStage(rowStage);
+    setStatus(rowStatus);
     setShowSourceSelect(!showSourceSelect);
   };
 
-  const handleStageSelectUpdate = (e) => {
-    setStage(e.target.value);
+  const handleStatusSelectUpdate = (e) => {
+    setStatus(e.target.value);
   };
 
-  const handleStageSelectSubmit = (rowId, stage, event) => {
+  const handleStatusSelectSubmit = (rowId, status, event) => {
     let eventCopy = event;
-    eventCopy.stage = stage;
-    // make a fetch to the API to update the stage for this lead
+    eventCopy.status = status;
+    // make a fetch to the API to update the status for this event
     update(
       {
         eventId: event._id,
@@ -565,89 +578,58 @@ export default function LeadsTable({ rows }) {
         t: jwt.token,
       },
       {
-        stage: stage,
+        status: status,
       }
     ).then((data) => {
       if (data && data.error) {
         console.log(data.error);
-        setStage(lead.stage);
+        setStatus(event.status);
         setUpdatingRow(null);
       } else {
         setUpdatingRow(null);
-        setStage(data.stage);
+        setStatus(data.status);
       }
     });
   };
 
   const handleCheckboxClick = (source) => {
     let newActiveSources;
-    if (activeSources.includes(source)) {
-      newActiveSources = activeSources.filter(
+    if (queryState.activeSources.includes(source)) {
+      newActiveSources = queryState.activeSources.filter(
         (activeSource) => activeSource != source
       );
     } else {
-      newActiveSources = [...activeSources, source];
+      newActiveSources = [...queryState.activeSources, source];
     }
-    setActiveSources(newActiveSources);
-    const rowsWithActiveSource = rows.filter((row) =>
-      newActiveSources.includes(row.source)
-    );
-    const newActiveRows = stableSort(
-      rowsWithActiveSource,
-      getComparator(order, orderBy)
-    );
-    const newPage = 0;
-    setActiveRows(newActiveRows);
-    setCurrentPageRows(
-      newActiveRows.slice(
-        newPage * rowsPerPage,
-        newPage * rowsPerPage + rowsPerPage
-      )
-    );
-    setPage(0);
+    handleUpdate(0, "page");
+    handleUpdate(newActiveSources, "source");
   };
 
-  const handleStageCheckboxClick = (stage) => {
-    let newActiveStages;
-    if (activeStages.includes(stage)) {
-      newActiveStages = activeStages.filter(
-        (activeStage) => activeStage != stage
+  const handleStatusCheckboxClick = (status) => {
+    let newActiveStatuses;
+    if (queryState.activeStatuses.includes(status)) {
+      newActiveStatuses = queryState.activeStatuses.filter(
+        (activeStatus) => activeStatus != status
       );
     } else {
-      newActiveStages = [...activeStages, stage];
+      newActiveStatuses = [...queryState.activeStatuses, status];
     }
-    setActiveStages(newActiveStages);
-    const rowsWithActiveStage = rows.filter((row) =>
-      newActiveStages.includes(row.stage)
-    );
-    const newActiveRows = stableSort(
-      rowsWithActiveStage,
-      getComparator(order, orderBy)
-    );
-    const newPage = 0;
-    setActiveRows(newActiveRows);
-    setCurrentPageRows(
-      newActiveRows.slice(
-        newPage * rowsPerPage,
-        newPage * rowsPerPage + rowsPerPage
-      )
-    );
-    setPage(0);
+    handleUpdate(0, "page");
+    handleUpdate(newActiveStatuses, "status");
   };
 
-  // source row
   const data = (row) => {
     if (showSourceSelect && updatingRow && row._id === updatingRow) {
       return (
         <>
           <Select
-            labelId="stage-select"
-            id={`stage_select_${row._id}`}
-            value={stage}
+            labelId="status-select"
+            id={`status_select_${row._id}`}
+            value={status}
             key={`select_${row._id}`}
-            onChange={(e) => handleStageSelectUpdate(e)}
+            onChange={(e) => handleStatusSelectUpdate(e)}
           >
-            {options.zillowStages.map((option) => (
+            {options.map((option) => (
               <MenuItem key={option} value={option}>
                 {option}
               </MenuItem>
@@ -656,14 +638,14 @@ export default function LeadsTable({ rows }) {
           <IconButton
             aria-label="save"
             color="primary"
-            onClick={() => handleStageSelectSubmit(row._id, stage, row)}
+            onClick={() => handleStatusSelectSubmit(row._id, status, row)}
           >
             <Check />
           </IconButton>
           <IconButton
             aria-label="cancel"
             color="primary"
-            onClick={() => handleUpdateStageClick(row._id, stage)}
+            onClick={() => handleUpdateStatusClick(row._id, status)}
           >
             <Cancel />
           </IconButton>
@@ -672,10 +654,10 @@ export default function LeadsTable({ rows }) {
     } else {
       return (
         <Button
-          key={`stage_button_${row._id}`}
-          onClick={() => handleUpdateStageClick(row._id, row.stage)}
+          key={`status_button_${row._id}`}
+          onClick={() => handleUpdateStatusClick(row._id, row.status)}
         >
-          {row.stage}
+          {row.status}
           <Edit key={`edit_icon_${row._id}`} />
         </Button>
       );
@@ -685,37 +667,56 @@ export default function LeadsTable({ rows }) {
   return (
     <div className={classes.root}>
       <Paper className={classes.paper}>
-        <EnhancedTableToolbar rows={rows} />
+        <EnhancedTableToolbar
+          rows={activeRows}
+          showDatePicker={showDatePicker}
+          setShowDatePicker={setShowDatePicker}
+          startDate={startDate}
+          endDate={endDate}
+          handleDatesChange={handleDatesChange}
+          setStartDate={setStartDate}
+          setEndDate={setEndDate}
+          createSnackbarAlert={createSnackbarAlert}
+          handleSyncEventsClick={handleSyncEventsClick}
+          queryState={queryState}
+          updateQueryState={updateQueryState}
+          handleUpdate={handleUpdate}
+        />
 
         <TableContainer>
           <Table
             className={classes.table}
             aria-labelledby="tableTitle"
-            size={dense ? "small" : "medium"}
+            size={"medium"}
             aria-label="enhanced table"
           >
             <EnhancedTableHead
               classes={classes}
-              order={order}
-              orderBy={orderBy}
+              queryState={queryState}
               onRequestSort={handleRequestSort}
-              onSourceFilterClick={handleSourceFilterClick}
+              onSourceFilterClick={() => handleFilterClick("source")}
               openFilter={openFilter}
               sources={sources}
-              activeSources={activeSources}
-              stages={stages}
-              activeStages={activeStages}
+              statuses={statuses}
               onCheckboxClick={handleCheckboxClick}
-              onStageCheckboxClick={handleStageCheckboxClick}
-              onSelectAllSources={handleSelectAllSources}
-              onClearSources={onClearSources}
-              onResetSources={onResetSources}
-              onStageFilterClick={handleStageFilterClick}
-              onSelectAllStages={handleSelectAllStages}
-              onClearStages={handleClearStages}
-              onResetStage={handleResetStage}
+              onStatusCheckboxClick={handleStatusCheckboxClick}
+              onSelectAllSources={() => handleSelect("source", sources)}
+              onClearSources={() => handleSelect("source", [])}
+              onResetSources={() => handleSelect("source", sources)}
+              onStatusFilterClick={() => handleFilterClick("status")}
+              onSelectAllStatuses={() => handleSelect("status", statuses)}
+              onClearStatuses={() => handleSelect("status", [])}
+              onResetStatuses={() => handleSelect("status", statuses)}
             />
+
             <TableBody>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell>
+                    <h2>Loading...</h2>
+                  </TableCell>
+                </TableRow>
+              ) : null}
               {currentPageRows.map((row, index) => {
                 const labelId = `enhanced-table-checkbox-${index}`;
 
@@ -728,26 +729,29 @@ export default function LeadsTable({ rows }) {
                       align={"center"}
                       padding={"normal"}
                     >
-                      {row.name ? row.name : `${row.firstName} ${row.lastName}`}
+                      {row.property ? row.property.street : ""}
                     </TableCell>
                     <TableCell align={"center"} padding={"normal"}>
                       {`${new Date(row.created).toDateString()} ${new Date(
                         row.created
                       ).toLocaleTimeString()}`}
                     </TableCell>
-
+                    <TableCell align={"center"} padding={"normal"}>
+                      {row.source}
+                    </TableCell>
                     <TableCell align={"center"} padding={"normal"}>
                       {data(row)}
                     </TableCell>
                     <TableCell align={"center"} padding={"normal"}>
-                      {row.stage}
+                      {row.isPossibleZillowExemption ? "YES" : "NO"}
                     </TableCell>
                     <TableCell align={"center"} padding={"normal"}>
-                      {row.zillowStage}
-                    </TableCell>
-                    <TableCell align={"center"} padding={"normal"}>
-                      <Link to={"/lead/" + row._id} key={row._id}>
-                        <IconButton>
+                      <Link to={"/event/" + row._id} key={row._id}>
+                        <IconButton
+                          color="primary"
+                          variant="contained"
+                          className={classes.button}
+                        >
                           <ArrowForward />
                         </IconButton>
                       </Link>
@@ -756,7 +760,7 @@ export default function LeadsTable({ rows }) {
                 );
               })}
               {emptyRows > 0 && (
-                <TableRow style={{ height: (dense ? 33 : 53) * emptyRows }}>
+                <TableRow style={{ height: 53 * emptyRows }}>
                   <TableCell colSpan={6} />
                 </TableRow>
               )}
@@ -767,10 +771,10 @@ export default function LeadsTable({ rows }) {
           rowsPerPageOptions={[5, 10, 25, 50, 100]}
           component="div"
           count={activeRows.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onChangePage={handleChangePage}
-          onChangeRowsPerPage={handleChangeRowsPerPage}
+          rowsPerPage={queryState.pageSize}
+          page={queryState.page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
     </div>
