@@ -11,8 +11,20 @@ import Profile from "./user/Profile";
 import PrivateRoute from "./auth/PrivateRoute";
 import Menu from "./core/Menu";
 import zillowStatusOptions from "../lib/constants";
+import zillowStageOptions from "../lib/zillowStageOptions";
 
 const initialEventSearchState = {
+  page: 0,
+  pageSize: 10,
+  activeSources: ["Zillow Flex"],
+  activeStatuses: zillowStatusOptions,
+  order: "desc",
+  orderBy: "created",
+  startDate: null,
+  endDate: null,
+};
+
+const initialLeadSearchState = {
   page: 0,
   pageSize: 10,
   activeSources: ["Zillow Flex"],
@@ -26,6 +38,9 @@ const initialEventSearchState = {
 const MainRouter = () => {
   const [eventSearchState, setEventSearchState] = useState(
     initialEventSearchState
+  );
+  const [leadSearchState, setLeadSearchState] = useState(
+    initialLeadSearchState
   );
 
   return (
@@ -43,7 +58,16 @@ const MainRouter = () => {
             />
           )}
         />
-        <Route path="/leads" component={Leads} />
+        <Route
+          path="/leads"
+          render={(props) => (
+            <Leads
+              {...props}
+              queryState={leadSearchState}
+              setQueryState={setLeadSearchState}
+            />
+          )}
+        />
         <Route path="/users" component={Users} />
         <Route path="/signup" component={Signup} />
         <Route path="/signin" component={Signin} />
