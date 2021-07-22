@@ -1,5 +1,5 @@
 ## Contributions
-- Initial code came from https://github.com/shamahoque/mern-skeleton, props to Shama Hoque
+- MERN skeleton code came from https://github.com/shamahoque/mern-skeleton, props to Shama Hoque
 
 ## Run 
 - To run the project, first define all the required env vars in a `.env` at the root of the project directory:
