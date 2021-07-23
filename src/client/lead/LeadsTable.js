@@ -64,7 +64,7 @@ const headCells = [
     id: "exemption",
     numeric: false,
     disablePadding: false,
-    label: "Possible Zillow Flex / Trulia exemption?",
+    label: "Possible Zillow Flex exemption?",
   },
   { id: "more", numeric: true, disablePadding: false, label: "More" },
 ];

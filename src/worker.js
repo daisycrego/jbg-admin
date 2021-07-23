@@ -108,20 +108,14 @@ function start() {
             ? true
             : false;
 
-          const isTruliaEvent = eventData.source
-            .toLowerCase()
-            .includes("trulia")
-            ? true
-            : false;
-
-          if ((isZillowFlexEvent || isTruliaEvent) && !isNewLead) {
+          if (isZillowFlexEvent && !isNewLead) {
             console.log(
-              `Possible Zillow Flex or Trulia Exemption -> Sending email alert`
+              `Possible Zillow Flex Exemption -> Sending email alert`
             );
 
             isPossibleZillowExemption = true;
 
-            const text = `Possible Zillow Flex or Trulia Exemption Identified
+            const text = `Possible Zillow Flex Exemption Identified
                 Zillow Property URL: ${eventData.property.url}
                 FUB URL: https://jillkbiggs.followupboss.com/2/people/view/${eventData.personId}
                 Zillow Premier Agent URL: ${personData.sourceUrl}
@@ -161,7 +155,7 @@ function start() {
 
             const html = `
             <div>
-                <h2> Possible Zillow Flex or Trulia Exemption Identified </h2>
+                <h2> Possible Zillow Flex Exemption Identified </h2>
                 <p> Zillow Property URL: ${eventData.property.url} </p>
                 <p> FUB URL: https://jillkbiggs.followupboss.com/2/people/view/${eventData.personId} </p>
                 <p> Zillow Premier Agent URL: ${personData.sourceUrl} </p>
@@ -204,7 +198,7 @@ function start() {
               let info = await transporter.sendMail({
                 from: '"cregodev7@gmail.com', // sender address
                 to: "daisycrego@gmail.com, cregodev7@gmail.com, dan@jillbiggsgroup.com, support@jillbiggsgroup.com", // list of receivers
-                subject: "Possible Zillow Flex or Trulia Exemption", // Subject line
+                subject: "Possible Zillow Flex", // Subject line
                 text: text, // plain text body
                 html: html, // html body
               });
@@ -214,7 +208,7 @@ function start() {
           } else {
             isPossibleZillowExemption = false;
             console.log(
-              `No Zillow/Trulia Exemption identified, still saving the event data.`
+              `No Zillow Exemption identified, still saving the event data.`
             );
           }
 
