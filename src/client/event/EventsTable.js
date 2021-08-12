@@ -19,6 +19,7 @@ import {
   Select,
   MenuItem,
   Box,
+  Tooltip,
 } from "@material-ui/core";
 import {
   Edit,
@@ -635,31 +636,37 @@ export default function EventsTable({
               </MenuItem>
             ))}
           </Select>
-          <IconButton
-            aria-label="save"
-            color="primary"
-            onClick={() => handleStatusSelectSubmit(row._id, status, row)}
-          >
-            <Check />
-          </IconButton>
-          <IconButton
-            aria-label="cancel"
-            color="primary"
-            onClick={() => handleUpdateStatusClick(row._id, status)}
-          >
-            <Cancel />
-          </IconButton>
+          <Tooltip title="Save changes">
+            <IconButton
+              aria-label="save"
+              color="primary"
+              onClick={() => handleStatusSelectSubmit(row._id, status, row)}
+            >
+              <Check />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Cancel changes">
+            <IconButton
+              aria-label="cancel"
+              color="primary"
+              onClick={() => handleUpdateStatusClick(row._id, status)}
+            >
+              <Cancel />
+            </IconButton>
+          </Tooltip>
         </>
       );
     } else {
       return (
-        <Button
-          key={`status_button_${row._id}`}
-          onClick={() => handleUpdateStatusClick(row._id, row.status)}
-        >
-          {row.status}
-          <Edit key={`edit_icon_${row._id}`} />
-        </Button>
+        <Tooltip title="Update status">
+          <Button
+            key={`status_button_${row._id}`}
+            onClick={() => handleUpdateStatusClick(row._id, row.status)}
+          >
+            {row.status}
+            <Edit key={`edit_icon_${row._id}`} />
+          </Button>
+        </Tooltip>
       );
     }
   };
@@ -746,15 +753,17 @@ export default function EventsTable({
                       {row.isPossibleZillowExemption ? "YES" : "NO"}
                     </TableCell>
                     <TableCell align={"center"} padding={"normal"}>
-                      <Link to={"/event/" + row._id} key={row._id}>
-                        <IconButton
-                          color="primary"
-                          variant="contained"
-                          className={classes.button}
-                        >
-                          <ArrowForward />
-                        </IconButton>
-                      </Link>
+                      <Tooltip title="More data">
+                        <Link to={"/event/" + row._id} key={row._id}>
+                          <IconButton
+                            color="primary"
+                            variant="contained"
+                            className={classes.button}
+                          >
+                            <ArrowForward />
+                          </IconButton>
+                        </Link>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
                 );

@@ -58,8 +58,8 @@ const read = (req, res) => {
 };
 
 const list = async (req, res) => {
-  const activeSources = req.body.activeSources;
-  const activeStatuses = req.body.activeStatuses;
+  const activeSources = req.body.categories.sources.active;
+  const activeStatuses = req.body.categories.statuses.active;
   const startDate = req.body.startDate;
   const endDate = req.body.endDate;
 
@@ -90,12 +90,54 @@ const list = async (req, res) => {
         created: order === "desc" ? -1 : 1,
       });
     } else {
-      events = await Event.find({
-        source: activeSources,
-        status: activeStatuses,
-      }).sort({
-        created: order === "desc" ? -1 : 1,
-      });
+      let queryObj;
+      if (
+        activeSources &&
+        activeStatuses &&
+        activeSources.length &&
+        activeStatuses.length
+      ) {
+        queryObj = {
+          source: activeSources,
+          status: activeStatuses,
+        };
+      } else if (activeSources && activeSources.length) {
+        queryObj = {
+          source: activeSources,
+          status: [],
+        };
+      } else if (activeStatuses && activeStatuses.length) {
+        queryObj = {
+          status: activeStatuses,
+          source: [],
+        };
+      } else {
+        queryObj = {
+          status: [],
+          source: [],
+        };
+      }
+
+      console.log(`events api`);
+      console.log(`queryObj`);
+      console.log(queryObj);
+
+      const searchText = req.body.searchText;
+      if (searchText) {
+        queryObj = {
+          ...queryObj,
+          "property.street": searchText ? searchText.trim() : "",
+        };
+        events = await Event.find(queryObj)
+          .find()
+          .sort({
+            created: order === "desc" ? -1 : 1,
+          });
+      } else {
+        events = await Event.find(queryObj).sort({
+          created: order === "desc" ? -1 : 1,
+        });
+      }
     }
 
     const allSources = await Event.distinct("source");

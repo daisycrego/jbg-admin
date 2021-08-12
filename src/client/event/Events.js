@@ -163,7 +163,7 @@ export default function Events({ queryState, setQueryState }) {
         setQueryState({ ...queryState, page: newData });
         break;
       case "pageSize":
-        setQueryState({ ...queryState, pageSize: newData });
+        setQueryState({ ...queryState, pageSize: newData, page: 0 });
         break;
       case "source":
         setQueryState({ ...queryState, activeSources: newData, page: 0 });
