@@ -120,12 +120,6 @@ export default function Event({ match }) {
             primary={"Created:"} secondary={new Date(event.created).toDateString()}
           />
         </ListItem>
-        <ListItem style={{ wordWrap: "break-word" }} >
-          <ListItemText
-            primary={"Raw JSON:"} secondary={<pre>{JSON.stringify(event, undefined, 2)}</pre>}
-          />
-        
-        </ListItem>
       </List>
     </Paper>
     </>
