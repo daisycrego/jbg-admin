@@ -2,7 +2,7 @@ const fetch = require("node-fetch");
 
 const list = async (signal, options) => {
   try {
-    let response = await fetch(`/api/events/search`, {
+    let response = await fetch(`/api/leads/search`, {
       method: "POST",
       signal: signal,
       body: JSON.stringify(options),
@@ -17,7 +17,7 @@ const list = async (signal, options) => {
 const update = async (params, credentials, event) => {
   try {
     // add userId as a parameter or somehow access userId from the route!
-    let response = await fetch(`/api/event/${params.eventId}`, {
+    let response = await fetch(`/api/lead/${params.leadId}`, {
       method: "PUT",
       headers: {
         Accept: "application/json",
@@ -34,7 +34,7 @@ const update = async (params, credentials, event) => {
 
 const read = async (params, credentials, signal) => {
   try {
-    let response = await fetch("/api/event/" + params.eventId, {
+    let response = await fetch("/api/lead/" + params.leadId, {
       method: "GET",
       signal: signal,
       headers: {
@@ -51,7 +51,7 @@ const read = async (params, credentials, signal) => {
 
 const sync_leads = async (credentials, signal) => {
   try {
-    let response = await fetch("/api/events/sync", {
+    let response = await fetch("/api/leads/sync", {
       method: "GET",
       signal: signal,
       headers: {

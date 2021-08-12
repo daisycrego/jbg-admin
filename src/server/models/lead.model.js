@@ -1,18 +1,14 @@
 const mongoose = require("mongoose");
-const zillowStageOptions = require("../../lib/zillowStageOptions");
+//const { zillowStageOptions } = require("../../lib/constants");
 const LeadSchema = new mongoose.Schema({
-  personId: {
-    type: String,
+  id: {
+    type: Number,
     required: false,
   },
   updated: Date,
   created: {
     type: Date,
     default: Date.now,
-  },
-  createdVia: {
-    type: String,
-    required: false,
   },
   name: {
     type: String,
@@ -38,16 +34,8 @@ const LeadSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-  stageId: {
-    type: Number,
-    required: false,
-  },
   source: {
     type: String,
-    required: false,
-  },
-  sourceId: {
-    type: Number,
     required: false,
   },
   sourceUrl: {
@@ -59,10 +47,6 @@ const LeadSchema = new mongoose.Schema({
     required: false,
   },
   contacted: {
-    type: Number,
-    required: false,
-  },
-  price: {
     type: Number,
     required: false,
   },
@@ -152,9 +136,17 @@ const LeadSchema = new mongoose.Schema({
   },
   zillowStage: {
     type: String,
-    enum: zillowStageOptions,
     required: false,
-    default: "No stage",
+    default: null,
+  },
+  processed: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
+  processedAt: {
+    type: Date,
+    required: false,
   },
 });
 module.exports = mongoose.model("Lead", LeadSchema);

@@ -24,7 +24,7 @@ import theme from "./../client/theme";
 //comment out before building for production
 import devBundle from "./devBundle";
 
-import { setupEventsWebhook } from "./webhooks";
+import { setupWebhooks } from "./webhooks";
 let Queue = require("bull");
 
 const CURRENT_WORKING_DIR = process.cwd();
@@ -84,7 +84,7 @@ workQueue.on("global:completed", (jobId, result) => {
 });
 
 // set up `eventsCreated` FUB webhook if it doesn't exist
-setupEventsWebhook();
+setupWebhooks();
 
 app.get("*", (req, res) => {
   const sheets = new ServerStyleSheets();

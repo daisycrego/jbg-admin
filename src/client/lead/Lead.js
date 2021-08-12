@@ -14,7 +14,7 @@ import {
   Divider,
 } from "@material-ui/core";
 import {
-  Event as EventIcon,
+  Person as PersonIcon,
   ArrowBack as ArrowBackIcon,
 } from "@material-ui/icons";
 
@@ -36,7 +36,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Lead({ match }) {
   const classes = useStyles();
-  const [event, setEvent] = useState({});
+  const [lead, setLead] = useState({});
   const [redirectToSignin, setRedirectToSignin] = useState(false);
   const [redirectToEvents, setRedirectToEvents] = useState(false);
   const jwt = auth.isAuthenticated();
@@ -44,10 +44,9 @@ export default function Lead({ match }) {
   useEffect(() => {
     const abortController = new AbortController();
     const signal = abortController.signal;
-
     read(
       {
-        eventId: match.params.eventId,
+        leadId: match.params.leadId,
       },
       { t: jwt.token },
       signal
@@ -55,18 +54,18 @@ export default function Lead({ match }) {
       if (data && data.error) {
         setRedirectToSignin(true);
       } else {
-        data.message = data.message.match(/.{1,50}/g);
+        //data.message = data.message.match(/.{1,50}/g);
         if (data.property && data.property.url) {
           data.property.url = data.property.url.match(/.{1,50}/g);
         }
-        setEvent(data);
+        setLead(data);
       }
     });
 
     return function cleanup() {
       abortController.abort();
     };
-  }, [match.params.eventId]);
+  }, [match.params.leadId]);
 
   const handleReturnToSearch = () => {
     setRedirectToEvents(true);
@@ -75,7 +74,7 @@ export default function Lead({ match }) {
   if (redirectToSignin) {
     return <Redirect to="/signin" />;
   } else if (redirectToEvents) {
-    return <Redirect to="/" />;
+    return <Redirect to="/leads" />;
   }
   // prettier-ignore
   return (
@@ -90,41 +89,46 @@ export default function Lead({ match }) {
       Back to search results</Button>
     <Paper className={classes.root} elevation={4}>
       <Typography variant="h6" className={classes.title}>
-        Event
+        Lead
       </Typography>
       <List dense>
         <ListItem>
           <ListItemAvatar>
             <Avatar>
-              <EventIcon />
+              <PersonIcon />
             </Avatar>
           </ListItemAvatar>
-          <ListItemText primary={event.name} secondary={event.name} />{" "}
+          <ListItemText primary={lead.name} secondary={lead.name} />{" "}
         </ListItem>
         <Divider />
         <ListItem>
-          <ListItemText primary={`ID (FUB)`} secondary={event._id} />
+          <ListItemText primary={`ID (FUB)`} secondary={lead._id} />
         </ListItem>
         <ListItem>
-          <ListItemText primary={`Person ID:`} secondary={event.personId} />
+          <ListItemText primary={`Phone #1:`} secondary={lead.phones && lead.phones.length ? lead.phones[0].value : ''} />
         </ListItem>
         <ListItem>
-          <ListItemText primary={`Property URL:`} secondary={<a target="_blank" href={event.property?.url}>{event.property?.url}</a>}/>
+          <ListItemText primary={`Email #1:`} secondary={lead.emails && lead.emails.length ? lead.emails[0].value : ''} />
         </ListItem>
         <ListItem>
-          <ListItemText primary={`Message:`} secondary={event.message} />
+          <ListItemText primary={`Address #1:`} secondary={lead.addresses && lead.addresses.length ? lead.addresses[0].value : ''} />
         </ListItem>
-
+        <ListItem>
+          <ListItemText primary={`FUB Stage:`} secondary={lead.stage} />
+        </ListItem>
+        <ListItem>
+          <ListItemText primary={`Zillow Stage:`} secondary={lead.zillowStage} />
+        </ListItem>
+        <ListItem>
+          <ListItemText primary={`Source:`} secondary={lead.source}/>
+        </ListItem>
+        <ListItem>
+          <ListItemText primary={`Source URL:`} secondary={lead.sourceUrl ? <a target="_blank" href={lead.sourceUrl}>{lead.sourceUrl}</a> : ''}/>
+        </ListItem>
         <ListItem>
           <ListItemText
-            primary={"Created:"} secondary={new Date(event.created).toDateString()}
+            primary={"Created:"} secondary={new Date(lead.created).toDateString()}
           />
-        </ListItem>
-        <ListItem style={{ wordWrap: "break-word" }} >
-          <ListItemText
-            primary={"Raw JSON:"} secondary={<pre>{JSON.stringify(event, undefined, 2)}</pre>}
-          />
-        
         </ListItem>
       </List>
     </Paper>

@@ -19,6 +19,7 @@ import {
   Select,
   MenuItem,
   Box,
+  Tooltip,
 } from "@material-ui/core";
 import {
   Edit,
@@ -39,32 +40,45 @@ import {
   ExpandLess,
   EventAvailable,
   ArrowRightAlt,
+  Delete,
 } from "@material-ui/icons";
+
 import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
 import LuxonUtils from "@date-io/luxon"; // peer date library for MUI date picker
 import _ from "lodash";
 import { CSVLink } from "react-csv";
 
-import options from "../../lib/constants";
 import { update } from "./api-lead";
 import auth from "./../auth/auth-helper";
-import { CSVParser } from "../../lib/csvParser";
+import { LeadCSVParser } from "../../lib/leadCsvParser";
 
 const headCells = [
   {
-    id: "propertyStreet",
+    id: "name",
     numeric: false,
     disablePadding: true,
-    label: "Property address",
+    label: "Name",
+  },
+  {
+    id: "phone",
+    numeric: false,
+    disablePadding: true,
+    label: "Phone",
+  },
+  {
+    id: "email",
+    numeric: false,
+    disablePadding: true,
+    label: "Email",
   },
   { id: "created", numeric: true, disablePadding: false, label: "Created" },
   { id: "source", numeric: true, disablePadding: false, label: "Source" },
-  { id: "status", numeric: true, disablePadding: false, label: "Status" },
+  { id: "fubStage", numeric: true, disablePadding: false, label: "FUB Stage" },
   {
-    id: "exemption",
-    numeric: false,
+    id: "zillowStage",
+    numeric: true,
     disablePadding: false,
-    label: "Possible Zillow Flex exemption?",
+    label: "Zillow Stage",
   },
   { id: "more", numeric: true, disablePadding: false, label: "More" },
 ];
@@ -75,17 +89,24 @@ function EnhancedTableHead(props) {
     onRequestSort,
     openFilter,
     onSourceFilterClick,
-    onStatusFilterClick,
+    onZillowStageFilterClick,
+    onFubStageFilterClick,
     onSelectAllSources,
     onClearSources,
     onResetSources,
     sources,
-    statuses,
+    fubStages,
+    zillowStages,
+    zillowStageOptions,
     onCheckboxClick,
-    onSelectAllStatuses,
-    onClearStatuses,
-    onResetStatuses,
-    onStatusCheckboxClick,
+    onSelectAllFubStages,
+    onSelectAllZillowStages,
+    onClearFubStages,
+    onClearZillowStages,
+    onResetFubStages,
+    onResetZillowStages,
+    onFubStageCheckboxClick,
+    onZillowStageCheckboxClick,
     queryState,
     updateQueryState,
   } = props;
@@ -105,7 +126,7 @@ function EnhancedTableHead(props) {
               queryState.orderBy === headCell.id ? queryState.order : false
             }
           >
-            {["propertyStreet", "created"].includes(headCell.id) ? (
+            {["created"].includes(headCell.id) ? (
               <TableSortLabel
                 direction={
                   queryState.orderBy === headCell.id ? queryState.order : "asc"
@@ -125,17 +146,6 @@ function EnhancedTableHead(props) {
               headCell.label
             )}
 
-            {headCell.id === "status" &&
-              (!openFilter || openFilter !== "status") && (
-                <Button onClick={onStatusFilterClick}>
-                  <ArrowDropDown />
-                </Button>
-              )}
-            {headCell.id === "status" && openFilter === "status" && (
-              <Button onClick={onStatusFilterClick}>
-                <ArrowDropUp />
-              </Button>
-            )}
             {headCell.id === "source" &&
               (!openFilter || openFilter !== "source") && (
                 <Button onClick={onSourceFilterClick}>
@@ -182,39 +192,102 @@ function EnhancedTableHead(props) {
                 )}
               </Box>
             )}
-            {headCell.id === "status" && openFilter === "status" && (
+            {headCell.id === "fubStage" &&
+              (!openFilter || openFilter !== "fubStage") && (
+                <Button onClick={onFubStageFilterClick}>
+                  <ArrowDropDown />
+                </Button>
+              )}
+            {headCell.id === "fubStage" && openFilter === "fubStage" && (
+              <Button onClick={onFubStageFilterClick}>
+                <ArrowDropUp />
+              </Button>
+            )}
+            {headCell.id === "fubStage" && openFilter === "fubStage" && (
               <Box border={1}>
-                {headCell.id === "status" && openFilter === "status" && (
+                {headCell.id === "fubStage" && openFilter === "fubStage" && (
                   <>
-                    <IconButton onClick={() => onSelectAllStatuses(true)}>
+                    <IconButton onClick={() => onSelectAllFubStages(true)}>
                       <DoneAll />
                     </IconButton>
-                    <IconButton onClick={() => onClearStatuses(false)}>
+                    <IconButton onClick={() => onClearFubStages(false)}>
                       <ClearAll />
                     </IconButton>
-                    <IconButton onClick={() => onResetStatuses(null)}>
+                    <IconButton onClick={() => onResetFubStages(null)}>
                       <Refresh />
                     </IconButton>
                   </>
                 )}
-                {headCell.id === "status" && openFilter === "status" && (
+                {headCell.id === "fubStage" && openFilter === "fubStage" && (
                   <ul className={classes.listItem}>
-                    {statuses.map((status) => (
-                      <li key={status}>
-                        {queryState.activeStatuses.includes(status) ? (
+                    {fubStages.map((stage) => (
+                      <li key={stage}>
+                        {queryState.activeFubStages &&
+                        queryState.activeFubStages.includes(stage) ? (
                           <IconButton
-                            onClick={() => onStatusCheckboxClick(status)}
+                            onClick={() => onFubStageCheckboxClick(stage)}
                           >
                             <CheckBox />
                           </IconButton>
                         ) : (
                           <IconButton
-                            onClick={() => onStatusCheckboxClick(status)}
+                            onClick={() => onFubStageCheckboxClick(stage)}
                           >
                             <CheckBoxOutlineBlank />
                           </IconButton>
                         )}
-                        {status}
+                        {stage}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Box>
+            )}
+            {headCell.id === "zillowStage" &&
+              (!openFilter || openFilter !== "zillowStage") && (
+                <Button onClick={onZillowStageFilterClick}>
+                  <ArrowDropDown />
+                </Button>
+              )}
+            {headCell.id === "zillowStage" && openFilter === "zillowStage" && (
+              <Button onClick={onZillowStageFilterClick}>
+                <ArrowDropUp />
+              </Button>
+            )}
+            {headCell.id === "zillowStage" && openFilter === "zillowStage" && (
+              <Box border={1}>
+                {headCell.id === "zillowStage" && openFilter === "zillowStage" && (
+                  <>
+                    <IconButton onClick={() => onSelectAllZillowStages(true)}>
+                      <DoneAll />
+                    </IconButton>
+                    <IconButton onClick={() => onClearZillowStages(false)}>
+                      <ClearAll />
+                    </IconButton>
+                    <IconButton onClick={() => onResetZillowStages(null)}>
+                      <Refresh />
+                    </IconButton>
+                  </>
+                )}
+                {headCell.id === "zillowStage" && openFilter === "zillowStage" && (
+                  <ul className={classes.listItem}>
+                    {zillowStages.map((stage) => (
+                      <li key={stage}>
+                        {queryState.activeZillowStages &&
+                        queryState.activeZillowStages.includes(stage) ? (
+                          <IconButton
+                            onClick={() => onZillowStageCheckboxClick(stage)}
+                          >
+                            <CheckBox />
+                          </IconButton>
+                        ) : (
+                          <IconButton
+                            onClick={() => onZillowStageCheckboxClick(stage)}
+                          >
+                            <CheckBoxOutlineBlank />
+                          </IconButton>
+                        )}
+                        {stage}
                       </li>
                     ))}
                   </ul>
@@ -260,7 +333,7 @@ const useToolbarStyles = makeStyles((theme) => ({
 const EnhancedTableToolbar = (props) => {
   const classes = useToolbarStyles();
 
-  const csv = CSVParser.generateCSV(props.rows);
+  const csv = LeadCSVParser.generateCSV(props.rows);
 
   return (
     <Toolbar>
@@ -272,7 +345,7 @@ const EnhancedTableToolbar = (props) => {
             id="tableTitle"
             component="div"
           >
-            Follow-Up Boss Events
+            Follow-Up Boss Leads
           </Typography>
           <>
             {props.showDatePicker ? (
@@ -404,9 +477,9 @@ const EnhancedTableToolbar = (props) => {
             color="primary"
             className={classes.button}
             startIcon={<Sync />}
-            onClick={props.handleSyncEventsClick}
+            onClick={props.handleSyncLeadsClick}
           >
-            Sync Events
+            Sync Leads
           </Button>
         </>
       }
@@ -448,11 +521,13 @@ export default function LeadsTable({
   activeRows,
   currentPageRows,
   sources,
-  statuses,
+  fubStages,
+  zillowStages,
+  zillowStageOptions,
   isLoading,
   openFilter,
   createSnackbarAlert,
-  handleSyncEventsClick,
+  handleSyncLeadsClick,
   queryState,
   updateQueryState,
   handleUpdate,
@@ -461,7 +536,9 @@ export default function LeadsTable({
   const classes = useStyles();
   const [showSourceSelect, setShowSourceSelect] = useState(false);
   const [updatingRow, setUpdatingRow] = useState(null);
-  const [status, setStatus] = useState("");
+  const [updatingStage, setUpdatingStage] = useState(null);
+  const [zillowStage, setZillowStage] = useState("");
+  const [fubStage, setFubStage] = useState("");
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [startDate, setStartDate] = useState(queryState.startDate);
   const [endDate, setEndDate] = useState(queryState.endDate);
@@ -522,11 +599,18 @@ export default function LeadsTable({
           handleUpdate("source", "filter");
         }
         break;
-      case "status":
-        if (openFilter === "status") {
+      case "fubStage":
+        if (openFilter === "fubStage") {
           handleUpdate(null, "filter");
         } else {
-          handleUpdate("status", "filter");
+          handleUpdate("fubStage", "filter");
+        }
+        break;
+      case "zillowStage":
+        if (openFilter === "zillowStage") {
+          handleUpdate(null, "filter");
+        } else {
+          handleUpdate("zillowStage", "filter");
         }
         break;
       default:
@@ -540,9 +624,13 @@ export default function LeadsTable({
         handleUpdate(0, "page");
         handleUpdate(newValues, "source");
         break;
-      case "status":
+      case "fub_stage":
         handleUpdate(0, "page");
-        handleUpdate(newValues, "status");
+        handleUpdate(newValues, "fubStage");
+        break;
+      case "zillow_stage":
+        handleUpdate(0, "page");
+        handleUpdate(newValues, "zillowStage");
         break;
       default:
         break;
@@ -553,43 +641,108 @@ export default function LeadsTable({
     queryState.Size -
     Math.min(
       queryState.pageSize,
-      activeRows.length - queryState.page * queryState.pageSize
+      activeRows ? activeRows.length : 0 - queryState.page * queryState.pageSize
     );
 
-  const handleUpdateStatusClick = (rowId, rowStatus) => {
-    setUpdatingRow(rowId);
-    setStatus(rowStatus);
-    setShowSourceSelect(!showSourceSelect);
+  const handleUpdateStageClick = (rowId, rowStatus, stageType) => {
+    console.log(`handleUpdateStageClick`);
+    if (rowId === updatingRow && rowStatus === updatingStage) {
+      return;
+    }
+
+    console.log(`rowId: ${rowId}`);
+    console.log(`rowStatus: ${rowStatus}`);
+    console.log(`stageType: ${stageType}`);
+    switch (stageType) {
+      case "fub":
+        setUpdatingRow(rowId);
+        setUpdatingStage("fub");
+        setFubStage(rowStatus);
+        setShowSourceSelect(!showSourceSelect);
+        break;
+      case "zillow":
+        setUpdatingRow(rowId);
+        setUpdatingStage("zillow");
+        setZillowStage(rowStatus);
+        setShowSourceSelect(!showSourceSelect);
+        break;
+    }
   };
 
-  const handleStatusSelectUpdate = (e) => {
-    setStatus(e.target.value);
+  const handleStageSelectUpdate = (e, stageType) => {
+    console.log(`handleStageSelectUpdate`);
+    //console.log(stageType);
+    console.log(`e.target.value`);
+    console.log(e.target.value);
+    console.log(`stageType: ${stageType}`);
+    switch (stageType) {
+      case "zillow":
+        setZillowStage(e.target.value);
+        break;
+      case "fub":
+        setFubStage(e.target.value);
+        break;
+    }
   };
 
-  const handleStatusSelectSubmit = (rowId, status, event) => {
-    let eventCopy = event;
-    eventCopy.status = status;
-    // make a fetch to the API to update the status for this event
-    update(
-      {
-        eventId: event._id,
-      },
-      {
-        t: jwt.token,
-      },
-      {
-        status: status,
-      }
-    ).then((data) => {
-      if (data && data.error) {
-        console.log(data.error);
-        setStatus(event.status);
-        setUpdatingRow(null);
-      } else {
-        setUpdatingRow(null);
-        setStatus(data.status);
-      }
-    });
+  const handleStageSelectSubmit = (rowId, stage, lead, stageType) => {
+    console.log(`handleStageSelectSubmit`);
+    console.log(stage);
+    let leadCopy = lead;
+    switch (stageType) {
+      case "zillow":
+        leadCopy.zillowStage = stage ? stage : null;
+        // make a fetch to the API to update the stage for this lead
+        update(
+          {
+            leadId: lead._id,
+          },
+          {
+            t: jwt.token,
+          },
+          {
+            zillowStage: stage,
+          }
+        ).then((data) => {
+          if (data && data.error) {
+            console.log(data.error);
+            setZillowStage(lead.stage);
+            setUpdatingRow(null);
+            setUpdatingStage(null);
+          } else {
+            setUpdatingRow(null);
+            setUpdatingStage(null);
+            setZillowStage(data.stage);
+          }
+        });
+        break;
+      case "fub":
+        leadCopy.stage = stage ? stage : null;
+        // make a fetch to the API to update the stage for this lead
+        update(
+          {
+            leadId: lead._id,
+          },
+          {
+            t: jwt.token,
+          },
+          {
+            stage: stage,
+          }
+        ).then((data) => {
+          if (data && data.error) {
+            console.log(data.error);
+            setFubStage(lead.stage);
+            setUpdatingRow(null);
+            setUpdatingStage(null);
+          } else {
+            setUpdatingRow(null);
+            setUpdatingStage(null);
+            setFubStage(data.stage);
+          }
+        });
+        break;
+    }
   };
 
   const handleCheckboxClick = (source) => {
@@ -605,31 +758,99 @@ export default function LeadsTable({
     handleUpdate(newActiveSources, "source");
   };
 
-  const handleStatusCheckboxClick = (status) => {
-    let newActiveStatuses;
-    if (queryState.activeStatuses.includes(status)) {
-      newActiveStatuses = queryState.activeStatuses.filter(
-        (activeStatus) => activeStatus != status
-      );
-    } else {
-      newActiveStatuses = [...queryState.activeStatuses, status];
+  const handleStageCheckboxClick = (stage, stageType) => {
+    let newActiveStages;
+    switch (stageType) {
+      case "zillowStage":
+        if (
+          queryState.activeZillowStages &&
+          queryState.activeZillowStages.includes(stage)
+        ) {
+          newActiveStages = queryState.activeZillowStages.filter(
+            (activeStage) => activeStage != stage
+          );
+        } else {
+          if (queryState.activeZillowStages) {
+            newActiveStages = [...queryState.activeZillowStages, stage];
+          } else {
+            newActiveStages = [stage];
+          }
+        }
+        handleUpdate(0, "page");
+        handleUpdate(newActiveStages, "zillowStage");
+        break;
+      case "fubStage":
+        if (
+          queryState.activeFubStages &&
+          queryState.activeFubStages.includes(stage)
+        ) {
+          newActiveStages = queryState.activeFubStages.filter(
+            (activeStage) => activeStage != stage
+          );
+        } else {
+          if (queryState.activeFubStages) {
+            newActiveStages = [...queryState.activeFubStages, stage];
+          } else {
+            newActiveStages = [stage];
+          }
+        }
+        handleUpdate(0, "page");
+        handleUpdate(newActiveStages, "fubStage");
+        break;
     }
-    handleUpdate(0, "page");
-    handleUpdate(newActiveStatuses, "status");
   };
 
-  const data = (row) => {
-    if (showSourceSelect && updatingRow && row._id === updatingRow) {
+  const selectRowState = (row, stageType) => {
+    let stage;
+    if (row._id === updatingRow && stageType === updatingStage) {
+      switch (stageType) {
+        case "zillow":
+          stage = zillowStage
+            ? zillowStage
+            : row.zillowStage
+            ? row.zillowStage
+            : "";
+          break;
+        case "fub":
+          stage = fubStage ? fubStage : row.stage ? row.stage : "";
+          break;
+        default:
+          stage = "";
+          break;
+      }
+    } else {
+      switch (stageType) {
+        case "zillow":
+          stage = row.zillowStage ? row.zillowStage : "";
+          break;
+        case "fub":
+          stage = row.stage ? row.stage : "";
+          break;
+        default:
+          stage = "";
+          break;
+      }
+    }
+    return stage;
+  };
+
+  const data = (row, stageType, menuOptions) => {
+    if (
+      showSourceSelect &&
+      updatingRow &&
+      row._id === updatingRow &&
+      stageType === updatingStage
+    ) {
       return (
         <>
           <Select
             labelId="status-select"
             id={`status_select_${row._id}`}
-            value={status}
+            value={selectRowState(row, stageType)}
             key={`select_${row._id}`}
-            onChange={(e) => handleStatusSelectUpdate(e)}
+            onChange={(e) => handleStageSelectUpdate(e, stageType)}
           >
-            {options.map((option) => (
+            {menuOptions.map((option) => (
               <MenuItem key={option} value={option}>
                 {option}
               </MenuItem>
@@ -638,28 +859,67 @@ export default function LeadsTable({
           <IconButton
             aria-label="save"
             color="primary"
-            onClick={() => handleStatusSelectSubmit(row._id, status, row)}
+            onClick={(e) =>
+              handleStageSelectSubmit(
+                row._id,
+                stageType === "zillow" ? zillowStage : fubStage,
+                row,
+                stageType
+              )
+            }
           >
-            <Check />
+            <Tooltip title="Save changes">
+              <Check />
+            </Tooltip>
           </IconButton>
           <IconButton
             aria-label="cancel"
             color="primary"
-            onClick={() => handleUpdateStatusClick(row._id, status)}
+            onClick={() => {
+              console.log(`a`);
+              handleUpdateStageClick(
+                row._id,
+                selectRowState(row, stageType),
+                stageType
+              );
+            }}
           >
-            <Cancel />
+            <Tooltip title="Cancel changes">
+              <Cancel />
+            </Tooltip>
+          </IconButton>
+          <IconButton
+            aria-label="delete"
+            color="primary"
+            onClick={() => {
+              console.log(`b`);
+              handleUpdateStageClick(row._id, "", updatingStage);
+            }}
+          >
+            <Tooltip title="Clear Stage">
+              <Delete />
+            </Tooltip>
           </IconButton>
         </>
       );
     } else {
       return (
-        <Button
-          key={`status_button_${row._id}`}
-          onClick={() => handleUpdateStatusClick(row._id, row.status)}
-        >
-          {row.status}
-          <Edit key={`edit_icon_${row._id}`} />
-        </Button>
+        <Tooltip title="Edit">
+          <Button
+            key={`status_button_${row._id}`}
+            onClick={() => {
+              console.log(`c`);
+              handleUpdateStageClick(
+                row._id,
+                selectRowState(row, stageType),
+                stageType
+              );
+            }}
+          >
+            {selectRowState(row, stageType)}
+            <Edit key={`edit_icon_${row._id}`} />
+          </Button>
+        </Tooltip>
       );
     }
   };
@@ -677,7 +937,7 @@ export default function LeadsTable({
           setStartDate={setStartDate}
           setEndDate={setEndDate}
           createSnackbarAlert={createSnackbarAlert}
-          handleSyncEventsClick={handleSyncEventsClick}
+          handleSyncLeadsClick={handleSyncLeadsClick}
           queryState={queryState}
           updateQueryState={updateQueryState}
           handleUpdate={handleUpdate}
@@ -697,16 +957,30 @@ export default function LeadsTable({
               onSourceFilterClick={() => handleFilterClick("source")}
               openFilter={openFilter}
               sources={sources}
-              statuses={statuses}
+              fubStages={fubStages}
+              zillowStages={zillowStages}
               onCheckboxClick={handleCheckboxClick}
-              onStatusCheckboxClick={handleStatusCheckboxClick}
+              onFubStageCheckboxClick={(e) =>
+                handleStageCheckboxClick(e, "fubStage")
+              }
+              onZillowStageCheckboxClick={(e) =>
+                handleStageCheckboxClick(e, "zillowStage")
+              }
               onSelectAllSources={() => handleSelect("source", sources)}
               onClearSources={() => handleSelect("source", [])}
               onResetSources={() => handleSelect("source", sources)}
-              onStatusFilterClick={() => handleFilterClick("status")}
-              onSelectAllStatuses={() => handleSelect("status", statuses)}
-              onClearStatuses={() => handleSelect("status", [])}
-              onResetStatuses={() => handleSelect("status", statuses)}
+              onFubStageFilterClick={() => handleFilterClick("fubStage")}
+              onZillowStageFilterClick={() => handleFilterClick("zillowStage")}
+              onSelectAllFubStages={() => handleSelect("fubStage", fubStages)}
+              onSelectAllZillowStages={() =>
+                handleSelect("zillowStage", zillowStages)
+              }
+              onClearFubStages={() => handleSelect("fubStage", [])}
+              onClearZillowStages={() => handleSelect("zillowStage", [])}
+              onResetFubStages={() => handleSelect("fubStage", fubStages)}
+              onResetZillowStages={() =>
+                handleSelect("zillowStage", zillowStages)
+              }
             />
 
             <TableBody>
@@ -729,7 +1003,29 @@ export default function LeadsTable({
                       align={"center"}
                       padding={"normal"}
                     >
-                      {row.property ? row.property.street : ""}
+                      {row.name ? row.name : ""}
+                    </TableCell>
+                    <TableCell
+                      component="th"
+                      id={labelId}
+                      scope="row"
+                      align={"center"}
+                      padding={"normal"}
+                    >
+                      {row.phones && row.phones.length
+                        ? row.phones[0].value
+                        : ""}
+                    </TableCell>
+                    <TableCell
+                      component="th"
+                      id={labelId}
+                      scope="row"
+                      align={"center"}
+                      padding={"normal"}
+                    >
+                      {row.emails && row.emails.length
+                        ? row.emails[0].value
+                        : ""}
                     </TableCell>
                     <TableCell align={"center"} padding={"normal"}>
                       {`${new Date(row.created).toDateString()} ${new Date(
@@ -740,21 +1036,23 @@ export default function LeadsTable({
                       {row.source}
                     </TableCell>
                     <TableCell align={"center"} padding={"normal"}>
-                      {data(row)}
+                      {data(row, "fub", fubStages)}
                     </TableCell>
                     <TableCell align={"center"} padding={"normal"}>
-                      {row.isPossibleZillowExemption ? "YES" : "NO"}
+                      {data(row, "zillow", zillowStageOptions)}
                     </TableCell>
                     <TableCell align={"center"} padding={"normal"}>
-                      <Link to={"/event/" + row._id} key={row._id}>
-                        <IconButton
-                          color="primary"
-                          variant="contained"
-                          className={classes.button}
-                        >
-                          <ArrowForward />
-                        </IconButton>
-                      </Link>
+                      <Tooltip title="More">
+                        <Link to={"/lead/" + row._id} key={row._id}>
+                          <IconButton
+                            color="primary"
+                            variant="contained"
+                            className={classes.button}
+                          >
+                            <ArrowForward />
+                          </IconButton>
+                        </Link>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
                 );

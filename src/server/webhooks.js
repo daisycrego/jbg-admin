@@ -15,12 +15,34 @@ const fetchWebhooks = async () => {
   try {
     const result = await fetch(url, options);
     const parsedResult = await result.json();
-    if (parsedResult.webhooks) {
-      return parsedResult.webhooks;
+    console.log(parsedResult.webhooks);
+    const requiredWebhooks = [
+      "eventsCreated",
+      "peopleCreated",
+      "peopleStageUpdated",
+    ];
+    const activeWebhooks =
+      parsedResult.webhooks && parsedResult.webhooks.length
+        ? parsedResult.webhooks.map((item) => item.event)
+        : [];
+    const missingWebhooks = requiredWebhooks.filter(
+      (webhook) => !activeWebhooks.includes(webhook)
+    );
+    console.log(`missingWebhooks`);
+    console.log(missingWebhooks);
+    if (!missingWebhooks.length) {
+      return {
+        error: null,
+        missingWebhooks: [],
+      };
     } else {
-      throw new Error(
+      /*throw new Error(
         parsedResult.errorMessage ? parsedResult.errorMessage : parsedResult
-      );
+      );*/
+      return {
+        error: `Missing the following webhooks: ${missingWebhooks}`,
+        missingWebhooks,
+      };
     }
   } catch (err) {
     console.log(err);
@@ -28,17 +50,23 @@ const fetchWebhooks = async () => {
   }
 };
 
-const createWebhook = async (webhooks) => {
-  if (webhooks.length) {
-    return;
+const webhookUrl = (webhookType) => {
+  switch (webhookType) {
+    case "eventsCreated":
+      return `https://jbg-admin.herokuapp.com/api/events/fub/callback/`;
+    case "peopleCreated":
+      return `https://jbg-admin.herokuapp.com/api/leads/fub/callback/created`;
+    case "peopleStageUpdated":
+      return `https://jbg-admin.herokuapp.com/api/leads/fub/callback/updated`;
   }
+};
 
-  console.log(`Creating a webhook because one doesn't exist`);
+const createWebhook = async (webhookType) => {
   const url = "https://api.followupboss.com/v1/webhooks";
   const BASIC_AUTHORIZATION = config.basicAuth;
   const data = {
-    event: "eventsCreated",
-    url: "https://jbg-admin.herokuapp.com/api/events/fub/callback",
+    event: webhookType,
+    url: webhookUrl(webhookType),
   };
   const body = JSON.stringify(data);
   const options = {
@@ -55,9 +83,9 @@ const createWebhook = async (webhooks) => {
     const result = await fetch(url, options);
     const parsedResult = await result.json();
     console.log(parsedResult);
-    if (parsedResult.event === "eventsCreated") {
+    if (parsedResult.event === webhookType) {
       console.log(
-        `${parsedResult.event} webhook created, events data will be posted to ${parsedResult.url}`
+        `${parsedResult.event} webhook created, data will be posted to ${parsedResult.url}`
       );
     }
   } catch (err) {
@@ -66,8 +94,11 @@ const createWebhook = async (webhooks) => {
   }
 };
 
-export const setupEventsWebhook = () => {
+export const setupWebhooks = async () => {
   // Check if the webhook exists
   // If the webhook doesn't exist, create it
-  fetchWebhooks().then(createWebhook);
+  const result = await fetchWebhooks();
+  if (result.missingWebhooks.length) {
+    result.missingWebhooks.forEach((webhookType) => createWebhook(webhookType));
+  }
 };

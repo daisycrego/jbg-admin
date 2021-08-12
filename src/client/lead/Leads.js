@@ -7,6 +7,7 @@ import { Snackbar } from "@material-ui/core";
 import { list, sync_leads } from "./api-lead.js";
 import auth from "./../auth/auth-helper";
 import LeadsTable from "./LeadsTable";
+import { zillowStageOptions } from "../../lib/constants";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -56,7 +57,8 @@ export default function Leads({ queryState, setQueryState }) {
   const [snackbar, setSnackbar] = useState({ open: false, message: "" });
   const [redirectToSignin, setRedirectToSignin] = useState(false);
   const [sources, setSources] = useState([]);
-  const [statuses, setStatuses] = useState([]);
+  const [fubStages, setFubStages] = useState([]);
+  const [zillowStages, setZillowStages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [openFilter, setOpenFilter] = useState(null);
 
@@ -64,7 +66,7 @@ export default function Leads({ queryState, setQueryState }) {
     setSnackbar({ message, open: true });
   };
 
-  const updateEvents = (initialState) => {
+  const updateLeads = (initialState) => {
     const abortController = new AbortController();
     const signal = abortController.signal;
 
@@ -77,17 +79,20 @@ export default function Leads({ queryState, setQueryState }) {
         set;
         setRedirectToSignin(true);
       } else {
-        setAllRows(data ? data.events : []);
+        setAllRows(data ? data.leads : []);
         const page =
-          data && data.events
-            ? data.events.slice(
+          data && data.leads
+            ? data.leads.slice(
                 queryState.page * queryState.pageSize,
                 queryState.page * queryState.pageSize + queryState.pageSize
               )
             : [];
         setCurrentPageRows(page);
-        setSources(data ? data.sources : []);
-        setStatuses(data ? data.statuses : []);
+        setSources(data.sources ? data.sources : []);
+        setFubStages(data.fubStages ? data.fubStages : []);
+        setZillowStages(
+          data.zillowStages ? data.zillowStages : zillowStageOptions
+        );
         setIsLoading(false);
         handleUpdate(null, "filter");
       }
@@ -110,17 +115,20 @@ export default function Leads({ queryState, setQueryState }) {
         setRedirectToSignin(true);
       } else {
         setIsLoading(false);
-        setAllRows(data.events);
+        setAllRows(data ? data.leads : []);
         setCurrentPageRows(
-          data.events
-            ? data.events.slice(
+          data.leads
+            ? data.leads.slice(
                 queryState.page * queryState.pageSize,
                 queryState.page * queryState.pageSize + queryState.pageSize
               )
             : []
         );
         setSources(data.sources);
-        setStatuses(data.statuses);
+        setFubStages(data.fubStages);
+        setZillowStages(
+          data.zillowStages ? data.zillowStages : zillowStageOptions
+        );
       }
     });
 
@@ -129,23 +137,23 @@ export default function Leads({ queryState, setQueryState }) {
     };
   }, []);
 
-  const confirmSyncEventsClick = () => {
+  const confirmSyncLeadsClick = () => {
     const continueSync = confirm(
-      "Are you sure you need to sync the events? Only do this when the system has gone out of sync."
+      "Are you sure you need to sync the leads? Only do this when the system has gone out of sync."
     );
     if (!continueSync) {
       return;
     }
-    handleSyncEventsClick();
+    handleSyncLeadsClick();
   };
 
-  const handleSyncEventsClick = async () => {
+  const handleSyncLeadsClick = async () => {
     const jwt = auth.isAuthenticated();
     const credentials = { t: jwt.token };
     const abortController = new AbortController();
     const signal = abortController.signal;
     setSnackbar({ message: "Syncing with Follow Up Boss...", open: true });
-    const result = await sync_events(credentials, signal);
+    const result = await sync_leads(credentials, signal);
     if (result.message) {
       // { error: "You have reached the rate limit for number of requ…oss.com/reference#rate-limiting for more details."}
       // send to a notify/snackbar
@@ -163,37 +171,44 @@ export default function Leads({ queryState, setQueryState }) {
         setQueryState({ ...queryState, page: newData });
         break;
       case "pageSize":
-        setQueryState({ ...queryState, pageSize: newData });
+        setQueryState({ ...queryState, pageSize: newData, page: 0 });
         break;
       case "source":
         setQueryState({ ...queryState, activeSources: newData, page: 0 });
-        updateEvents({
+        updateLeads({
           ...queryState,
           activeSources: newData,
         });
         break;
-      case "status":
-        setQueryState({ ...queryState, activeStatuses: newData, page: 0 });
-        updateEvents({
+      case "zillowStage":
+        setQueryState({ ...queryState, activeZillowStages: newData, page: 0 });
+        updateLeads({
           ...queryState,
-          activeStatuses: newData,
+          activeZillowStages: newData,
+        });
+        break;
+      case "fubStage":
+        setQueryState({ ...queryState, activeFubStages: newData, page: 0 });
+        updateLeads({
+          ...queryState,
+          activeFubStages: newData,
         });
         break;
       case "order":
         setQueryState({ ...queryState, order: newData });
-        const newOrderEvents = stableSort(
+        const newOrderLeads = stableSort(
           allRows,
           getComparator(newData, queryState.orderBy)
         );
-        setAllRows(newOrderEvents);
+        setAllRows(newOrderLeads);
         break;
       case "orderBy":
         setQueryState({ ...queryState, orderBy: newData });
-        const newOrderByEvents = stableSort(
+        const newOrderByLeads = stableSort(
           allRows,
           getComparator(queryState.order, newData)
         );
-        setAllRows(newOrderByEvents);
+        setAllRows(newOrderByLeads);
         break;
       case "currentPageRows":
         setCurrentPageRows(newData);
@@ -204,7 +219,7 @@ export default function Leads({ queryState, setQueryState }) {
           startDate: newData.startDate,
           endDate: newData.endDate,
         });
-        updateEvents({
+        updateLeads({
           ...queryState,
           startDate: newData.startDate,
           endDate: newData.endDate,
@@ -231,12 +246,14 @@ export default function Leads({ queryState, setQueryState }) {
       />
 
       <LeadsTable
-        handleSyncEventsClick={confirmSyncEventsClick}
+        handleSyncLeadsClick={confirmSyncLeadsClick}
         isLoading={isLoading}
         activeRows={allRows}
         currentPageRows={currentPageRows}
         sources={sources}
-        statuses={statuses}
+        fubStages={fubStages}
+        zillowStages={zillowStages}
+        zillowStageOptions={zillowStageOptions}
         openFilter={openFilter}
         createSnackbarAlert={createSnackbarAlert}
         queryState={queryState}

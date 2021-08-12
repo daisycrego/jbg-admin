@@ -45,6 +45,7 @@ const leadById = async (req, res, next, id) => {
         error: "lead not found",
       });
     req.lead = lead;
+    console.log(lead);
     next();
   } catch (err) {
     return res.status("400").json({
@@ -58,20 +59,94 @@ const read = (req, res) => {
 };
 
 const list = async (req, res) => {
-  console.log(`Express server: /api/leads GET request received, this is the frontend requesting Lead data
-  from the backend.`);
+  const activeSources = req.body.activeSources;
+  const activeZillowStages = req.body.activeZillowStages;
+  const activeFubStages = req.body.activeFubStages;
+  const startDate = req.body.startDate;
+  const endDate = req.body.endDate;
+  const order = req.body.order;
+  const orderBy = req.body.orderBy; // only current option is `created`
+  let matchObj = {};
+  let leads;
   try {
-    // Available fields: https://docs.followupboss.com/reference#people-get
-    // stage == FUB API Stage
-    /*let leads = await Lead.find().select(
-      "personId updated created firstName lastName name price source isZillowLead stage zillowStage stageId sourceId sourceUrl delayed contacted price tags emails phones addresses socialData collaborators teamLeaders pondMembers"
-    );*/
-    let leads = await Lead.find().select(
-      "personId updated created firstName lastName name price source isZillowLead stage zillowStage stageId sourceId sourceUrl delayed contacted price tags emails phones addresses socialData collaborators teamLeaders pondMembers"
-    );
-    res.json(leads);
+    let startDateOnly = startDate ? new Date(startDate) : new Date(0);
+    let endDateOnly = endDate ? new Date(endDate) : new Date();
+    startDateOnly = startDateOnly.toLocaleDateString();
+    startDateOnly = new Date(startDateOnly);
+    endDateOnly.setDate(endDateOnly.getDate() + 1);
+    endDateOnly = endDateOnly.toLocaleDateString();
+    endDateOnly = new Date(endDateOnly);
+
+    if (activeZillowStages) {
+      if (activeFubStages) {
+        matchObj = {
+          source: activeSources,
+          stage: activeFubStages,
+          zillowStage: activeZillowStages,
+          created: {
+            $gte: startDateOnly,
+            $lt: endDateOnly,
+          },
+        };
+      } else {
+        matchObj = {
+          source: activeSources,
+          zillowStage: activeZillowStages,
+          created: {
+            $gte: startDateOnly,
+            $lt: endDateOnly,
+          },
+        };
+      }
+    } else if (activeFubStages) {
+      matchObj = {
+        source: activeSources,
+        stage: activeFubStages,
+        created: {
+          $gte: startDateOnly,
+          $lt: endDateOnly,
+        },
+      };
+    } else {
+      matchObj = {
+        source: activeSources,
+        created: {
+          $gte: startDateOnly,
+          $lt: endDateOnly,
+        },
+      };
+    }
+    console.log(`matchObj`);
+    console.log(matchObj);
+
+    leads = await Lead.find(matchObj).sort({
+      created: order === "desc" ? -1 : 1,
+    });
+    console.log(`find`);
+    console.log(`leads.length: ${leads.length}`);
+
+    const allSources = await Lead.distinct("source");
+    const allFubStages = await Lead.distinct("stage");
+    const allZillowStages = await Lead.distinct("zillowStage");
+
+    console.log(`zillow stages`);
+    console.log(allZillowStages);
+
+    res.json({
+      leads: leads ? leads : [],
+      sources: allSources,
+      fubStages: allFubStages,
+      zillowStages: allZillowStages,
+    });
   } catch (err) {
+    console.log(err.name);
     console.log(err);
+    if (err.name === "MongoError") {
+      leads = await Lead.find(matchObj);
+      console.log(`find w/o sort`);
+      console.log(`leads.length: ${leads.length}`);
+    }
+
     return res.status(400).json({
       error: errorHandler.getErrorMessage(err),
     });
@@ -130,9 +205,41 @@ const addNewLeads = async (leads) => {
       } catch (err) {
         console.log(err);
       }
-      // TODO: if there is an existing lead, update the data (all of the fields, not just stage)
     } else {
-      await existingLead.update(leadObj);
+      await Lead.findOneAndUpdate({ id: leadObj.id }, { $set: leadObj });
+      /*
+      // update everything BUT zillowStage
+      existingLead.updated = leadObj.updated;
+      existingLead.created = leadObj.created;
+      existingLead.name = leadObj.name;
+      existingLead.firstName = leadObj.firstName;
+      existingLead.lastName = leadObj.lastName;
+      existingLead.lastActivity = leadObj.lastActivity;
+      existingLead.price = leadObj.price;
+      existingLead.stage = leadObj.stage;
+      existingLead.source = leadObj.source;
+      existingLead.delayed = leadObj.delayed;
+      existingLead.contacted = leadObj.contacted;
+      existingLead.assignedLenderId = leadObj.assignedLenderId;
+      existingLead.assignedLenderName = leadObj.assignedLenderName;
+      existingLead.assignedUserId = leadObj.assignedUserId;
+      existingLead.assignedPondId = leadObj.assignedPondId;
+      existingLead.assignedTo = leadObj.assignedTo;
+      existingLead.tags = leadObj.tags;
+      existingLead.emails = leadObj.emails;
+      existingLead.phones = leadObj.phones;
+      existingLead.addresses = leadObj.addresses;
+      existingLead.picture = leadObj.picture;
+      existingLead.socialData = leadObj.socialData;
+      existingLead.claimed = leadObj.claimed;
+      existingLead.firstToClaimOffer = leadObj.firstToClaimOffer;
+      existingLead.collaborators = leadObj.collaborators;
+      existingLead.teamLeaders = leadObj.teamLeaders;
+      existingLead.pondMembers = leadObj.pondMembers;
+      existingLead.processed = true;
+      existingLead.processedAt = new Date();
+      await existingLead.save();
+      */
     }
   }
 
@@ -212,10 +319,13 @@ let REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
 // Create / Connect to a named work queue
 let workQueue = new Queue("work", REDIS_URL);
 
-const createLeadsWebhookCallback = (req, res) => {
-  // This would be where you could pass arguments to the job
-  // Ex: workQueue.add({ url: 'https://www.heroku.com' })
-  // Docs: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueadd
+const peopleCreatedWebhookCallback = (req, res) => {
+  let job;
+  workQueue.add(req.body).then((result) => (job = result));
+  res.sendStatus(200);
+};
+
+const peopleStageUpdatedWebhookCallback = () => {
   let job;
   workQueue.add(req.body).then((result) => (job = result));
   res.sendStatus(200);
@@ -229,5 +339,6 @@ export default {
   remove,
   update,
   syncLeads,
-  createLeadsWebhookCallback,
+  peopleCreatedWebhookCallback,
+  peopleStageUpdatedWebhookCallback,
 };
