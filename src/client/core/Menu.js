@@ -24,14 +24,14 @@ const Menu = withRouter(({ history }) => (
           <HomeIcon />
         </IconButton>
       </Link>
-      <Link to="/users">
-        <Button style={isActive(history, "/users")}>Users</Button>
+      <Link to="/">
+        <Button style={isActive(history, "/events")}>Events</Button>
       </Link>
       <Link to="/leads">
         <Button style={isActive(history, "/leads")}>Leads</Button>
       </Link>
-      <Link to="/">
-        <Button style={isActive(history, "/events")}>Events</Button>
+      <Link to="/users">
+        <Button style={isActive(history, "/users")}>Users</Button>
       </Link>
       {!auth.isAuthenticated() && (
         <span>

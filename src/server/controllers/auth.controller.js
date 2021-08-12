@@ -15,7 +15,7 @@ const signin = async (req, res) => {
 
     if (!user.authenticate(req.body.password)) {
       return res.status("401").send({
-        error: "Email and password don't match.",
+        error: "Invalid email and/or password.",
       });
     }
 
