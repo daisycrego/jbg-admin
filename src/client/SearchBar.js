@@ -9,6 +9,7 @@ export default function SearchBar(props) {
   return (
     <div>
       <form
+        autocomplete="off"
         style={{
           display: "flex",
           width: "100%",
@@ -17,6 +18,7 @@ export default function SearchBar(props) {
         }}
       >
         <Input
+          autocomplete="off"
           onInput={(e) => setSearchText(e.target.value)}
           placeholder="Address..."
         >

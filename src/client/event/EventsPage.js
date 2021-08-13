@@ -24,8 +24,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function EventsPage({ queryState, updateQueryState }) {
-  console.log(queryState);
+export default function EventsPage({
+  queryState,
+  initialQueryState,
+  updateQueryState,
+}) {
   const jwt = auth.isAuthenticated();
   const classes = useStyles();
   const [rows, setRows] = useState([]);
@@ -41,6 +44,11 @@ export default function EventsPage({ queryState, updateQueryState }) {
 
   const createSnackbarAlert = (message) => {
     setSnackbar({ message, open: true });
+  };
+
+  const handleQueryReset = () => {
+    // force a reload?
+    updateQueryState(initialQueryState);
   };
 
   const handleStatusUpdate = (newStatus, event) => {
@@ -199,6 +207,8 @@ export default function EventsPage({ queryState, updateQueryState }) {
         tableDataTypes={tableDataTypes}
         CSVParser={CSVParser}
         handleSync={handleSyncEvents}
+        handleQueryReset={handleQueryReset}
+        createSnackbarAlert={createSnackbarAlert}
       />
     </Paper>
   );

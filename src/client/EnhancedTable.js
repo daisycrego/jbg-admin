@@ -19,6 +19,8 @@ import {
   ExpandLess,
   EventAvailable,
   ArrowRightAlt,
+  HighlightOff,
+  Refresh,
 } from "@material-ui/icons";
 import _ from "lodash";
 import auth from "./auth/auth-helper";
@@ -153,6 +155,7 @@ const EnhancedTableToolbar = (props) => {
           >
             {props.title}
           </Typography>
+
           <SearchBar
             classes={classes}
             searchText={props.queryState.searchText}
@@ -163,12 +166,20 @@ const EnhancedTableToolbar = (props) => {
               })
             }
           />
+          <Button
+            className={classes.button}
+            onClick={props.handleQueryReset}
+            startIcon={<Refresh />}
+          >
+            Reset Search
+          </Button>
           <EnhancedDatePicker
             startDate={props.startDate}
             endDate={props.endDate}
             queryState={props.queryState}
             updateQueryState={props.updateQueryState}
             classes={classes}
+            createSnackbarAlert={props.createSnackbarAlert}
           />
           <CSVDownloadButton
             Parser={props.CSVParser}
@@ -202,6 +213,8 @@ export default function EnhancedTable({
   columns,
   CSVParser,
   handleSync,
+  handleQueryReset,
+  createSnackbarAlert,
 }) {
   const jwt = auth.isAuthenticated();
   const classes = useStyles();
@@ -255,6 +268,8 @@ export default function EnhancedTable({
           updateQueryState={updateQueryState}
           CSVParser={CSVParser}
           handleSync={handleSync}
+          handleQueryReset={handleQueryReset}
+          createSnackbarAlert={createSnackbarAlert}
         />
 
         <TableContainer>

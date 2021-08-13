@@ -20,14 +20,14 @@ export default function EnhancedDatePicker(props) {
     switch (type) {
       case "start":
         if (endDate && data > endDate) {
-          createSnackbarAlert("Start date must come before end date");
+          props.createSnackbarAlert("Start date must come before end date");
           return;
         }
         setStartDate(data);
         break;
       case "end":
         if (startDate && data < startDate) {
-          createSnackbarAlert("End date must come after start date");
+          props.createSnackbarAlert("End date must come after start date");
           return;
         }
         setEndDate(data);
@@ -79,14 +79,14 @@ export default function EnhancedDatePicker(props) {
             <div>
               <Typography>from: </Typography>
               <DatePicker
-                value={startDate}
+                value={startDate ? startDate : null}
                 onChange={(e) => handleDatesChange(e, "start")}
               />
             </div>
             <div style={{ marginBottom: 5 }}>
               <Typography>to: </Typography>
               <DatePicker
-                value={endDate}
+                value={endDate ? endDate : null}
                 onChange={(e) => handleDatesChange(e, "end")}
               />
             </div>

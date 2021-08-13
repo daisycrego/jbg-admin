@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Route, Switch } from "react-router-dom";
 import Users from "./user/Users";
-import Events from "./event/Events";
 import EventsPage from "./event/EventsPage";
 import Signup from "./user/Signup";
 import Event from "./event/Event";
@@ -18,29 +17,6 @@ import {
   booleanOptions,
 } from "../lib/constants";
 
-const initialEventSearchState = {
-  page: 0,
-  pageSize: 10,
-  categories: {
-    sources: {
-      active: ["Zillow Flex"],
-      all: null,
-      default: ["Zillow Flex"],
-    },
-    statuses: {
-      active: zillowStatusOptions,
-      all: null,
-      default: ["Zillow Flex"],
-    },
-  },
-  activeSources: ["Zillow Flex"],
-  activeStatuses: zillowStatusOptions,
-  order: "desc",
-  orderBy: "created",
-  startDate: null,
-  endDate: null,
-};
-
 const initialLeadSearchState = {
   page: 0,
   pageSize: 10,
@@ -53,7 +29,7 @@ const initialLeadSearchState = {
   endDate: null,
 };
 
-const initialTableSearchState = {
+const initialEventSearchState = {
   page: 0,
   pageSize: 10,
   categories: {
@@ -80,12 +56,13 @@ const initialTableSearchState = {
   searchText: "",
 };
 
+const initialEventStateCopy = { ...initialEventSearchState };
+
 const MainRouter = () => {
   const [eventSearchState, setEventSearchState] = useState(
     initialEventSearchState
   );
 
-  const [queryState1, setQueryState1] = useState(initialTableSearchState);
   const [leadSearchState, setLeadSearchState] = useState(
     initialLeadSearchState
   );
@@ -98,10 +75,11 @@ const MainRouter = () => {
           exact
           path="/"
           render={(props) => (
-            <Events
+            <EventsPage
               {...props}
               queryState={eventSearchState}
-              setQueryState={setEventSearchState}
+              initialQueryState={initialEventStateCopy}
+              updateQueryState={setEventSearchState}
             />
           )}
         />
@@ -112,17 +90,6 @@ const MainRouter = () => {
               {...props}
               queryState={leadSearchState}
               setQueryState={setLeadSearchState}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/test"
-          render={(props) => (
-            <EventsPage
-              {...props}
-              queryState={queryState1}
-              updateQueryState={setQueryState1}
             />
           )}
         />
