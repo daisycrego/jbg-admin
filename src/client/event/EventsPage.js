@@ -47,7 +47,6 @@ export default function EventsPage({
   };
 
   const handleQueryReset = () => {
-    // force a reload?
     updateQueryState(initialQueryState);
   };
 
@@ -81,7 +80,7 @@ export default function EventsPage({
     const result = await sync_events(credentials, signal);
     if (result.message) {
       // { error: "You have reached the rate limit for number of requ…oss.com/reference#rate-limiting for more details."}
-      // send to a notify/snackbar
+      // send to a notify/snackbars
       setSnackbar({ message: result.message, open: true });
     } else if (result.error) {
       setSnackbar({ open: true, message: result.error });
@@ -113,8 +112,8 @@ export default function EventsPage({
         title: "Source",
         type: tableDataTypes.STRING,
         attr: [tableAttr.FILTERABLE],
-        categories: filterCategories.sources, // if null, base the filter options on the available data (eg distinct values are the categories)
-        categoriesName: "sources", // queryState.categories[categoriesName] will have the `all`, `default`, and `active` arrays for the current query state
+        categories: filterCategories.sources,
+        categoriesName: "sources",
       },
       {
         name: "status",

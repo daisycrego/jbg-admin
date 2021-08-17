@@ -16,7 +16,6 @@ const list = async (signal, options) => {
 
 const update = async (params, credentials, event) => {
   try {
-    // add userId as a parameter or somehow access userId from the route!
     let response = await fetch(`/api/event/${params.eventId}`, {
       method: "PUT",
       headers: {

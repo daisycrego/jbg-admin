@@ -118,10 +118,6 @@ const list = async (req, res) => {
         };
       }
 
-      console.log(`events api`);
-      console.log(`queryObj`);
-      console.log(queryObj);
-
       const searchText = req.body.searchText;
       if (searchText) {
         queryObj = {
