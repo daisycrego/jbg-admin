@@ -107,34 +107,12 @@ const useToolbarStyles = makeStyles((theme) => ({
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(1),
   },
-  highlight:
-    theme.palette.type === "light"
-      ? {
-          color: theme.palette.secondary.main,
-          backgroundColor: lighten(theme.palette.secondary.light, 0.85),
-        }
-      : {
-          color: theme.palette.text.primary,
-          backgroundColor: theme.palette.secondary.dark,
-        },
   title: {
     flex: "1 1 100%",
   },
-  sourceFilters: {
-    border: "solid",
-  },
-  searchField: {
-    display: "flex",
-    flexDirection: "column",
-  },
-  searchBar: {
-    flex: "3 2 100%",
-    flexDirection: "row",
-    display: "flex",
-  },
   button: {
-    paddingLeft: 20,
-    paddingRight: 20,
+    paddingLeft: 30,
+    paddingRight: 30,
     marginRight: 1,
     marginLeft: 1,
   },

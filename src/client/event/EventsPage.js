@@ -47,7 +47,6 @@ export default function EventsPage({
   };
 
   const handleQueryReset = () => {
-    // force a reload?
     updateQueryState(initialQueryState);
   };
 

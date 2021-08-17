@@ -645,14 +645,10 @@ export default function LeadsTable({
     );
 
   const handleUpdateStageClick = (rowId, rowStatus, stageType) => {
-    console.log(`handleUpdateStageClick`);
     if (rowId === updatingRow && rowStatus === updatingStage) {
       return;
     }
 
-    console.log(`rowId: ${rowId}`);
-    console.log(`rowStatus: ${rowStatus}`);
-    console.log(`stageType: ${stageType}`);
     switch (stageType) {
       case "fub":
         setUpdatingRow(rowId);
@@ -670,11 +666,6 @@ export default function LeadsTable({
   };
 
   const handleStageSelectUpdate = (e, stageType) => {
-    console.log(`handleStageSelectUpdate`);
-    //console.log(stageType);
-    console.log(`e.target.value`);
-    console.log(e.target.value);
-    console.log(`stageType: ${stageType}`);
     switch (stageType) {
       case "zillow":
         setZillowStage(e.target.value);
@@ -686,8 +677,6 @@ export default function LeadsTable({
   };
 
   const handleStageSelectSubmit = (rowId, stage, lead, stageType) => {
-    console.log(`handleStageSelectSubmit`);
-    console.log(stage);
     let leadCopy = lead;
     switch (stageType) {
       case "zillow":

@@ -36,7 +36,7 @@ export default function EnhancedDatePicker(props) {
   };
 
   return (
-    <>
+    <div>
       {showDatePicker ? (
         <div style={{ backgroundColor: "#f5f5f5", padding: "1em" }}>
           <div style={{ display: "flex", marginBottom: 5 }}>
@@ -119,7 +119,7 @@ export default function EnhancedDatePicker(props) {
             startIcon={<DateRange />}
           >
             {startDate || endDate ? (
-              <>
+              <div>
                 <Typography>
                   {" "}
                   {startDate ? startDate.toLocaleString() : ""}{" "}
@@ -129,7 +129,7 @@ export default function EnhancedDatePicker(props) {
                   {" "}
                   {endDate ? endDate.toLocaleString() : ""}{" "}
                 </Typography>
-              </>
+              </div>
             ) : (
               <div
                 style={{
@@ -143,6 +143,6 @@ export default function EnhancedDatePicker(props) {
           </Button>
         </Tooltip>
       )}
-    </>
+    </div>
   );
 }

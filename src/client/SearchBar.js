@@ -7,20 +7,17 @@ export default function SearchBar(props) {
   const [searchText, setSearchText] = useState(props.searchText);
 
   return (
-    <div>
+    <div style={{ width: "50%" }}>
       <form
-        autocomplete="off"
         style={{
           display: "flex",
           width: "100%",
-          marginRight: 1,
-          marginLeft: 1,
         }}
       >
         <Input
-          autocomplete="off"
           onInput={(e) => setSearchText(e.target.value)}
           placeholder="Address..."
+          autoComplete="off"
         >
           {props.searchText}
         </Input>
