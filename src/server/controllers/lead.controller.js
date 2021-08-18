@@ -318,20 +318,22 @@ const syncLeads = async (req, res) => {
 };
 
 // Connect to a local redis intance locally, and the Heroku-provided URL in production
-let REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
+//let REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
 
 // Create / Connect to a named work queue
-let workQueue = new Queue("work", REDIS_URL);
+//let workQueue = new Queue("work", REDIS_URL);
 
 const peopleCreatedWebhookCallback = (req, res) => {
   let job;
-  workQueue.add(req.body).then((result) => (job = result));
+  console.log(req.body);
+  //workQueue.add(req.body).then((result) => (job = result));
   res.sendStatus(200);
 };
 
-const peopleStageUpdatedWebhookCallback = () => {
+const peopleStageUpdatedWebhookCallback = (req, res) => {
   let job;
-  workQueue.add(req.body).then((result) => (job = result));
+  console.log(req.body);
+  //workQueue.add(req.body).then((result) => (job = result));
   res.sendStatus(200);
 };
 
