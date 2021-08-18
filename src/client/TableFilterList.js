@@ -9,6 +9,7 @@ import {
   ClearAll,
   Refresh,
 } from "@material-ui/icons";
+import _ from "lodash";
 
 const CheckboxListItem = ({
   category,
@@ -72,6 +73,7 @@ export default function TableFilterList({
   column,
   queryState,
   updateQueryState,
+  filterOptions,
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -100,7 +102,7 @@ export default function TableFilterList({
                   onClick={() => {
                     let newQueryState = { ...queryState };
                     newQueryState.categories[column.categoriesName].active =
-                      column.categories;
+                      filterOptions;
                     newQueryState.page = 0;
                     updateQueryState(newQueryState);
                   }}
@@ -135,7 +137,7 @@ export default function TableFilterList({
               </Tooltip>
             </>
             <ul className={classes.listItem}>
-              {column.categories.map((category) => (
+              {filterOptions.map((category) => (
                 <CheckboxListItem
                   key={category}
                   column={column}
