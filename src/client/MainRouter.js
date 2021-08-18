@@ -5,7 +5,7 @@ import EventsPage from "./event/EventsPage";
 import Signup from "./user/Signup";
 import Event from "./event/Event";
 import Lead from "./lead/Lead";
-import Leads from "./lead/Leads";
+import LeadsPage from "./lead/LeadsPage";
 import Signin from "./auth/Signin";
 import EditProfile from "./user/EditProfile";
 import Profile from "./user/Profile";
@@ -20,13 +20,27 @@ import {
 const initialLeadSearchState = {
   page: 0,
   pageSize: 10,
-  activeSources: ["Zillow Flex"],
-  activeFubStages: null,
-  activeZillowStages: null,
   order: "desc",
   orderBy: "created",
   startDate: null,
   endDate: null,
+  categories: {
+    sources: {
+      all: [],
+      active: ["Zillow Flex"],
+      default: ["Zillow Flex"],
+    },
+    fubStages: {
+      all: [],
+      active: [],
+      default: [],
+    },
+    zillowStages: {
+      all: [],
+      active: [],
+      default: [],
+    },
+  },
 };
 
 const initialEventSearchState = {
@@ -35,12 +49,12 @@ const initialEventSearchState = {
   categories: {
     sources: {
       active: ["Zillow Flex"],
-      all: null,
+      all: [],
       default: ["Zillow Flex"],
     },
     statuses: {
       active: zillowStatusOptions,
-      all: null,
+      all: zillowStatusOptions,
       default: zillowStatusOptions,
     },
     isPossibleZillowExemption: {
@@ -57,6 +71,7 @@ const initialEventSearchState = {
 };
 
 const initialEventStateCopy = { ...initialEventSearchState };
+const initialLeadStateCopy = { ...initialLeadSearchState };
 
 const MainRouter = () => {
   const [eventSearchState, setEventSearchState] = useState(
@@ -86,10 +101,11 @@ const MainRouter = () => {
         <Route
           path="/leads"
           render={(props) => (
-            <Leads
+            <LeadsPage
               {...props}
               queryState={leadSearchState}
-              setQueryState={setLeadSearchState}
+              initialQueryState={initialLeadStateCopy}
+              updateQueryState={setLeadSearchState}
             />
           )}
         />
