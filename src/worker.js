@@ -72,8 +72,6 @@ function start() {
         await event.save();
         const eventData = await fubGET(job.data.uri);
         if (eventData) {
-          // ask Dan if he wants to also maintain the leads in our own database...
-
           personData = await fubGET(
             `https://api.followupboss.com/v1/people/${eventData.personId}`
           );
@@ -223,7 +221,9 @@ function start() {
             event.property = eventData.property;
             event.type = eventData.type;
             event.message = eventData.message;
-            event.propertyId = eventData.property.id;
+            event.propertyId = eventData.property
+              ? eventData.property.id
+              : null;
             event.processed = true;
             event.processedAt = new Date();
             event.save();

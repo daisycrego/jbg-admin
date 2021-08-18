@@ -26,4 +26,5 @@ function stableSort(array, comparator) {
 
 module.exports = {
   stableSort,
+  getComparator,
 };

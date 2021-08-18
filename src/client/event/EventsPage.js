@@ -6,7 +6,6 @@ import { list, update, sync_events } from "./api-event.js";
 import auth from "./../auth/auth-helper";
 import EnhancedTable from "../EnhancedTable";
 import { tableAttr, tableDataTypes } from "../../lib/table";
-import { stableSort } from "../../lib/sort";
 import { CSVParser } from "../../lib/csvParser";
 import { Snackbar } from "@material-ui/core";
 
