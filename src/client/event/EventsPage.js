@@ -32,22 +32,16 @@ export default function EventsPage({
   const jwt = auth.isAuthenticated();
   const classes = useStyles();
   const [rows, setRows] = useState([]);
-  const [filterCategories, setFilterCategories] = useState({
-    sources: [],
-    statuses: [],
-    isPossibleZillowExemption: ["YES", "NO"],
-  });
-  const [snackbar, setSnackbar] = useState({ open: false, message: "" });
 
-  const [redirectToSignin, setRedirectToSignin] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const createSnackbarAlert = (message) => {
-    setSnackbar({ message, open: true });
-  };
-
-  const handleQueryReset = () => {
-    updateQueryState(initialQueryState);
+  const setupFilterCategories = () => {
+    const columns = generateColumnDesc();
+    let filterCategories = {};
+    for (let column of columns) {
+      if (column.attr.includes(tableAttr.FILTERABLE)) {
+        filterCategories[column.name] = [];
+      }
+    }
+    return filterCategories;
   };
 
   const handleStatusUpdate = (newStatus, event) => {
@@ -71,6 +65,73 @@ export default function EventsPage({
     });
   };
 
+  const generateColumnDesc = () => {
+    return [
+      {
+        name: "propertyStreet",
+        title: "Property address",
+        type: tableDataTypes.STRING,
+        attr: [],
+        categoriesName: null,
+      },
+      {
+        name: "created",
+        title: "Created",
+        type: tableDataTypes.DATE,
+        attr: [],
+        categoriesName: null,
+      },
+      {
+        name: "source",
+        title: "Source",
+        type: tableDataTypes.STRING,
+        attr: [tableAttr.FILTERABLE],
+
+        categoriesName: "sources",
+      },
+      {
+        name: "status",
+        title: "Status",
+        type: tableDataTypes.STRING,
+        attr: [tableAttr.FILTERABLE, tableAttr.UPDATABLE],
+
+        categoriesName: "statuses",
+        updateHandler: handleStatusUpdate,
+      },
+      {
+        name: "isPossibleZillowExemption",
+        title: "Possible Zillow Flex exemption?",
+        type: tableDataTypes.BOOLEAN,
+        attr: [],
+        categoriesName: null,
+      },
+      {
+        name: "id",
+        title: "More",
+        type: tableDataTypes.LINK,
+        attr: [],
+        categoriesName: null,
+        endpoint: "/event",
+      },
+    ];
+  };
+
+  const [filterCategories, setFilterCategories] = useState(
+    setupFilterCategories
+  );
+
+  const [snackbar, setSnackbar] = useState({ open: false, message: "" });
+  const [redirectToSignin, setRedirectToSignin] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const createSnackbarAlert = (message) => {
+    setSnackbar({ message, open: true });
+  };
+
+  const handleQueryReset = () => {
+    updateQueryState(initialQueryState);
+  };
+
   const handleSyncEvents = async () => {
     const jwt = auth.isAuthenticated();
     const credentials = { t: jwt.token };
@@ -87,60 +148,6 @@ export default function EventsPage({
     } else {
       setSnackbar({ open: true, message: result });
     }
-  };
-
-  const generateColumnDesc = () => {
-    return [
-      {
-        name: "propertyStreet",
-        title: "Property address",
-        type: tableDataTypes.STRING,
-        attr: [],
-        categories: null,
-        categoriesName: null,
-      },
-      {
-        name: "created",
-        title: "Created",
-        type: tableDataTypes.DATE,
-        attr: [],
-        categories: null,
-        categoriesName: null,
-      },
-      {
-        name: "source",
-        title: "Source",
-        type: tableDataTypes.STRING,
-        attr: [tableAttr.FILTERABLE],
-        categories: filterCategories.sources,
-        categoriesName: "sources",
-      },
-      {
-        name: "status",
-        title: "Status",
-        type: tableDataTypes.STRING,
-        attr: [tableAttr.FILTERABLE, tableAttr.UPDATABLE],
-        categories: filterCategories.statuses,
-        categoriesName: "statuses",
-        updateHandler: handleStatusUpdate,
-      },
-      {
-        name: "isPossibleZillowExemption",
-        title: "Possible Zillow Flex exemption?",
-        type: tableDataTypes.BOOLEAN,
-        attr: [],
-        categories: null,
-        categoriesName: null,
-      },
-      {
-        name: "id",
-        title: "More",
-        type: tableDataTypes.LINK,
-        attr: [],
-        categories: null,
-        categoriesName: null,
-      },
-    ];
   };
 
   const prepareEvents = (events) => {
@@ -173,10 +180,13 @@ export default function EventsPage({
       } else {
         setIsLoading(false);
         setRows(prepareEvents(data.events));
-        setFilterCategories({
-          sources: data.sources,
-          statuses: data.statuses,
-        });
+        let newFilterCategories = { ...filterCategories };
+        for (let column of generateColumnDesc()) {
+          if (column.attr.includes(tableAttr.FILTERABLE)) {
+            newFilterCategories[column.name] = data[column.categoriesName];
+          }
+        }
+        setFilterCategories(newFilterCategories);
       }
     });
 
@@ -200,12 +210,14 @@ export default function EventsPage({
         title={"Follow-Up Boss Events"}
         isLoading={isLoading}
         rows={rows}
+        filterCategories={filterCategories}
         columns={generateColumnDesc()}
         queryState={queryState}
         updateQueryState={updateQueryState}
         tableDataTypes={tableDataTypes}
         CSVParser={CSVParser}
         handleSync={handleSyncEvents}
+        syncTitle={"Events"}
         handleQueryReset={handleQueryReset}
         createSnackbarAlert={createSnackbarAlert}
       />
