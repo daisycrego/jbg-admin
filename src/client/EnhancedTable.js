@@ -82,6 +82,7 @@ function EnhancedTableHead(props) {
                   column={columnCell}
                   queryState={queryState}
                   updateQueryState={updateQueryState}
+                  filterOptions={props.filterCategories[columnCell.name]}
                 />
               </TableCell>
             );
@@ -167,7 +168,7 @@ const EnhancedTableToolbar = (props) => {
           <SyncButton
             classes={classes}
             handleSync={props.handleSync}
-            name="Event"
+            name={`${props.syncTitle}`}
           />
         </>
       }
@@ -184,6 +185,7 @@ const rowSlice = (rows, page, pageSize) => {
 
 export default function EnhancedTable({
   rows,
+  filterCategories,
   queryState,
   updateQueryState,
   title,
@@ -191,10 +193,10 @@ export default function EnhancedTable({
   columns,
   CSVParser,
   handleSync,
+  syncTitle,
   handleQueryReset,
   createSnackbarAlert,
 }) {
-  const jwt = auth.isAuthenticated();
   const classes = useStyles();
   const [currentPageRows, setCurrentPageRows] = useState([]);
   const [updatingRowId, setUpdatingRowId] = useState(null);
@@ -246,6 +248,7 @@ export default function EnhancedTable({
           updateQueryState={updateQueryState}
           CSVParser={CSVParser}
           handleSync={handleSync}
+          syncTitle={syncTitle}
           handleQueryReset={handleQueryReset}
           createSnackbarAlert={createSnackbarAlert}
         />
@@ -262,6 +265,8 @@ export default function EnhancedTable({
               columns={columns}
               queryState={queryState}
               updateQueryState={updateQueryState}
+              rows={rows}
+              filterCategories={filterCategories}
             />
 
             <TableBody>
@@ -278,7 +283,7 @@ export default function EnhancedTable({
                     {columns.map((column, index) => (
                       <EnhancedTableCell
                         key={`enhanced-${index}-${row._id}`}
-                        options={column.categories}
+                        options={filterCategories[column.name]}
                         column={column}
                         row={row}
                         index={index}
