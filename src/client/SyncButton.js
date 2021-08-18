@@ -20,7 +20,7 @@ export default function SyncButton({ classes, handleSync, name }) {
       startIcon={<Sync />}
       onClick={confirmSync}
     >
-      SYNC {name}S
+      SYNC {name}
     </Button>
   );
 }
