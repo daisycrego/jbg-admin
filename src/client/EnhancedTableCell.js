@@ -44,7 +44,7 @@ export default function EnhancedTableCell(props) {
           <Select
             labelId={`${column.name}-select`}
             id={`${column.name}_select_${row._id}`}
-            value={updatingCellState}
+            value={updatingCellState ? updatingCellState : ""}
             key={`select_${row._id}`}
             onChange={(e) => handleUpdatableChange(e)}
           >
@@ -120,7 +120,7 @@ export default function EnhancedTableCell(props) {
           padding={"normal"}
         >
           <Tooltip title="More data">
-            <Link to={"/event/" + row._id} key={row._id}>
+            <Link to={`${column.endpoint}/${row._id}`} key={row._id}>
               <IconButton
                 color="primary"
                 variant="contained"
