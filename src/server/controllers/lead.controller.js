@@ -6,6 +6,7 @@ import config from "../../config/config";
 import Queue from "bull";
 import jwt from "jsonwebtoken";
 import User from "../models/user.model";
+import { zillowStageOptions } from "../../lib/constants";
 
 const create = async (req, res) => {
   const lead = new Lead(req.body);
@@ -59,9 +60,15 @@ const read = (req, res) => {
 };
 
 const list = async (req, res) => {
-  const activeSources = req.body.activeSources;
-  const activeZillowStages = req.body.activeZillowStages;
-  const activeFubStages = req.body.activeFubStages;
+  let activeSources = [];
+  let activeZillowStages = [];
+  let activeFubStages = [];
+  try {
+    activeSources = req.body.categories.sources.active;
+    activeZillowStages = req.body.categories.zillowStages.active;
+    activeFubStages = req.body.categories.fubStages.active;
+  } catch (TypeError) {}
+
   const startDate = req.body.startDate;
   const endDate = req.body.endDate;
   const order = req.body.order;
@@ -77,7 +84,7 @@ const list = async (req, res) => {
     endDateOnly = endDateOnly.toLocaleDateString();
     endDateOnly = new Date(endDateOnly);
 
-    if (activeZillowStages) {
+    if (activeZillowStages.length) {
       if (activeFubStages) {
         matchObj = {
           source: activeSources,
@@ -98,7 +105,7 @@ const list = async (req, res) => {
           },
         };
       }
-    } else if (activeFubStages) {
+    } else if (activeFubStages.length) {
       matchObj = {
         source: activeSources,
         stage: activeFubStages,
@@ -107,7 +114,7 @@ const list = async (req, res) => {
           $lt: endDateOnly,
         },
       };
-    } else {
+    } else if (activeSources.length) {
       matchObj = {
         source: activeSources,
         created: {
@@ -115,36 +122,33 @@ const list = async (req, res) => {
           $lt: endDateOnly,
         },
       };
+    } else {
+      matchObj = {
+        created: {
+          $gte: startDateOnly,
+          $lt: endDateOnly,
+        },
+      };
     }
-    console.log(`matchObj`);
-    console.log(matchObj);
 
     leads = await Lead.find(matchObj).sort({
       created: order === "desc" ? -1 : 1,
     });
-    console.log(`find`);
-    console.log(`leads.length: ${leads.length}`);
 
     const allSources = await Lead.distinct("source");
     const allFubStages = await Lead.distinct("stage");
-    const allZillowStages = await Lead.distinct("zillowStage");
-
-    console.log(`zillow stages`);
-    console.log(allZillowStages);
 
     res.json({
       leads: leads ? leads : [],
       sources: allSources,
       fubStages: allFubStages,
-      zillowStages: allZillowStages,
+      zillowStages: zillowStageOptions,
     });
   } catch (err) {
     console.log(err.name);
     console.log(err);
     if (err.name === "MongoError") {
       leads = await Lead.find(matchObj);
-      console.log(`find w/o sort`);
-      console.log(`leads.length: ${leads.length}`);
     }
 
     return res.status(400).json({
