@@ -60,20 +60,28 @@ const read = (req, res) => {
 };
 
 const list = async (req, res) => {
-  let activeSources = [];
-  let activeZillowStages = [];
-  let activeFubStages = [];
+  let activeSources = null;
+  let activeZillowStages = null;
+  let activeFubStages = null;
+  let startDate = null;
+  let endDate = null;
+  let order = null;
+  let orderBy = null;
+  let pageSize = null;
+  let pageNumber = null;
   try {
     activeSources = req.body.categories.sources.active;
     activeZillowStages = req.body.categories.zillowStages.active;
     activeFubStages = req.body.categories.fubStages.active;
+    startDate = req.body.startDate;
+    endDate = req.body.endDate;
+    order = req.body.order;
+    orderBy = req.body.orderBy; // only current option is `created`
+    pageSize = req.body.pageSize;
+    pageNumber = req.body.page;
   } catch (TypeError) {}
 
-  const startDate = req.body.startDate;
-  const endDate = req.body.endDate;
-  const order = req.body.order;
-  const orderBy = req.body.orderBy; // only current option is `created`
-  let matchObj = {};
+  let queryObj = {};
   let leads;
   try {
     let startDateOnly = startDate ? new Date(startDate) : new Date(0);
@@ -84,9 +92,9 @@ const list = async (req, res) => {
     endDateOnly = endDateOnly.toLocaleDateString();
     endDateOnly = new Date(endDateOnly);
 
-    if (activeZillowStages.length) {
+    if (activeZillowStages && activeZillowStages.length) {
       if (activeFubStages) {
-        matchObj = {
+        queryObj = {
           source: activeSources,
           stage: activeFubStages,
           zillowStage: activeZillowStages,
@@ -96,7 +104,7 @@ const list = async (req, res) => {
           },
         };
       } else {
-        matchObj = {
+        queryObj = {
           source: activeSources,
           zillowStage: activeZillowStages,
           created: {
@@ -105,8 +113,8 @@ const list = async (req, res) => {
           },
         };
       }
-    } else if (activeFubStages.length) {
-      matchObj = {
+    } else if (activeFubStages && activeFubStages.length) {
+      queryObj = {
         source: activeSources,
         stage: activeFubStages,
         created: {
@@ -114,8 +122,8 @@ const list = async (req, res) => {
           $lt: endDateOnly,
         },
       };
-    } else if (activeSources.length) {
-      matchObj = {
+    } else if (activeSources && activeSources.length) {
+      queryObj = {
         source: activeSources,
         created: {
           $gte: startDateOnly,
@@ -123,23 +131,35 @@ const list = async (req, res) => {
         },
       };
     } else {
-      matchObj = {
+      queryObj = {
         created: {
           $gte: startDateOnly,
           $lt: endDateOnly,
         },
       };
+
+      const searchText = req.body.searchText;
+      const searchField = req.body.searchField;
+      if (searchText) {
+        queryObj[searchField] = searchText ? searchText.trim() : "";
+      }
     }
 
-    leads = await Lead.find(matchObj).sort({
-      created: order === "desc" ? -1 : 1,
-    });
+    leads = await Lead.find(queryObj)
+      .sort({
+        created: order === "desc" ? -1 : 1,
+      })
+      .skip(pageSize * pageNumber)
+      .limit(pageSize);
+
+    const totalLeads = await Lead.find(queryObj).countDocuments();
 
     const allSources = await Lead.distinct("source");
     const allFubStages = await Lead.distinct("stage");
 
     res.json({
       leads: leads ? leads : [],
+      totalLeads: totalLeads,
       sources: allSources,
       fubStages: allFubStages,
       zillowStages: zillowStageOptions,

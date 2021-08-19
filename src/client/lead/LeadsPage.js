@@ -31,6 +31,7 @@ export default function LeadsPage({
   const jwt = auth.isAuthenticated();
   const classes = useStyles();
   const [rows, setRows] = useState([]);
+  const [total, setTotal] = useState(0);
   const setupFilterCategories = () => {
     const columns = generateColumnDesc();
     let filterCategories = {};
@@ -90,7 +91,9 @@ export default function LeadsPage({
         title: "Name",
         type: tableDataTypes.STRING,
         attr: [],
-
+        search: true,
+        searchField: "name",
+        searchTitle: "Name",
         categoriesName: null,
       },
       {
@@ -98,7 +101,7 @@ export default function LeadsPage({
         title: "Phone",
         type: tableDataTypes.STRING,
         attr: [],
-
+        search: false,
         categoriesName: null,
       },
       {
@@ -106,7 +109,7 @@ export default function LeadsPage({
         title: "Email",
         type: tableDataTypes.STRING,
         attr: [],
-
+        search: false,
         categoriesName: null,
       },
       {
@@ -114,7 +117,7 @@ export default function LeadsPage({
         title: "Created",
         type: tableDataTypes.DATE,
         attr: [],
-
+        search: false,
         categoriesName: null,
       },
       {
@@ -122,7 +125,7 @@ export default function LeadsPage({
         title: "Source",
         type: tableDataTypes.STRING,
         attr: [tableAttr.FILTERABLE],
-
+        search: false,
         categoriesName: "sources",
       },
       {
@@ -130,7 +133,7 @@ export default function LeadsPage({
         title: "FUB Stage",
         type: tableDataTypes.STRING,
         attr: [tableAttr.FILTERABLE, tableAttr.UPDATABLE],
-
+        search: false,
         categoriesName: "fubStages",
         updateHandler: generateHandleUpdate("fub"),
       },
@@ -139,7 +142,7 @@ export default function LeadsPage({
         title: "Zillow Stage",
         type: tableDataTypes.STRING,
         attr: [tableAttr.FILTERABLE, tableAttr.UPDATABLE],
-
+        search: false,
         categoriesName: "zillowStages",
         updateHandler: generateHandleUpdate("zillow"),
       },
@@ -148,7 +151,7 @@ export default function LeadsPage({
         title: "More",
         type: tableDataTypes.LINK,
         attr: [],
-
+        search: false,
         categoriesName: null,
         endpoint: "/lead",
       },
@@ -229,6 +232,7 @@ export default function LeadsPage({
       } else {
         setIsLoading(false);
         setRows(prepareLeads(data.leads));
+        setTotal(data.totalLeads);
         let newFilterCategories = { ...filterCategories };
         for (let column of generateColumnDesc()) {
           if (column.attr.includes(tableAttr.FILTERABLE)) {
@@ -259,6 +263,7 @@ export default function LeadsPage({
         title={"Follow-Up Boss Leads"}
         isLoading={isLoading}
         rows={rows}
+        totalRows={total}
         filterCategories={filterCategories}
         columns={generateColumnDesc()}
         queryState={queryState}

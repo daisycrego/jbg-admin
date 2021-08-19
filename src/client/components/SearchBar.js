@@ -16,7 +16,7 @@ export default function SearchBar(props) {
       >
         <Input
           onInput={(e) => setSearchText(e.target.value)}
-          placeholder="Address..."
+          placeholder={`${props.searchTitle}...`}
           autoComplete="off"
         >
           {props.searchText}

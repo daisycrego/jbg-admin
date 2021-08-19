@@ -72,6 +72,9 @@ export default function EventsPage({
         type: tableDataTypes.STRING,
         attr: [],
         categoriesName: null,
+        search: true,
+        searchTitle: "Address",
+        searchField: "property.street",
       },
       {
         name: "created",
@@ -79,21 +82,22 @@ export default function EventsPage({
         type: tableDataTypes.DATE,
         attr: [],
         categoriesName: null,
+        search: false,
       },
       {
         name: "source",
         title: "Source",
         type: tableDataTypes.STRING,
         attr: [tableAttr.FILTERABLE],
-
         categoriesName: "sources",
+        search: false,
       },
       {
         name: "status",
         title: "Status",
         type: tableDataTypes.STRING,
         attr: [tableAttr.FILTERABLE, tableAttr.UPDATABLE],
-
+        search: false,
         categoriesName: "statuses",
         updateHandler: handleStatusUpdate,
       },
@@ -103,6 +107,7 @@ export default function EventsPage({
         type: tableDataTypes.BOOLEAN,
         attr: [],
         categoriesName: null,
+        search: false,
       },
       {
         name: "id",
@@ -111,6 +116,7 @@ export default function EventsPage({
         attr: [],
         categoriesName: null,
         endpoint: "/event",
+        search: false,
       },
     ];
   };

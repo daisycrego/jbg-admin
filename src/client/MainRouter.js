@@ -63,6 +63,7 @@ const initialEventSearchState = {
   startDate: null,
   endDate: null,
   searchText: "",
+  searchField: "",
 };
 
 const initialEventStateCopy = { ...initialEventSearchState };

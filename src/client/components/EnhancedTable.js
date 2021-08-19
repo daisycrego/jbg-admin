@@ -111,6 +111,7 @@ const useToolbarStyles = makeStyles((theme) => ({
 
 const EnhancedTableToolbar = (props) => {
   const classes = useToolbarStyles();
+  const searchColumns = props.columns.filter((column) => column.search);
 
   return (
     <Toolbar>
@@ -125,27 +126,38 @@ const EnhancedTableToolbar = (props) => {
             {props.title}
           </Typography>
 
-          <SearchBar
-            classes={classes}
-            searchText={props.queryState.searchText}
-            updateSearchText={(newSearchText) => {
-              let newQueryState = { ...props.queryState };
-              newQueryState.searchText = newSearchText;
-              for (let column of props.columns) {
-                if (
-                  newQueryState.categories &&
-                  newQueryState.categories[column.categoriesName] &&
-                  newQueryState.categories[column.categoriesName].active
-                ) {
-                  newQueryState.categories[column.categoriesName].active = null;
-                }
+          {searchColumns ? (
+            <SearchBar
+              classes={classes}
+              searchText={props.queryState.searchText}
+              searchTitle={
+                searchColumns.length && searchColumns[0].searchTitle
+                  ? searchColumns[0].searchTitle
+                  : ""
               }
-              console.log(`updateSearchText`);
-              console.log(newQueryState);
-              newQueryState.page = 0;
-              props.updateQueryState(newQueryState);
-            }}
-          />
+              updateSearchText={(newSearchText) => {
+                let newQueryState = { ...props.queryState };
+                newQueryState.searchText = newSearchText;
+                newQueryState.searchField =
+                  searchColumns.length && searchColumns[0].searchField
+                    ? searchColumns[0].searchField
+                    : "";
+                for (let column of props.columns) {
+                  if (
+                    newQueryState.categories &&
+                    newQueryState.categories[column.categoriesName] &&
+                    newQueryState.categories[column.categoriesName].active
+                  ) {
+                    newQueryState.categories[column.categoriesName].active =
+                      null;
+                  }
+                }
+                newQueryState.page = 0;
+                props.updateQueryState(newQueryState);
+              }}
+            />
+          ) : null}
+
           <Button
             className={classes.button}
             onClick={props.handleQueryReset}

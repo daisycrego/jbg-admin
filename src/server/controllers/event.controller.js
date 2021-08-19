@@ -58,17 +58,25 @@ const read = (req, res) => {
 };
 
 const list = async (req, res) => {
-  const activeSources = req.body.categories.sources.active;
-  const activeStatuses = req.body.categories.statuses.active;
-  const startDate = req.body.startDate;
-  const endDate = req.body.endDate;
-  const pageNumber = req.body.page;
-  const pageSize = req.body.pageSize;
+  let activeSources = null;
+  let activeStatuses = null;
+  let startDate = null;
+  let endDate = null;
+  let pageNumber = null;
+  let pageSize = null;
+  let order = null;
+  let orderBy = null;
+  try {
+    activeSources = req.body.categories.sources.active;
+    activeStatuses = req.body.categories.statuses.active;
+    startDate = req.body.startDate;
+    endDate = req.body.endDate;
+    pageNumber = req.body.page;
+    pageSize = req.body.pageSize;
+    order = req.body.order;
+    orderBy = req.body.orderBy;
+  } catch (TypeError) {}
 
-  const order = req.body.order;
-
-  // orderBy not currently used because it only ever has 1 value: created
-  const orderBy = req.body.orderBy;
   let events;
   let queryObj = {};
   try {
@@ -116,13 +124,12 @@ const list = async (req, res) => {
       }
 
       const searchText = req.body.searchText;
+      const searchField = req.body.searchField;
       if (searchText) {
-        queryObj = {
-          ...queryObj,
-          "property.street": searchText ? searchText.trim() : "",
-        };
+        queryObj[searchField] = searchText ? searchText.trim() : "";
       }
     }
+    console.log(queryObj);
     events = await Event.find(queryObj)
       .sort({
         created: order === "desc" ? -1 : 1,
