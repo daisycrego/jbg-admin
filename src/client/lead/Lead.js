@@ -85,6 +85,7 @@ export default function Lead({ match }) {
       color="primary"
       className={classes.button}
       startIcon={<ArrowBackIcon />}
+      style={{margin:10}}
     >
       Back to search results</Button>
     <Paper className={classes.root} elevation={4}>
