@@ -62,12 +62,15 @@ const list = async (req, res) => {
   const activeStatuses = req.body.categories.statuses.active;
   const startDate = req.body.startDate;
   const endDate = req.body.endDate;
+  const pageNumber = req.body.page;
+  const pageSize = req.body.pageSize;
 
   const order = req.body.order;
 
   // orderBy not currently used because it only ever has 1 value: created
   const orderBy = req.body.orderBy;
   let events;
+  let queryObj = {};
   try {
     if (startDate || endDate) {
       let startDateOnly = startDate ? new Date(startDate) : new Date(0);
@@ -79,18 +82,15 @@ const list = async (req, res) => {
       endDateOnly = endDateOnly.toLocaleDateString();
       endDateOnly = new Date(endDateOnly);
 
-      events = await Event.find({
+      queryObj = {
         source: activeSources,
         status: activeStatuses,
         created: {
           $gte: startDateOnly,
           $lt: endDateOnly,
         },
-      }).sort({
-        created: order === "desc" ? -1 : 1,
-      });
+      };
     } else {
-      let queryObj;
       if (
         activeSources &&
         activeStatuses &&
@@ -112,10 +112,7 @@ const list = async (req, res) => {
           source: [],
         };
       } else {
-        queryObj = {
-          status: [],
-          source: [],
-        };
+        queryObj = {};
       }
 
       const searchText = req.body.searchText;
@@ -124,22 +121,22 @@ const list = async (req, res) => {
           ...queryObj,
           "property.street": searchText ? searchText.trim() : "",
         };
-        events = await Event.find(queryObj)
-          .find()
-          .sort({
-            created: order === "desc" ? -1 : 1,
-          });
-      } else {
-        events = await Event.find(queryObj).sort({
-          created: order === "desc" ? -1 : 1,
-        });
       }
     }
+    events = await Event.find(queryObj)
+      .sort({
+        created: order === "desc" ? -1 : 1,
+      })
+      .skip(pageSize * pageNumber)
+      .limit(pageSize);
+
+    const totalEvents = await Event.find(queryObj).countDocuments();
 
     const allSources = await Event.distinct("source");
     const allStatuses = await Event.distinct("status");
 
     res.json({
+      totalEvents: totalEvents,
       events: events,
       sources: allSources,
       statuses: allStatuses,

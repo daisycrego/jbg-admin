@@ -128,12 +128,23 @@ const EnhancedTableToolbar = (props) => {
           <SearchBar
             classes={classes}
             searchText={props.queryState.searchText}
-            updateSearchText={(newSearchText) =>
-              props.updateQueryState({
-                ...props.queryState,
-                searchText: newSearchText,
-              })
-            }
+            updateSearchText={(newSearchText) => {
+              let newQueryState = { ...props.queryState };
+              newQueryState.searchText = newSearchText;
+              for (let column of props.columns) {
+                if (
+                  newQueryState.categories &&
+                  newQueryState.categories[column.categoriesName] &&
+                  newQueryState.categories[column.categoriesName].active
+                ) {
+                  newQueryState.categories[column.categoriesName].active = null;
+                }
+              }
+              console.log(`updateSearchText`);
+              console.log(newQueryState);
+              newQueryState.page = 0;
+              props.updateQueryState(newQueryState);
+            }}
           />
           <Button
             className={classes.button}
@@ -175,6 +186,7 @@ const rowSlice = (rows, page, pageSize) => {
 
 export default function EnhancedTable({
   rows,
+  totalRows,
   filterCategories,
   queryState,
   updateQueryState,
@@ -188,18 +200,8 @@ export default function EnhancedTable({
   createSnackbarAlert,
 }) {
   const classes = useStyles();
-  const [currentPageRows, setCurrentPageRows] = useState([]);
   const [updatingRowId, setUpdatingRowId] = useState(null);
   const [updatingRowState, setUpdatingRowState] = useState(null);
-
-  useEffect(() => {
-    const newCurrentPageRows = rowSlice(
-      rows,
-      queryState.page,
-      queryState.pageSize
-    );
-    setCurrentPageRows(newCurrentPageRows);
-  }, [rows]);
 
   const emptyRows =
     queryState.Size -
@@ -210,22 +212,11 @@ export default function EnhancedTable({
 
   const handleChangePage = (event, newPage) => {
     updateQueryState({ ...queryState, page: newPage });
-    const newActiveRows = rows.slice(
-      newPage * queryState.pageSize,
-      newPage * queryState.pageSize + queryState.pageSize
-    );
-    setCurrentPageRows(newActiveRows);
   };
 
   const handleChangeRowsPerPage = (event) => {
     const newRowsPerPage = parseInt(event.target.value, 10);
-    const newPage = 0;
-    const newActiveRows = rows.slice(
-      newPage * newRowsPerPage,
-      newPage * newRowsPerPage + newRowsPerPage
-    );
     updateQueryState({ ...queryState, pageSize: newRowsPerPage, page: 0 });
-    setCurrentPageRows(newActiveRows);
   };
 
   return (
@@ -234,6 +225,7 @@ export default function EnhancedTable({
         <EnhancedTableToolbar
           title={title}
           rows={rows}
+          columns={columns}
           queryState={queryState}
           updateQueryState={updateQueryState}
           CSVParser={CSVParser}
@@ -267,7 +259,7 @@ export default function EnhancedTable({
                   </TableCell>
                 </TableRow>
               ) : null}
-              {currentPageRows.map((row) => {
+              {rows.map((row) => {
                 return (
                   <TableRow hover tabIndex={-1} key={row._id}>
                     {columns.map((column, index) => (
@@ -308,7 +300,7 @@ export default function EnhancedTable({
         <TablePagination
           rowsPerPageOptions={[5, 10, 25, 50, 100]}
           component="div"
-          count={rows.length}
+          count={totalRows}
           rowsPerPage={queryState.pageSize}
           page={queryState.page}
           onPageChange={handleChangePage}

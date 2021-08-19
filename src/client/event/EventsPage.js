@@ -122,6 +122,7 @@ export default function EventsPage({
   const [snackbar, setSnackbar] = useState({ open: false, message: "" });
   const [redirectToSignin, setRedirectToSignin] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [total, setTotal] = useState(0);
 
   const createSnackbarAlert = (message) => {
     setSnackbar({ message, open: true });
@@ -179,6 +180,7 @@ export default function EventsPage({
       } else {
         setIsLoading(false);
         setRows(prepareEvents(data.events));
+        setTotal(data.totalEvents);
         let newFilterCategories = { ...filterCategories };
         for (let column of generateColumnDesc()) {
           if (column.attr.includes(tableAttr.FILTERABLE)) {
@@ -209,6 +211,7 @@ export default function EventsPage({
         title={"Follow-Up Boss Events"}
         isLoading={isLoading}
         rows={rows}
+        totalRows={total}
         filterCategories={filterCategories}
         columns={generateColumnDesc()}
         queryState={queryState}
