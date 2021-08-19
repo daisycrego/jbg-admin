@@ -85,6 +85,7 @@ export default function Event({ match }) {
       variant="contained"
       color="primary"
       className={classes.button}
+      style={{margin:10}}
       startIcon={<ArrowBackIcon />}
     >
       Back to search results</Button>
