@@ -9,7 +9,7 @@ import LeadsPage from "./lead/LeadsPage";
 import Signin from "./auth/Signin";
 import EditProfile from "./user/EditProfile";
 import Profile from "./user/Profile";
-import Menu from "./core/Menu";
+import Menu from "./components/Menu";
 import {
   zillowStatusOptions,
   zillowStageOptions,

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { tableAttr, tableDataTypes } from "../lib/table";
+import { tableAttr, tableDataTypes } from "../../lib/table";
 import {
   TableCell,
   IconButton,

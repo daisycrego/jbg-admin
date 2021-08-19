@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { lighten, makeStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@material-ui/core/styles";
 import {
   Table,
   TableBody,
@@ -13,21 +13,11 @@ import {
   Paper,
   Button,
 } from "@material-ui/core";
-import {
-  DateRange,
-  Clear,
-  ExpandLess,
-  EventAvailable,
-  ArrowRightAlt,
-  HighlightOff,
-  Refresh,
-} from "@material-ui/icons";
-import _ from "lodash";
-import auth from "./auth/auth-helper";
+import { Refresh } from "@material-ui/icons";
 import TableFilterList from "./TableFilterList";
 import EnhancedTableCell from "./EnhancedTableCell";
 import EnhancedDatePicker from "./EnhancedDatePicker";
-import { tableAttr, tableDataTypes } from "../lib/table";
+import { tableAttr } from "../../lib/table";
 import CSVDownloadButton from "./CSVDownloadButton";
 import SyncButton from "./SyncButton";
 import SearchBar from "./SearchBar";

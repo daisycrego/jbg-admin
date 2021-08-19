@@ -4,7 +4,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import { list, update, sync_events } from "./api-event.js";
 import auth from "./../auth/auth-helper";
-import EnhancedTable from "../EnhancedTable";
+import EnhancedTable from "../components/EnhancedTable";
 import { tableAttr, tableDataTypes } from "../../lib/table";
 import { CSVParser } from "../../lib/csvParser";
 import { Snackbar } from "@material-ui/core";

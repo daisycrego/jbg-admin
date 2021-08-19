@@ -4,7 +4,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import { list, update, sync_leads } from "./api-lead.js";
 import auth from "./../auth/auth-helper";
-import EnhancedTable from "../EnhancedTable";
+import EnhancedTable from "../components/EnhancedTable";
 import { tableAttr, tableDataTypes } from "../../lib/table";
 import { LeadCSVParser as CSVParser } from "../../lib/leadCsvParser";
 import { Snackbar } from "@material-ui/core";
