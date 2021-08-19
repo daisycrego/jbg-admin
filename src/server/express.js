@@ -37,24 +37,22 @@ let workQueue = new Queue("work", REDIS_URL);
 devBundle.compile(app);
 
 // parse body params and attache them to req.body
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(cookieParser());
 app.use(compress());
-// secure apps by setting various HTTP headers
 app.use(helmet());
-// enable CORS - Cross Origin Resource Sharing
 app.use(cors());
 
 app.use("/dist", express.static(path.join(CURRENT_WORKING_DIR, "dist")));
 
-// mount routes
+// Mount routes
 app.use("/", userRoutes);
 app.use("/", eventRoutes);
 app.use("/", authRoutes);
 app.use("/", leadRoutes);
 
-// Kick off a new job by adding it to the work queue
+// Start a new job by adding it to the work queue
 app.post("/job", async (req, res) => {
   // This would be where you could pass arguments to the job
   // Ex: workQueue.add({ url: 'https://www.heroku.com' })
@@ -83,7 +81,7 @@ workQueue.on("global:completed", (jobId, result) => {
   console.log(`Job completed with result ${result}`);
 });
 
-// set up `eventsCreated` FUB webhook if it doesn't exist
+// Set up FUB webhooks
 setupWebhooks();
 
 app.get("*", (req, res) => {

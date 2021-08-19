@@ -12,11 +12,6 @@ router
   .put(authCtrl.requireSignin, authCtrl.hasAuthorization, userCtrl.update)
   .delete(authCtrl.requireSignin, authCtrl.hasAuthorization, userCtrl.remove);
 
-// TODO
-/*
-Add /api/events and /api/events/:userId routes with protections similar to the routes above (/api/users and /api/users/:userId)
-*/
-
 router.param("userId", userCtrl.userByID);
 
 export default router;

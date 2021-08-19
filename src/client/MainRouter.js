@@ -10,11 +10,7 @@ import Signin from "./auth/Signin";
 import EditProfile from "./user/EditProfile";
 import Profile from "./user/Profile";
 import Menu from "./components/Menu";
-import {
-  zillowStatusOptions,
-  zillowStageOptions,
-  booleanOptions,
-} from "../lib/constants";
+import { zillowStatusOptions, booleanOptions } from "../lib/constants";
 
 const initialLeadSearchState = {
   page: 0,

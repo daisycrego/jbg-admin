@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-//const { zillowStageOptions } = require("../../lib/constants");
 const LeadSchema = new mongoose.Schema({
   id: {
     type: Number,
