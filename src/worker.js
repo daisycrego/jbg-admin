@@ -2,7 +2,7 @@ let throng = require("throng");
 let Queue = require("bull");
 let Event = require("./server/models/event.model");
 let Log = require("./server/models/log.model");
-const { fubGET } = require("./fetch-fub");
+const { fubGET } = require("./lib/fetch-fub");
 const nodemailer = require("nodemailer");
 const { connect } = require("./db");
 

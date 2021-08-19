@@ -1,5 +1,5 @@
 const fetch = require("node-fetch");
-const config = require("./config/config");
+const config = require("../config/config");
 
 const fubGET = async (endpoint) => {
   const BASIC_AUTHORIZATION = config.basicAuth;
