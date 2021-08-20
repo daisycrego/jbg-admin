@@ -33,17 +33,6 @@ const useStyles = makeStyles((theme) => ({
   table: {
     minWidth: 750,
   },
-  visuallyHidden: {
-    border: 0,
-    clip: "rect(0 0 0 0)",
-    height: 1,
-    margin: -1,
-    overflow: "hidden",
-    padding: 0,
-    position: "absolute",
-    top: 20,
-    width: 1,
-  },
   listItem: {
     listStyleType: "none",
     height: "10em",
@@ -53,7 +42,13 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function EnhancedTableHead(props) {
-  const { classes, queryState, updateQueryState, columnMetadata } = props;
+  const {
+    classes,
+    queryState,
+    updateQueryState,
+    columnMetadata,
+    filterCategories,
+  } = props;
 
   return (
     <TableHead>
@@ -72,7 +67,7 @@ function EnhancedTableHead(props) {
                   column={columnCell}
                   queryState={queryState}
                   updateQueryState={updateQueryState}
-                  filterOptions={props.filterCategories[columnCell.name]}
+                  filterOptions={filterCategories[columnCell.name]}
                 />
               </TableCell>
             );
