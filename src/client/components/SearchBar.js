@@ -18,6 +18,12 @@ export default function SearchBar(props) {
           onInput={(e) => setSearchText(e.target.value)}
           placeholder={`${props.searchTitle}...`}
           autoComplete="off"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              updateSearchText(searchText);
+            }
+          }}
         >
           {props.searchText}
         </Input>

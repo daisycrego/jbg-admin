@@ -136,6 +136,7 @@ export default function EventsPage({
 
   const handleQueryReset = () => {
     updateQueryState(initialQueryState);
+    //this.props.history.push("/");
   };
 
   const handleSyncEvents = async () => {
