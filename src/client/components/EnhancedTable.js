@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import {
   Table,
@@ -53,12 +53,12 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function EnhancedTableHead(props) {
-  const { classes, queryState, updateQueryState, columns } = props;
+  const { classes, queryState, updateQueryState, columnMetadata } = props;
 
   return (
     <TableHead>
       <TableRow>
-        {columns.map((columnCell) => {
+        {columnMetadata.map((columnCell) => {
           if (columnCell.attr.includes(tableAttr.FILTERABLE)) {
             return (
               <TableCell
@@ -111,7 +111,7 @@ const useToolbarStyles = makeStyles((theme) => ({
 
 const EnhancedTableToolbar = (props) => {
   const classes = useToolbarStyles();
-  const searchColumns = props.columns.filter((column) => column.search);
+  const searchColumns = props.columnMetadata.filter((column) => column.search);
 
   return (
     <Toolbar>
@@ -142,7 +142,7 @@ const EnhancedTableToolbar = (props) => {
                   searchColumns.length && searchColumns[0].searchField
                     ? searchColumns[0].searchField
                     : "";
-                for (let column of props.columns) {
+                for (let column of props.columnMetadata) {
                   if (
                     newQueryState.categories &&
                     newQueryState.categories[column.categoriesName] &&
@@ -189,13 +189,6 @@ const EnhancedTableToolbar = (props) => {
   );
 };
 
-const rowSlice = (rows, page, pageSize) => {
-  if (!rows) {
-    return [];
-  }
-  return rows.slice(page * pageSize, page * pageSize + pageSize);
-};
-
 export default function EnhancedTable({
   rows,
   totalRows,
@@ -204,7 +197,7 @@ export default function EnhancedTable({
   updateQueryState,
   title,
   isLoading,
-  columns,
+  columnMetadata,
   CSVParser,
   handleSync,
   syncTitle,
@@ -237,7 +230,7 @@ export default function EnhancedTable({
         <EnhancedTableToolbar
           title={title}
           rows={rows}
-          columns={columns}
+          columnMetadata={columnMetadata}
           queryState={queryState}
           updateQueryState={updateQueryState}
           CSVParser={CSVParser}
@@ -256,7 +249,7 @@ export default function EnhancedTable({
           >
             <EnhancedTableHead
               classes={classes}
-              columns={columns}
+              columnMetadata={columnMetadata}
               queryState={queryState}
               updateQueryState={updateQueryState}
               rows={rows}
@@ -274,7 +267,7 @@ export default function EnhancedTable({
               {rows.map((row) => {
                 return (
                   <TableRow hover tabIndex={-1} key={row._id}>
-                    {columns.map((column, index) => (
+                    {columnMetadata.map((column, index) => (
                       <EnhancedTableCell
                         key={`enhanced-${index}-${row._id}`}
                         options={filterCategories[column.name]}

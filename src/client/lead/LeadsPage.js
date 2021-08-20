@@ -33,9 +33,9 @@ export default function LeadsPage({
   const [rows, setRows] = useState([]);
   const [total, setTotal] = useState(0);
   const setupFilterCategories = () => {
-    const columns = generateColumnDesc();
+    const columnMetadata = generateColumnMetadata();
     let filterCategories = {};
-    for (let column of columns) {
+    for (let column of columnMetadata) {
       if (column.attr.includes(tableAttr.FILTERABLE)) {
         filterCategories[column.name] = [];
       }
@@ -84,7 +84,7 @@ export default function LeadsPage({
     }
   };
 
-  const generateColumnDesc = () => {
+  const generateColumnMetadata = () => {
     return [
       {
         name: "name",
@@ -234,7 +234,7 @@ export default function LeadsPage({
         setRows(prepareLeads(data.leads));
         setTotal(data.totalLeads);
         let newFilterCategories = { ...filterCategories };
-        for (let column of generateColumnDesc()) {
+        for (let column of generateColumnMetadata()) {
           if (column.attr.includes(tableAttr.FILTERABLE)) {
             newFilterCategories[column.name] = data[column.categoriesName];
           }
@@ -265,7 +265,7 @@ export default function LeadsPage({
         rows={rows}
         totalRows={total}
         filterCategories={filterCategories}
-        columns={generateColumnDesc()}
+        columnMetadata={generateColumnMetadata()}
         queryState={queryState}
         updateQueryState={updateQueryState}
         tableDataTypes={tableDataTypes}

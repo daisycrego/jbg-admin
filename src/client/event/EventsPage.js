@@ -33,9 +33,9 @@ export default function EventsPage({
   const [rows, setRows] = useState([]);
 
   const setupFilterCategories = () => {
-    const columns = generateColumnDesc();
+    const columnMetadata = generateColumnMetadata();
     let filterCategories = {};
-    for (let column of columns) {
+    for (let column of columnMetadata) {
       if (column.attr.includes(tableAttr.FILTERABLE)) {
         filterCategories[column.name] = [];
       }
@@ -64,7 +64,7 @@ export default function EventsPage({
     });
   };
 
-  const generateColumnDesc = () => {
+  const generateColumnMetadata = () => {
     return [
       {
         name: "propertyStreet",
@@ -189,7 +189,7 @@ export default function EventsPage({
         setRows(prepareEvents(data.events));
         setTotal(data.totalEvents);
         let newFilterCategories = { ...filterCategories };
-        for (let column of generateColumnDesc()) {
+        for (let column of generateColumnMetadata()) {
           if (column.attr.includes(tableAttr.FILTERABLE)) {
             newFilterCategories[column.name] = data[column.categoriesName];
           }
@@ -220,7 +220,7 @@ export default function EventsPage({
         rows={rows}
         totalRows={total}
         filterCategories={filterCategories}
-        columns={generateColumnDesc()}
+        columnMetadata={generateColumnMetadata()}
         queryState={queryState}
         updateQueryState={updateQueryState}
         tableDataTypes={tableDataTypes}
