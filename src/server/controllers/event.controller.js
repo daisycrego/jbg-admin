@@ -129,7 +129,6 @@ const list = async (req, res) => {
         queryObj[searchField] = searchText ? searchText.trim() : "";
       }
     }
-    console.log(queryObj);
     events = await Event.find(queryObj)
       .sort({
         created: order === "desc" ? -1 : 1,
