@@ -305,9 +305,6 @@ let REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
 let workQueue = new Queue("work", REDIS_URL);
 
 const createEventsWebhookCallback = (req, res) => {
-  // This would be where you could pass arguments to the job
-  // Ex: workQueue.add({ url: 'https://www.heroku.com' })
-  // Docs: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueadd
   let job;
   workQueue.add(req.body).then((result) => (job = result));
   res.sendStatus(200);
