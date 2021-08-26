@@ -14,7 +14,7 @@ import {
   Button,
 } from "@material-ui/core";
 import { Refresh } from "@material-ui/icons";
-import TableFilterList from "./TableFilterList";
+import FilterableHeaderCell from "./FilterableHeaderCell";
 import EnhancedTableCell from "./EnhancedTableCell";
 import EnhancedDatePicker from "./EnhancedDatePicker";
 import { tableAttr } from "../../lib/table";
@@ -41,44 +41,42 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function EnhancedTableHead(props) {
-  const {
-    classes,
-    queryState,
-    updateQueryState,
-    columnMetadata,
-    filterCategories,
-  } = props;
-
+function EnhancedTableHead({
+  classes,
+  queryState,
+  updateQueryState,
+  columnsMetadata,
+  filterCategories,
+}) {
   return (
     <TableHead>
       <TableRow>
-        {columnMetadata.map((columnCell) => {
-          if (columnCell.attr.includes(tableAttr.FILTERABLE)) {
+        {columnsMetadata.map((columnMetadata) => {
+          if (columnMetadata.attr.includes(tableAttr.FILTERABLE)) {
             return (
               <TableCell
-                key={columnCell.name}
+                key={columnMetadata.name}
                 align={"center"}
                 padding={"normal"}
               >
-                {columnCell.title}
-                <TableFilterList
+                {columnMetadata.title}
+                <FilterableHeaderCell
                   classes={classes}
-                  column={columnCell}
+                  columnMetadata={columnMetadata}
                   queryState={queryState}
                   updateQueryState={updateQueryState}
-                  filterOptions={filterCategories[columnCell.name]}
+                  filterOptions={filterCategories[columnMetadata.name]}
                 />
               </TableCell>
             );
           } else {
             return (
               <TableCell
-                key={columnCell.name}
+                key={columnMetadata.name}
                 align={"center"}
                 padding={"normal"}
               >
-                {columnCell.title}
+                {columnMetadata.title}
               </TableCell>
             );
           }
@@ -106,7 +104,9 @@ const useToolbarStyles = makeStyles((theme) => ({
 
 const EnhancedTableToolbar = (props) => {
   const classes = useToolbarStyles();
-  const searchColumns = props.columnMetadata.filter((column) => column.search);
+  const searchColumns = props.columnsMetadata.filter(
+    (columnMetadata) => columnMetadata.search
+  );
 
   return (
     <Toolbar>
@@ -137,14 +137,16 @@ const EnhancedTableToolbar = (props) => {
                   searchColumns.length && searchColumns[0].searchField
                     ? searchColumns[0].searchField
                     : "";
-                for (let column of props.columnMetadata) {
+                for (let columnMetadata of props.columnsMetadata) {
                   if (
                     newQueryState.categories &&
-                    newQueryState.categories[column.categoriesName] &&
-                    newQueryState.categories[column.categoriesName].active
+                    newQueryState.categories[columnMetadata.categoriesName] &&
+                    newQueryState.categories[columnMetadata.categoriesName]
+                      .active
                   ) {
-                    newQueryState.categories[column.categoriesName].active =
-                      null;
+                    newQueryState.categories[
+                      columnMetadata.categoriesName
+                    ].active = null;
                   }
                 }
                 newQueryState.page = 0;
@@ -192,7 +194,7 @@ export default function EnhancedTable({
   updateQueryState,
   title,
   isLoading,
-  columnMetadata,
+  columnsMetadata,
   CSVParser,
   handleSync,
   syncTitle,
@@ -225,7 +227,7 @@ export default function EnhancedTable({
         <EnhancedTableToolbar
           title={title}
           rows={rows}
-          columnMetadata={columnMetadata}
+          columnsMetadata={columnsMetadata}
           queryState={queryState}
           updateQueryState={updateQueryState}
           CSVParser={CSVParser}
@@ -244,7 +246,7 @@ export default function EnhancedTable({
           >
             <EnhancedTableHead
               classes={classes}
-              columnMetadata={columnMetadata}
+              columnsMetadata={columnsMetadata}
               queryState={queryState}
               updateQueryState={updateQueryState}
               rows={rows}
@@ -262,21 +264,21 @@ export default function EnhancedTable({
               {rows.map((row) => {
                 return (
                   <TableRow hover tabIndex={-1} key={row._id}>
-                    {columnMetadata.map((column, index) => (
+                    {columnsMetadata.map((columnMetadata, index) => (
                       <EnhancedTableCell
                         key={`enhanced-${index}-${row._id}`}
-                        options={filterCategories[column.name]}
-                        column={column}
+                        options={filterCategories[columnMetadata.name]}
+                        columnMetadata={columnMetadata}
                         row={row}
                         index={index}
                         classes={classes}
                         isUpdatingCell={
-                          column.attr.includes(tableAttr.UPDATABLE) &&
+                          columnMetadata.attr.includes(tableAttr.UPDATABLE) &&
                           updatingRowId &&
                           updatingRowId === row._id
                         }
                         updatingCellState={
-                          column.attr.includes(tableAttr.UPDATABLE) &&
+                          columnMetadata.attr.includes(tableAttr.UPDATABLE) &&
                           updatingRowId &&
                           updatingRowId === row._id
                             ? updatingRowState

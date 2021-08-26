@@ -15,7 +15,7 @@ export default function EnhancedTableCell(props) {
   const {
     options,
     row,
-    column,
+    columnMetadata,
     index,
     classes,
     updateRowState,
@@ -37,13 +37,13 @@ export default function EnhancedTableCell(props) {
     updateRowId(rowId);
   };
 
-  if (column.attr.includes(tableAttr.UPDATABLE)) {
+  if (columnMetadata.attr.includes(tableAttr.UPDATABLE)) {
     if (isUpdatingCell) {
       return (
         <TableCell key={`cell-${row._id}`}>
           <Select
-            labelId={`${column.name}-select`}
-            id={`${column.name}_select_${row._id}`}
+            labelId={`${columnMetadata.name}-select`}
+            id={`${columnMetadata.name}_select_${row._id}`}
             value={updatingCellState ? updatingCellState : ""}
             key={`select_${row._id}`}
             onChange={(e) => handleUpdatableChange(e)}
@@ -59,7 +59,7 @@ export default function EnhancedTableCell(props) {
               aria-label="save"
               color="primary"
               onClick={(e) => {
-                column.updateHandler(updatingCellState, row);
+                columnMetadata.updateHandler(updatingCellState, row);
                 setUpdatingCellState(e.target.value);
                 updateRowId(null);
               }}
@@ -84,12 +84,14 @@ export default function EnhancedTableCell(props) {
     } else {
       return (
         <TableCell key={`cell-${row._id}`}>
-          <Tooltip title={`Update ${column.name}`}>
+          <Tooltip title={`Update ${columnMetadata.name}`}>
             <Button
-              key={`${column.name}_button_${row._id}`}
-              onClick={() => handleUpdatableClick(row._id, row[column.name])}
+              key={`${columnMetadata.name}_button_${row._id}`}
+              onClick={() =>
+                handleUpdatableClick(row._id, row[columnMetadata.name])
+              }
             >
-              {row[column.name]}
+              {row[columnMetadata.name]}
               <Edit key={`edit_icon_${row._id}`} />
             </Button>
           </Tooltip>
@@ -98,7 +100,7 @@ export default function EnhancedTableCell(props) {
     }
   }
   const labelId = `enhanced-table-checkbox-${row._id}`;
-  switch (column.type) {
+  switch (columnMetadata.type) {
     case tableDataTypes.STRING:
       return (
         <TableCell
@@ -109,7 +111,7 @@ export default function EnhancedTableCell(props) {
           padding="normal"
           key={`${labelId}-${index}`}
         >
-          {row[column.name] ? row[column.name] : ""}
+          {row[columnMetadata.name] ? row[columnMetadata.name] : ""}
         </TableCell>
       );
     case tableDataTypes.LINK:
@@ -120,7 +122,7 @@ export default function EnhancedTableCell(props) {
           padding={"normal"}
         >
           <Tooltip title="More data">
-            <Link to={`${column.endpoint}/${row._id}`} key={row._id}>
+            <Link to={`${columnMetadata.endpoint}/${row._id}`} key={row._id}>
               <IconButton
                 color="primary"
                 variant="contained"
@@ -142,7 +144,7 @@ export default function EnhancedTableCell(props) {
           padding="normal"
           key={`${labelId}-${index}`}
         >
-          {row[column.name] ? "YES" : "NO"}
+          {row[columnMetadata.name] ? "YES" : "NO"}
         </TableCell>
       );
 
@@ -156,8 +158,8 @@ export default function EnhancedTableCell(props) {
           padding="normal"
           key={`${labelId}-${index}`}
         >
-          {`${new Date(row[column.name]).toDateString()} ${new Date(
-            row[column.name]
+          {`${new Date(row[columnMetadata.name]).toDateString()} ${new Date(
+            row[columnMetadata.name]
           ).toLocaleTimeString()}`}
         </TableCell>
       );

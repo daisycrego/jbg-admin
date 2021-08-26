@@ -33,11 +33,11 @@ export default function EventsPage({
   const [rows, setRows] = useState([]);
 
   const setupFilterCategories = () => {
-    const columnMetadata = generateColumnMetadata();
+    const columnsMetadata = generateColumnMetadata();
     let filterCategories = {};
-    for (let column of columnMetadata) {
-      if (column.attr.includes(tableAttr.FILTERABLE)) {
-        filterCategories[column.name] = [];
+    for (let columnMetadata of columnsMetadata) {
+      if (columnMetadata.attr.includes(tableAttr.FILTERABLE)) {
+        filterCategories[columnMetadata.name] = [];
       }
     }
     return filterCategories;
@@ -189,9 +189,10 @@ export default function EventsPage({
         setRows(prepareEvents(data.events));
         setTotal(data.totalEvents);
         let newFilterCategories = { ...filterCategories };
-        for (let column of generateColumnMetadata()) {
-          if (column.attr.includes(tableAttr.FILTERABLE)) {
-            newFilterCategories[column.name] = data[column.categoriesName];
+        for (let columnMetadata of generateColumnMetadata()) {
+          if (columnMetadata.attr.includes(tableAttr.FILTERABLE)) {
+            newFilterCategories[columnMetadata.name] =
+              data[columnMetadata.categoriesName];
           }
         }
         setFilterCategories(newFilterCategories);
@@ -220,7 +221,7 @@ export default function EventsPage({
         rows={rows}
         totalRows={total}
         filterCategories={filterCategories}
-        columnMetadata={generateColumnMetadata()}
+        columnsMetadata={generateColumnMetadata()}
         queryState={queryState}
         updateQueryState={updateQueryState}
         tableDataTypes={tableDataTypes}

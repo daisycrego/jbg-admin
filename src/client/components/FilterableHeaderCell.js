@@ -15,15 +15,17 @@ const CheckboxListItem = ({
   category,
   queryState,
   updateQueryState,
-  column,
+  columnMetadata,
 }) => {
-  const handleCheckboxClick = (category, add, column) => {
+  const handleCheckboxClick = (category, add, columnMetadata) => {
     let newQueryState = { ...queryState };
     if (add) {
-      newQueryState.categories[column.categoriesName].active.push(category);
+      newQueryState.categories[columnMetadata.categoriesName].active.push(
+        category
+      );
     } else {
-      newQueryState.categories[column.categoriesName].active.splice(
-        newQueryState.categories[column.categoriesName].active.indexOf(
+      newQueryState.categories[columnMetadata.categoriesName].active.splice(
+        newQueryState.categories[columnMetadata.categoriesName].active.indexOf(
           category
         ),
         1
@@ -33,17 +35,19 @@ const CheckboxListItem = ({
     updateQueryState(newQueryState);
   };
 
-  const checkbox = (column) => {
+  const checkbox = (columnMetadata) => {
     if (
       queryState.categories &&
-      column.categoriesName in queryState.categories
+      columnMetadata.categoriesName in queryState.categories
     ) {
       if (
-        queryState.categories[column.categoriesName].active.includes(category)
+        queryState.categories[columnMetadata.categoriesName].active.includes(
+          category
+        )
       ) {
         return (
           <IconButton
-            onClick={() => handleCheckboxClick(category, false, column)}
+            onClick={() => handleCheckboxClick(category, false, columnMetadata)}
           >
             <CheckBox />
           </IconButton>
@@ -51,7 +55,7 @@ const CheckboxListItem = ({
       } else {
         return (
           <IconButton
-            onClick={() => handleCheckboxClick(category, true, column)}
+            onClick={() => handleCheckboxClick(category, true, columnMetadata)}
           >
             <CheckBoxOutlineBlank />
           </IconButton>
@@ -62,15 +66,15 @@ const CheckboxListItem = ({
 
   return (
     <li key={category}>
-      {checkbox(column)}
+      {checkbox(columnMetadata)}
       {category}
     </li>
   );
 };
 
-export default function TableFilterList({
+export default function FilterableHeaderCell({
   classes,
-  column,
+  columnMetadata,
   queryState,
   updateQueryState,
   filterOptions,
@@ -101,8 +105,9 @@ export default function TableFilterList({
                 <IconButton
                   onClick={() => {
                     let newQueryState = { ...queryState };
-                    newQueryState.categories[column.categoriesName].active =
-                      filterOptions;
+                    newQueryState.categories[
+                      columnMetadata.categoriesName
+                    ].active = filterOptions;
                     newQueryState.page = 0;
                     updateQueryState(newQueryState);
                   }}
@@ -114,7 +119,9 @@ export default function TableFilterList({
                 <IconButton
                   onClick={() => {
                     let newQueryState = { ...queryState };
-                    newQueryState.categories[column.categoriesName].active = [];
+                    newQueryState.categories[
+                      columnMetadata.categoriesName
+                    ].active = [];
                     newQueryState.page = 0;
                     updateQueryState(newQueryState);
                   }}
@@ -126,8 +133,12 @@ export default function TableFilterList({
                 <IconButton
                   onClick={() => {
                     let newQueryState = { ...queryState };
-                    newQueryState.categories[column.categoriesName].active =
-                      queryState.categories[column.categoriesName].default;
+                    newQueryState.categories[
+                      columnMetadata.categoriesName
+                    ].active =
+                      queryState.categories[
+                        columnMetadata.categoriesName
+                      ].default;
                     newQueryState.page = 0;
                     updateQueryState(newQueryState);
                   }}
@@ -140,7 +151,7 @@ export default function TableFilterList({
               {filterOptions.map((category) => (
                 <CheckboxListItem
                   key={category}
-                  column={column}
+                  columnMetadata={columnMetadata}
                   queryState={queryState}
                   updateQueryState={updateQueryState}
                   category={category}
