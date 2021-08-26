@@ -282,14 +282,9 @@ const syncEventsHelper = async (url) => {
 };
 
 const syncEvents = async (req, res) => {
-  // Prepare an authenticated request for the FUB API with a starting URL
-  // Rather than use a while loop, use some kind of helper function or recursion!
-  // Try to make a fetch from the FUB API
-  // If the response
   let currentUrl = "https://api.followupboss.com/v1/events?limit=100&offset=0";
   currentUrl = await syncEventsHelper(currentUrl);
   while (currentUrl) {
-    // update the currentUrl or exit the while loop
     currentUrl = await syncEventsHelper(currentUrl);
   }
 
