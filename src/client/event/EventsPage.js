@@ -230,6 +230,7 @@ export default function EventsPage({
         syncTitle={"Events"}
         handleQueryReset={handleQueryReset}
         createSnackbarAlert={createSnackbarAlert}
+        redirectTo={"/"}
       />
     </Paper>
   );

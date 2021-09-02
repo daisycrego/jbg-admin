@@ -163,7 +163,6 @@ export default function LeadsPage({
   );
 
   const [snackbar, setSnackbar] = useState({ open: false, message: "" });
-
   const [redirectToSignin, setRedirectToSignin] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -266,7 +265,7 @@ export default function LeadsPage({
         rows={rows}
         totalRows={total}
         filterCategories={filterCategories}
-        columnMetadata={generateColumnMetadata()}
+        columnsMetadata={generateColumnMetadata()}
         queryState={queryState}
         updateQueryState={updateQueryState}
         tableDataTypes={tableDataTypes}
@@ -275,6 +274,7 @@ export default function LeadsPage({
         handleSync={handleSyncLeads}
         handleQueryReset={handleQueryReset}
         createSnackbarAlert={createSnackbarAlert}
+        redirectTo={"/leads"}
       />
     </Paper>
   );

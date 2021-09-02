@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { tableAttr, tableDataTypes } from "../../lib/table";
 import {
   TableCell,
@@ -9,7 +9,7 @@ import {
   Tooltip,
 } from "@material-ui/core";
 import { Edit, Check, Cancel, ArrowForward } from "@material-ui/icons";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 
 export default function EnhancedTableCell(props) {
   const {
@@ -21,12 +21,13 @@ export default function EnhancedTableCell(props) {
     updateRowState,
     updateRowId,
     isUpdatingCell,
+    redirectTo,
   } = props;
 
   const [updatingCellState, setUpdatingCellState] = useState(
     props.updatingCellState
   );
-
+  
   const handleUpdatableChange = (e) => {
     setUpdatingCellState(e.target.value);
   };
@@ -36,6 +37,8 @@ export default function EnhancedTableCell(props) {
     updateRowState(newState);
     updateRowId(rowId);
   };
+
+  let history = useHistory();
 
   if (columnMetadata.attr.includes(tableAttr.UPDATABLE)) {
     if (isUpdatingCell) {
@@ -62,6 +65,8 @@ export default function EnhancedTableCell(props) {
                 columnMetadata.updateHandler(updatingCellState, row);
                 setUpdatingCellState(e.target.value);
                 updateRowId(null);
+                history.push(redirectTo);
+                history.go();
               }}
             >
               <Check />
@@ -87,7 +92,7 @@ export default function EnhancedTableCell(props) {
           <Tooltip title={`Update ${columnMetadata.name}`}>
             <Button
               key={`${columnMetadata.name}_button_${row._id}`}
-              onClick={() =>
+              onClick={() => 
                 handleUpdatableClick(row._id, row[columnMetadata.name])
               }
             >

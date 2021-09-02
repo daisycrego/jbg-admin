@@ -41,7 +41,7 @@ const CheckboxListItem = ({
       columnMetadata.categoriesName in queryState.categories
     ) {
       if (
-        queryState.categories[columnMetadata.categoriesName].active.includes(
+        queryState.categories[columnMetadata.categoriesName] && queryState.categories[columnMetadata.categoriesName].active && queryState.categories[columnMetadata.categoriesName].active.includes(
           category
         )
       ) {

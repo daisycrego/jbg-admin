@@ -21,6 +21,7 @@ import { tableAttr } from "../../lib/table";
 import CSVDownloadButton from "./CSVDownloadButton";
 import SyncButton from "./SyncButton";
 import SearchBar from "./SearchBar";
+import { useHistory } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -104,9 +105,10 @@ const useToolbarStyles = makeStyles((theme) => ({
 
 const EnhancedTableToolbar = (props) => {
   const classes = useToolbarStyles();
-  const searchColumns = props.columnsMetadata.filter(
+  const searchColumns = props.columnsMetadata && props.columnsMetadata.length ? props.columnsMetadata.filter(
     (columnMetadata) => columnMetadata.search
-  );
+  ) : [];
+  let history = useHistory();
 
   return (
     <Toolbar>
@@ -157,7 +159,7 @@ const EnhancedTableToolbar = (props) => {
 
           <Button
             className={classes.button}
-            onClick={props.handleQueryReset}
+            onClick={() => {history.push(props.redirectTo); history.go();}}
             startIcon={<Refresh />}
           >
             Reset Search
@@ -200,10 +202,12 @@ export default function EnhancedTable({
   syncTitle,
   handleQueryReset,
   createSnackbarAlert,
+  redirectTo,
 }) {
   const classes = useStyles();
   const [updatingRowId, setUpdatingRowId] = useState(null);
   const [updatingRowState, setUpdatingRowState] = useState(null);
+  
 
   const emptyRows =
     queryState.Size -
@@ -222,93 +226,95 @@ export default function EnhancedTable({
   };
 
   return (
-    <div className={classes.root}>
-      <Paper className={classes.paper}>
-        <EnhancedTableToolbar
-          title={title}
-          rows={rows}
-          columnsMetadata={columnsMetadata}
-          queryState={queryState}
-          updateQueryState={updateQueryState}
-          CSVParser={CSVParser}
-          handleSync={handleSync}
-          syncTitle={syncTitle}
-          handleQueryReset={handleQueryReset}
-          createSnackbarAlert={createSnackbarAlert}
-        />
-
-        <TableContainer>
-          <Table
-            className={classes.table}
-            aria-labelledby="tableTitle"
-            size={"medium"}
-            aria-label="enhanced table"
-          >
-            <EnhancedTableHead
-              classes={classes}
-              columnsMetadata={columnsMetadata}
-              queryState={queryState}
-              updateQueryState={updateQueryState}
-              rows={rows}
-              filterCategories={filterCategories}
-            />
-
-            <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell>
-                    <h2>Loading...</h2>
-                  </TableCell>
-                </TableRow>
-              ) : null}
-              {rows.map((row) => {
-                return (
-                  <TableRow hover tabIndex={-1} key={row._id}>
-                    {columnsMetadata.map((columnMetadata, index) => (
-                      <EnhancedTableCell
-                        key={`enhanced-${index}-${row._id}`}
-                        options={filterCategories[columnMetadata.name]}
-                        columnMetadata={columnMetadata}
-                        row={row}
-                        index={index}
-                        classes={classes}
-                        isUpdatingCell={
-                          columnMetadata.attr.includes(tableAttr.UPDATABLE) &&
-                          updatingRowId &&
-                          updatingRowId === row._id
-                        }
-                        updatingCellState={
-                          columnMetadata.attr.includes(tableAttr.UPDATABLE) &&
-                          updatingRowId &&
-                          updatingRowId === row._id
-                            ? updatingRowState
-                            : null
-                        }
-                        updateRowState={setUpdatingRowState}
-                        updateRowId={setUpdatingRowId}
-                      />
-                    ))}
+      <div className={classes.root}>
+        <Paper className={classes.paper}>
+          <EnhancedTableToolbar
+            title={title}
+            rows={rows}
+            columnsMetadata={columnsMetadata}
+            queryState={queryState}
+            updateQueryState={updateQueryState}
+            CSVParser={CSVParser}
+            handleSync={handleSync}
+            syncTitle={syncTitle}
+            handleQueryReset={handleQueryReset}
+            createSnackbarAlert={createSnackbarAlert}
+            redirectTo={redirectTo}
+          />
+  
+          <TableContainer>
+            <Table
+              className={classes.table}
+              aria-labelledby="tableTitle"
+              size={"medium"}
+              aria-label="enhanced table"
+            >
+              <EnhancedTableHead
+                classes={classes}
+                columnsMetadata={columnsMetadata}
+                queryState={queryState}
+                updateQueryState={updateQueryState}
+                rows={rows}
+                filterCategories={filterCategories}
+              />
+  
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell>
+                      <h2>Loading...</h2>
+                    </TableCell>
                   </TableRow>
-                );
-              })}
-              {emptyRows > 0 && (
-                <TableRow style={{ height: 53 * emptyRows }}>
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25, 50, 100]}
-          component="div"
-          count={totalRows}
-          rowsPerPage={queryState.pageSize}
-          page={queryState.page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </Paper>
-    </div>
-  );
+                ) : null}
+                {rows.map((row) => {
+                  return (
+                    <TableRow hover tabIndex={-1} key={row._id}>
+                      {columnsMetadata.map((columnMetadata, index) => (
+                        <EnhancedTableCell
+                          key={`enhanced-${index}-${row._id}`}
+                          options={filterCategories[columnMetadata.name]}
+                          columnMetadata={columnMetadata}
+                          row={row}
+                          index={index}
+                          classes={classes}
+                          isUpdatingCell={
+                            columnMetadata.attr.includes(tableAttr.UPDATABLE) &&
+                            updatingRowId &&
+                            updatingRowId === row._id
+                          }
+                          updatingCellState={
+                            columnMetadata.attr.includes(tableAttr.UPDATABLE) &&
+                            updatingRowId &&
+                            updatingRowId === row._id
+                              ? updatingRowState
+                              : null
+                          }
+                          updateRowState={setUpdatingRowState}
+                          updateRowId={setUpdatingRowId}
+                          redirectTo={redirectTo}
+                        />
+                      ))}
+                    </TableRow>
+                  );
+                })}
+                {emptyRows > 0 && (
+                  <TableRow style={{ height: 53 * emptyRows }}>
+                    <TableCell colSpan={6} />
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25, 50, 100]}
+            component="div"
+            count={totalRows}
+            rowsPerPage={queryState.pageSize}
+            page={queryState.page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </Paper>
+      </div>
+    );
 }
