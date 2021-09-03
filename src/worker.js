@@ -90,6 +90,10 @@ function start() {
             );
           }
 
+          
+          
+        }
+
           const isZillowFlexEvent = eventData.source
             .toLowerCase()
             .includes("zillow flex")
@@ -103,35 +107,49 @@ function start() {
 
             isPossibleZillowExemption = true;
 
-            const text = `Possible Zillow Flex Exemption Identified
-                Zillow Property URL: ${eventData.property.url}
-                FUB URL: https://jillkbiggs.followupboss.com/2/people/view/${eventData.personId}
-                Zillow Premier Agent URL: ${personData.sourceUrl}
-                View this lead on FUB: https://jillkbiggs.followupboss.com/2/people/view/${eventData.personId}
-            `;
+            const existingLogs = await Log.find({ personId: personData.id });
+            let isPossibleDuplicateAlert = false;
+            if (existingLogs.length) {
+                let threeDaysAgo = new Date();
+                threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+                const recentAlertsSent = existingLogs.length ? existingLogs.filter(log => log.isPossibleZillowExemption===true && log.processedAt > threeDaysAgo) : [];
+                if (recentAlertsSent.length) {
+                  console.log(`Duplicate alert detected, not sending an email!`)
+                  isPossibleDuplicateAlert = true;
+                  isPossibleZillowExemption = false;
+                } 
+                
+                if (!isPossibleDuplicateAlert) {
+                  const text = `Possible Zillow Flex Exemption Identified
+                      Zillow Property URL: ${eventData.property.url}
+                      FUB URL: https://jillkbiggs.followupboss.com/2/people/view/${eventData.personId}
+                      Zillow Premier Agent URL: ${personData.sourceUrl}
+                      View this lead on FUB: https://jillkbiggs.followupboss.com/2/people/view/${eventData.personId}
+                  `;
 
-            const html = `
-            <div>
-                <h2> Possible Zillow Flex Exemption Identified </h2>
-                <p> Zillow Property URL: ${eventData.property.url} </p>
-                <p> FUB URL: https://jillkbiggs.followupboss.com/2/people/view/${eventData.personId} </p>
-                <p> Zillow Premier Agent URL: ${personData.sourceUrl} </p>
-                <p> <a href="https://jillkbiggs.followupboss.com/2/people/view/${eventData.personId}" target="_blank">View this lead on FUB</a> </p>
-            </div>
-            `;
+                  const html = `
+                  <div>
+                      <h2> Possible Zillow Flex Exemption Identified </h2>
+                      <p> Zillow Property URL: ${eventData.property.url} </p>
+                      <p> FUB URL: https://jillkbiggs.followupboss.com/2/people/view/${eventData.personId} </p>
+                      <p> Zillow Premier Agent URL: ${personData.sourceUrl} </p>
+                      <p> <a href="https://jillkbiggs.followupboss.com/2/people/view/${eventData.personId}" target="_blank">View this lead on FUB</a> </p>
+                  </div>
+                  `;
 
-            try {
-              // send mail with defined transport object
-              let info = await smtpTransporter.sendMail({
-                from: '"cregodev7@gmail.com', // sender address
-                to: "daisycrego@gmail.com, cregodev7@gmail.com, dan@jillbiggsgroup.com, support@jillbiggsgroup.com", // list of receivers
-                subject: "Possible Zillow Flex", // Subject line
-                text: text, // plain text body
-                html: html, // html body
-              });
-            } catch (err) {
-              console.log(err);
-            }
+                  try {
+                    // send mail with defined transport object
+                    let info = await smtpTransporter.sendMail({
+                      from: '"cregodev7@gmail.com', // sender address
+                      to: "daisycrego@gmail.com, cregodev7@gmail.com, dan@jillbiggsgroup.com, support@jillbiggsgroup.com", // list of receivers
+                      subject: "Possible Zillow Flex", // Subject line
+                      text: text, // plain text body
+                      html: html, // html body
+                    });
+                  } catch (err) {
+                    console.log(err);
+                  }
+                }
           } else {
             isPossibleZillowExemption = false;
             console.log(
