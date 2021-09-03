@@ -4,6 +4,9 @@ Admin app for The Jill Biggs Group's Follow-Up Boss Event Management
 ## View Deployed Version
 https://jbg-admin.herokuapp.com
 
+- Current Heroku App: `jbg-admin`
+- Note about deploying: Don't move this `README` or any other file alongside the `src/` directory at the root level. It messes with the Heroku deploy. Keep only `src/` at the top level, and then Heroku will successfully detect the Node app.
+
 ## Run Locally
 - Define environment vars in `.env`:
 ```
