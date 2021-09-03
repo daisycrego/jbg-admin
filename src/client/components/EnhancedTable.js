@@ -206,6 +206,7 @@ export default function EnhancedTable({
 }) {
   const classes = useStyles();
   const [updatingRowId, setUpdatingRowId] = useState(null);
+  const [updatingColumn, setUpdatingColumn] = useState(null);
   const [updatingRowState, setUpdatingRowState] = useState(null);
   
 
@@ -280,17 +281,20 @@ export default function EnhancedTable({
                           isUpdatingCell={
                             columnMetadata.attr.includes(tableAttr.UPDATABLE) &&
                             updatingRowId &&
-                            updatingRowId === row._id
+                            updatingRowId === row._id &&
+                            updatingColumn === columnMetadata.name
                           }
                           updatingCellState={
                             columnMetadata.attr.includes(tableAttr.UPDATABLE) &&
                             updatingRowId &&
-                            updatingRowId === row._id
+                            updatingRowId === row._id && 
+                            updatingColumn === columnMetadata.name
                               ? updatingRowState
                               : null
                           }
                           updateRowState={setUpdatingRowState}
                           updateRowId={setUpdatingRowId}
+                          updateColumn={setUpdatingColumn}
                           redirectTo={redirectTo}
                         />
                       ))}

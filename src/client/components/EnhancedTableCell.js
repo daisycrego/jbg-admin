@@ -20,6 +20,7 @@ export default function EnhancedTableCell(props) {
     classes,
     updateRowState,
     updateRowId,
+    updateColumn,
     isUpdatingCell,
     redirectTo,
   } = props;
@@ -32,10 +33,11 @@ export default function EnhancedTableCell(props) {
     setUpdatingCellState(e.target.value);
   };
 
-  const handleUpdatableClick = (rowId, newState) => {
+  const handleUpdatableClick = (rowId, columnName, newState) => {
     setUpdatingCellState(newState);
     updateRowState(newState);
     updateRowId(rowId);
+    updateColumn(columnName);
   };
 
   let history = useHistory();
@@ -77,7 +79,7 @@ export default function EnhancedTableCell(props) {
               aria-label="cancel"
               color="primary"
               onClick={() => {
-                handleUpdatableClick(row._id, updatingCellState);
+                handleUpdatableClick(row._id, columnMetadata.name, updatingCellState);
                 updateRowId(null);
               }}
             >
@@ -93,7 +95,7 @@ export default function EnhancedTableCell(props) {
             <Button
               key={`${columnMetadata.name}_button_${row._id}`}
               onClick={() => 
-                handleUpdatableClick(row._id, row[columnMetadata.name])
+                handleUpdatableClick(row._id, columnMetadata.name, row[columnMetadata.name])
               }
             >
               {row[columnMetadata.name]}
