@@ -11,14 +11,6 @@ router.route("/api/leads").get(leadCtrl.list).post(leadCtrl.create);
 router.route("/api/leads/sync").get(authCtrl.requireSignin, leadCtrl.syncLeads);
 
 router
-  .route("/api/leads/fub/callback/created")
-  .post(leadCtrl.peopleCreatedWebhookCallback);
-
-router
-  .route("/api/leads/fub/callback/updated")
-  .post(leadCtrl.peopleStageUpdatedWebhookCallback);
-
-router
   .route("/api/lead/:leadId")
   .get(authCtrl.requireSignin, leadCtrl.read)
   .put(authCtrl.requireSignin, authCtrl.hasAuthorization, leadCtrl.update)

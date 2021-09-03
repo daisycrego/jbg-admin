@@ -7,6 +7,7 @@ import Queue from "bull";
 import jwt from "jsonwebtoken";
 import User from "../models/user.model";
 import { zillowStageOptions } from "../../lib/constants";
+const nodemailer = require("nodemailer");
 
 const create = async (req, res) => {
   const lead = new Lead(req.body);
@@ -332,6 +333,39 @@ const syncLeads = async (req, res) => {
     currentUrl = await syncLeadsHelper(currentUrl);
   }
 
+  let smtpTransporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+
+  const text = `Leads Synced with FUB`;
+  const html = `
+  <div>
+  <h2> Leads Synced with FUB </h2>
+  <p><a href="https://jbg-admin.herokuapp.com/leads">View leads</a></p>
+  </div>
+  `
+
+  try {
+    // send mail with defined transport object
+    let info = await smtpTransporter.sendMail({
+      from: '"cregodev7@gmail.com', // sender address
+      to: "daisycrego@gmail.com, cregodev7@gmail.com, dan@jillbiggsgroup.com, support@jillbiggsgroup.com", // list of receivers
+      subject: "FUB Leads Sync - Done", // Subject line
+      text: text, // plain text body
+      html: html, // html body
+    });
+  } catch (err) {
+    console.log(err);
+  }
+
+
+
   res.status(200).json({
     message: "Sync done",
   });
@@ -343,20 +377,6 @@ const syncLeads = async (req, res) => {
 // Create / Connect to a named work queue
 //let workQueue = new Queue("work", REDIS_URL);
 
-const peopleCreatedWebhookCallback = (req, res) => {
-  let job;
-  console.log(req.body);
-  //workQueue.add(req.body).then((result) => (job = result));
-  res.sendStatus(200);
-};
-
-const peopleStageUpdatedWebhookCallback = (req, res) => {
-  let job;
-  console.log(req.body);
-  //workQueue.add(req.body).then((result) => (job = result));
-  res.sendStatus(200);
-};
-
 export default {
   create,
   leadById,
@@ -365,6 +385,4 @@ export default {
   remove,
   update,
   syncLeads,
-  peopleCreatedWebhookCallback,
-  peopleStageUpdatedWebhookCallback,
 };
