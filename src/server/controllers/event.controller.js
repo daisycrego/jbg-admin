@@ -195,10 +195,6 @@ const addNewEvents = async (events) => {
       continue;
     }
 
-    console.log(
-      `Processing event: ${eventObj.id}, created: ${eventObj.created}, updated: ${eventObj.updated}`
-    );
-
     //const today = new Date();
     //const two_weeks_ago = today.getTime() - 1000 * 14 * (60 * 60 * 24);
     //const created = new Date(eventObj.created);
