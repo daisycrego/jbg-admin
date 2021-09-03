@@ -9,7 +9,7 @@ export default function CSVDownloadButton({ Parser, classes, rows }) {
   return (
     <Button variant="contained" color="primary" className={classes.button}>
       <CSVLink
-        style={{ color: "inherit", display: "flex", alignItems: "center" }}
+        style={{ color: "inherit", display: "flex", alignItems: "center", paddingLeft: 10, paddingRight: 10 }}
         data={csv}
       >
         <GetApp />
