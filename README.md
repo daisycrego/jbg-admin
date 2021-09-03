@@ -1,5 +1,5 @@
 # jbg-admin
-Admin app for Jill Biggs Group follow-up boss event management
+Admin app for The Jill Biggs Group's Follow-Up Boss Event Management
 
 ## View Deployed Version
 https://jbg-admin.herokuapp.com
