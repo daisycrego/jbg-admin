@@ -56,7 +56,8 @@ function start() {
     let personData;
     let isNewLead;
     let isZillowFlexEvent;
-    let isPossibleZillowExemption;
+    let isPossibleZillowExemption = false;
+    let isPossibleDuplicateAlert = false;
 
     if (!existingEvents) {
       try {
@@ -100,6 +101,7 @@ function start() {
             ? true
             : false;
 
+          
           if (isZillowFlexEvent && !isNewLead) {
             console.log(
               `Possible Zillow Flex Exemption -> Sending email alert`
@@ -108,7 +110,7 @@ function start() {
             isPossibleZillowExemption = true;
 
             const existingLogs = await Log.find({ personId: personData.id });
-            let isPossibleDuplicateAlert = false;
+            
             if (existingLogs.length) {
                 let threeDaysAgo = new Date();
                 threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
