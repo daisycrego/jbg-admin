@@ -17,9 +17,7 @@ const fetchWebhooks = async () => {
     const parsedResult = await result.json();
     console.log(parsedResult.webhooks);
     const requiredWebhooks = [
-      "eventsCreated",
-      "peopleCreated",
-      "peopleStageUpdated",
+      "eventsCreated"
     ];
     const activeWebhooks =
       parsedResult.webhooks && parsedResult.webhooks.length
