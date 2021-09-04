@@ -99,7 +99,8 @@ function start() {
 
           if (isZillowFlexEvent && !isNewLead) {
             console.log(
-              `Possible Zillow Flex Exemption -> Sending email alert`
+              `Possible Zillow Flex Exemption -> 
+              Checking for duplicate before sending email alert`
             );
 
             isPossibleZillowExemption = true;
@@ -108,12 +109,17 @@ function start() {
             if (existingLogs.length) {
               let threeDaysAgo = new Date();
               threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-              const recentAlertsSent = existingLogs.length ? existingLogs.filter(log => log.isPossibleZillowExemption===true && log.processedAt > threeDaysAgo) : [];
+              const recentAlertsSent = existingLogs.length
+                ? existingLogs.filter(
+                    (log) =>
+                      log.isPossibleZillowExemption === true &&
+                      log.processedAt > threeDaysAgo
+                  )
+                : [];
               if (recentAlertsSent.length) {
-                console.log(`Duplicate alert detected, not sending an email!`)
                 isPossibleDuplicateAlert = true;
                 isPossibleZillowExemption = false;
-              } 
+              }
             }
 
             if (!isPossibleDuplicateAlert) {
@@ -146,9 +152,12 @@ function start() {
               } catch (err) {
                 console.log(err);
               }
+            } else {
+              console.log(
+                `Duplicate alert detected, not sending an email for this event:`
+              );
+              console.log(eventData);
             }
-
-            
           } else {
             isPossibleZillowExemption = false;
             console.log(
